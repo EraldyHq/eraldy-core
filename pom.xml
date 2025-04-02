@@ -6,7 +6,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>eraldy-core-aggregator</artifactId>
-    <name>Eraldy Core</name>
+    <name>Eraldy Core Aggregator</name>
     <packaging>pom</packaging>
 
     <parent>
@@ -74,6 +74,39 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.7.5</version>
+            </dependency>
+            <!-- WebDriver-->
+            <!-- https://www.selenium.dev/documentation/en/selenium_installation/installing_selenium_libraries/-->
+            <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java-->
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-java</artifactId>
+                <version>4.9.1</version>
+            </dependency>
+            <!--  https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager -->
+            <dependency>
+                <groupId>io.github.bonigarcia</groupId>
+                <artifactId>webdrivermanager</artifactId>
+                <version>5.3.3</version>
+            </dependency>
+            <!-- Test -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>${harmcrest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- Must be before vertx otherwise, there is a conflict with log4j, they are at 2.17, and they don;t export core -->
             <dependency>
