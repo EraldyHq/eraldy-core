@@ -17,16 +17,14 @@ public class Command {
     private Path workingDirectory = Paths.get("");
     private Process process;
 
-    public Command(Path command) {
+    public Command(String command) {
 
-      if (!Files.exists(command)){
-        throw new IllegalArgumentException("The command file ("+command.toAbsolutePath().toString()+") does not exist");
-      }
-      commandAndArgs.add(command.toAbsolutePath().toString());
+
+      commandAndArgs.add(command);
 
     }
 
-    public static Command create(Path command) {
+    public static Command create(String command) {
 
         return new Command(command);
     }

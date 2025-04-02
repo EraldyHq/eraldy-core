@@ -3,12 +3,12 @@ package net.bytle.html;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import net.bytle.fs.Fs;
+import net.bytle.log.Log;
+import net.bytle.log.Logs;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
@@ -41,7 +41,7 @@ import java.util.Map;
  */
 public class CssInliner {
 
-  static Logger LOGGER = LoggerFactory.getLogger(CssInliner.class);
+  static Log LOGGER = Logs.createFromClazz(CssInliner.class);
   private static final String STYLE_NODE_NAME = "style";
   private static final String STYLE_ATTR_NAME = STYLE_NODE_NAME;
   private static final String CLASS_ATTR = "class";

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>eraldy-log</artifactId>
-    <name>Log</name>
+    <name>Eraldy Log</name>
 
     <parent>
         <artifactId>eraldy-core-aggregator</artifactId>
@@ -13,7 +13,20 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
+
     <dependencies>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jakarta-smtp</artifactId>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

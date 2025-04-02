@@ -1,0 +1,10 @@
+version: '3'
+
+tasks:
+  # When developing, compile and run
+  install:
+    cmds:
+      - mvn install -Dmaven.test.skip
+  package:
+    cmds:
+      - mvn package -Dmaven.test.skip

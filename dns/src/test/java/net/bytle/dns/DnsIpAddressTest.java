@@ -1,14 +1,15 @@
 package net.bytle.dns;
 
 import net.bytle.exception.CastException;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+
 
 import java.net.InetAddress;
 
-class DnsIpAddressTest {
+public class DnsIpAddressTest {
 
   @Test
-  void dnsIpAddressTest() throws DnsException, DnsNotFoundException, CastException {
+  public void dnsIpAddressTest() throws DnsException, DnsNotFoundException, CastException {
 
     XBillDnsClient dnsClient = XBillDnsClient.createDefault();
     String hostName = "www.datacadamia.com";

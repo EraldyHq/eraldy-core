@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>eraldy-smtp-client</artifactId>
+    <name>Eraldy Smtp Client</name>
+
+    <parent>
+        <artifactId>eraldy-core-aggregator</artifactId>
+        <groupId>com.eraldy</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- angus and jakarta should be the same as in SimpleEmail (don't know how to do that)-->
+    <!-- https://github.com/bbottema/simple-java-mail/blob/master/modules/core-module/pom.xml-->
+    <!-- https://eclipse-ee4j.github.io/angus-mail/-->
+    <properties>
+        <jakarta.version>2.1.2</jakarta.version>
+        <simple-email.version>8.10.1</simple-email.version>
+        <angus-email.version>2.0.2</angus-email.version>
+        <!-- See the set of version here https://developers.google.com/gmail/api/quickstart/java -->
+        <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-gmail -->
+        <google-api-gmail.version>v1-rev20220404-2.0.0</google-api-gmail.version>
+        <!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->
+        <google-api-client.version>2.0.1</google-api-client.version>
+        <google-oauth-client.version>1.34.1</google-oauth-client.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${jakarta.version}</version>
+            </dependency>
+            <!-- https://eclipse-ee4j.github.io/angus-mail/-->
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${angus-email.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.simplejavamail</groupId>
+                <artifactId>simple-java-mail</artifactId>
+                <version>${simple-email.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-gmail</artifactId>
+                <version>${google-api-gmail.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.api-client</groupId>
+                <artifactId>google-api-client</artifactId>
+                <version>${google-api-client.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client-jetty</artifactId>
+                <version>${google-oauth-client.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.eraldy</groupId>
+            <artifactId>eraldy-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eraldy</groupId>
+            <artifactId>eraldy-template</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eraldy</groupId>
+            <artifactId>eraldy-html</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.simplejavamail</groupId>
+            <artifactId>simple-java-mail</artifactId>
+        </dependency>
+        <!-- GMail -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-gmail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

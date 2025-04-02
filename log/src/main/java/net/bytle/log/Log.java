@@ -111,15 +111,29 @@ public class Log extends Logger {
   }
 
 
+  public void error(String s) {
+    this.log(Level.SEVERE, s);
+  }
 
-
+  public void error(String s, Throwable error) {
+    this.log(Level.SEVERE, s, error);
+  }
 
   public void severe(String... s) {
     this.severe(String.join(" - ", s));
   }
 
+
+  public void logf(Level level, String format, Object... parameters){
+    this.log(level,String.format(format, parameters));
+  }
+
   public void info(String... s) {
     this.info(String.join(" - ", s));
+  }
+
+  public void debug(String... s) {
+    this.fine(String.join(" - ", s));
   }
 
   public static final Level TIP = new LogLevel("TIP", 850);

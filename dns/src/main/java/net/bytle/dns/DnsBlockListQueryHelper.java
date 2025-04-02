@@ -3,9 +3,10 @@ package net.bytle.dns;
 import net.bytle.exception.CastException;
 import net.bytle.exception.IllegalStructure;
 import net.bytle.exception.InternalException;
+import net.bytle.log.Log;
+import net.bytle.log.Logs;
 import net.bytle.type.DnsName;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 
 import java.util.*;
 
@@ -14,7 +15,7 @@ import java.util.*;
  */
 public class DnsBlockListQueryHelper {
 
-  static Logger LOGGER = LogManager.getLogger(DnsBlockListQueryHelper.class);
+  static Log LOGGER = Logs.createFromClazz(DnsBlockListQueryHelper.class);
   private final DnsBlockList dnsBlockList;
   private final String queryTerm;
 
@@ -58,11 +59,11 @@ public class DnsBlockListQueryHelper {
       .orElse(null);
     if (response == null) {
       // Error on our end
-      LOGGER.warn("Internal Error: No response code for the response (" + responseCode + ")");
+      LOGGER.warning("Internal Error: No response code for the response (" + responseCode + ")");
       return DnsBlockListResponseCode.R_INTERNAL_RESPONSE_NOT_IN_LIST;
     }
     if (!response.getBlocked()) {
-      LOGGER.warn("Dns Blocking Query Error: Response code: " + response.getCode() + ", description: " + response.getDescription());
+      LOGGER.warning("Dns Blocking Query Error: Response code: " + response.getCode() + ", description: " + response.getDescription());
     }
     return response;
 

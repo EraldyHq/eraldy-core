@@ -109,7 +109,9 @@ public class Strings {
 
   public List<String> splitWithoutRemovingTheSplitCharacter(String patter) {
     // zero-width positive lookahead
-    return Arrays.asList(this.stringBuilderField.toString().split("(?=" + patter + ")"));
+    return Arrays.asList(
+            this.stringBuilderField.toString().split("(?=" + patter + ")")
+    );
   }
 
   public Integer numberOfOccurrences(String regexp) {
@@ -335,7 +337,7 @@ public class Strings {
   public Strings rtrim(String suffix) {
 
     int i = stringBuilderField.lastIndexOf(suffix);
-    if (i != -1 && i <= stringBuilderField.length() - 1) {
+    if (i != -1 && i == stringBuilderField.length() - suffix.length()) {
       stringBuilderField.delete(i, stringBuilderField.length());
     }
     return this;

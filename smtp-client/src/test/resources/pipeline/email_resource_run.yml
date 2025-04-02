@@ -1,0 +1,13 @@
+pipeline:
+  - name: 'Select'
+    operation: 'select'
+    args:
+      data-selector: "attachment/*@pipeline"
+      strict: true
+  - name: 'Email'
+    operation: 'sendmail'
+    args:
+      to: "support@tabulify.com"
+      subject: "Test resource run"
+      txt: |
+        The body of the email
