@@ -131,7 +131,6 @@ public class WiserConfiguration {
   public static BMailSmtpClient getSession() {
     return BMailSmtpClient.create()
       .setPort(WiserConfiguration.WISER_PORT)
-      .setAuth(REQUIRE_AUTH)
       .setUsername("foo")
       .setPassword("bar")
       .setStartTls(START_TLS_VALUE)
