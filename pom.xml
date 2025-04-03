@@ -49,6 +49,10 @@
         <!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->
         <google-api-client.version>2.0.1</google-api-client.version>
         <google-oauth-client.version>1.34.1</google-oauth-client.version>
+        <!-- https://mvnrepository.com/artifact/org.zeroturnaround/zt-exec-->
+        <!-- https://github.com/zeroturnaround/zt-exec -->
+        <!-- They support future -->
+        <exec.version>1.12</exec.version>
     </properties>
 
     <dependencyManagement>
@@ -179,6 +183,12 @@
                 <version>4.5.3</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Exec -->
+            <dependency>
+                <groupId>org.zeroturnaround</groupId>
+                <artifactId>zt-exec</artifactId>
+                <version>${exec.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

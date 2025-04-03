@@ -13,7 +13,7 @@ public class Command {
 
 
 
-    private List<String> commandAndArgs = new ArrayList<>();
+    private final List<String> commandAndArgs = new ArrayList<>();
     private Path workingDirectory = Paths.get("");
     private Process process;
 
@@ -49,6 +49,11 @@ public class Command {
 
     public void startAndWait() {
         try {
+            /*
+            * The problem with running interactive programs, such as sudo, from Runtime.exec is
+            * that it attaches their stdin and stdout to pipes rather than the console device they need.
+            * https://jonisalonen.com/2012/runtime-exec-with-unix-console-programs/
+             */
             process = new ProcessBuilder(commandAndArgs)
                     .directory(this.workingDirectory.toFile())
                     .start();
@@ -73,6 +78,7 @@ public class Command {
         return InputStreams.toString(input)+InputStreams.toString(inputErr);
     }
 
+    @SuppressWarnings("unused")
     public Command addArgs(List<String> args) {
         for (String arg:args){
             addArg(arg);
