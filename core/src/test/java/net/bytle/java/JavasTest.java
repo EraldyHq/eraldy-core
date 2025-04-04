@@ -22,7 +22,7 @@ public class JavasTest {
   @Test
   public void getFilePathFromUrl() throws MalformedURLException, URISyntaxException {
 
-    /**
+    /*
      * Code in a jar test
      */
 
