@@ -3,8 +3,10 @@ version: '3'
 tasks:
   # When developing, compile and run
   install:
+    # -DskipTests and not -Dmaven.test.skip so that test packaging is not skipped
     cmds:
-      - mvn install -Dmaven.test.skip
+      - mvn install -DskipTests
   package:
+    # -DskipTests and not -Dmaven.test.skip so that test packaging is not skipped
     cmds:
-      - mvn package -Dmaven.test.skip
+      - mvn package -DskipTests
