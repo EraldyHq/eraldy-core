@@ -63,7 +63,7 @@ public class TestSenderUtility {
         .setPort(PORT_GUI_LOCAL_SMTP_SERVER)
         .build();
     } else {
-      if (JavaEnvs.IS_DEV) {
+      if (JavaEnvs.isDev(TestSenderUtility.class)) {
         throw new RuntimeException("The local development server (Papercut) is not started, you can send an email");
       }
       paperCutLocalSmtpServer = null;

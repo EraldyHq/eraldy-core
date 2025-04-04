@@ -17,24 +17,16 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.eraldy</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>eraldy-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.eraldy</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>eraldy-template</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.eraldy</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>eraldy-html</artifactId>
-        </dependency>
-
-        <!-- Testing -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.mail</groupId>
@@ -64,6 +56,40 @@
             <artifactId>google-oauth-client-jetty</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.davidmoten</groupId>
+            <artifactId>subethasmtp</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>net/bytle/email/test/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

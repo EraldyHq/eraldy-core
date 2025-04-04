@@ -24,7 +24,6 @@
         <module>smtp-client</module>
         <module>niofs-http</module>
         <module>dns</module>
-        <module>smtp-client-test</module>
     </modules>
 
     <properties>
@@ -53,6 +52,9 @@
         <!-- https://github.com/zeroturnaround/zt-exec -->
         <!-- They support future -->
         <exec.version>1.12</exec.version>
+        <!-- email SMTP server
+        https://mvnrepository.com/artifact/com.github.davidmoten/subethasmtp -->
+        <subetha.version>6.0.7</subetha.version>
     </properties>
 
     <dependencyManagement>
@@ -81,7 +83,9 @@
             <dependency>
                 <groupId>com.eraldy</groupId>
                 <artifactId>eraldy-smtp-client-test</artifactId>
+                <type>test-jar</type>
                 <version>${project.version}</version>
+                <classifier>tests</classifier>
             </dependency>
             <dependency>
                 <groupId>com.eraldy</groupId>
@@ -166,6 +170,12 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.davidmoten</groupId>
+                <artifactId>subethasmtp</artifactId>
+                <version>${subetha.version}</version>
                 <scope>test</scope>
             </dependency>
             <!-- Must be before vertx otherwise, there is a conflict with log4j, they are at 2.17, and they don;t export core -->
