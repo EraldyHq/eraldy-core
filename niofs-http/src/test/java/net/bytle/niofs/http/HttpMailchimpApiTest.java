@@ -3,6 +3,7 @@ package net.bytle.niofs.http;
 import net.bytle.fs.Fs;
 import net.bytle.type.env.DotEnv;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.file.StandardCopyOption;
 
 public class HttpMailchimpApiTest {
 
+  @Ignore
   @Test
   public void testGetRequestRestApi() throws IOException, URISyntaxException {
 

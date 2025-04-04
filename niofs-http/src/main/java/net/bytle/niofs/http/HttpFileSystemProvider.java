@@ -134,7 +134,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
   }
 
   /**
-   * check access is meaning less in HTTP.
+   * Check access is meaning less in HTTP.
    * <p>
    * Why ?
    * A `HEAD` method may be not authorized (405)
@@ -183,7 +183,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
         connection.connect();
         int responseCode = connection.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
-          /**
+          /*
            * IO Exception is needed for {@link Files#isAccessible(Path, AccessMode...)}
            */
           throw new IOException("No read permission. The http request was not successful, we got the following response code " + responseCode);

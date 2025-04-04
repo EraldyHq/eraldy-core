@@ -176,7 +176,7 @@ final class HttpFileSystem extends FileSystem {
    * @return return if we check the access (readability, existence) with the `HEAD` method
    */
   public boolean shouldCheckAccess() {
-    /**
+    /*
      * No, by default because `HEAD` has a side effect in the fact that it may be
      * just not authorized (405) while a `GET` will
      *
