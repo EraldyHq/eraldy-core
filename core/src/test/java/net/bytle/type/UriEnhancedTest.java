@@ -29,4 +29,12 @@ public class UriEnhancedTest {
 
 
   }
+
+  @Test
+  public void UriIllegalCharacter() throws IllegalStructure {
+    // the symbol | in the query is illegal, need to be encoded
+    UriEnhanced uriEnhanced = UriEnhanced
+            .createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=json&prop=description|categories");
+    Assert.assertEquals("description|categories", uriEnhanced.getQueryProperty("prop"));
+  }
 }
