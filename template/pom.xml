@@ -21,11 +21,9 @@
       <groupId>com.eraldy</groupId>
       <artifactId>eraldy-log</artifactId>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.eraldy</groupId>

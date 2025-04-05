@@ -104,6 +104,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.eraldy</groupId>
+                <artifactId>eraldy-cli</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.7.5</version>
@@ -112,6 +117,33 @@
                 <groupId>org.ini4j</groupId>
                 <artifactId>ini4j</artifactId>
                 <version>0.5.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.12.1</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.json/json -->
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20250107</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>2.9.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>1.15.3</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.cssparser</groupId>
+                <artifactId>cssparser</artifactId>
+                <version>0.9.29</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
             <dependency>
