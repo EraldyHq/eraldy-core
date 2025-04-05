@@ -1,0 +1,10 @@
+
+  * Hello Nico must be seen as atomic
+<unit>
+<code dos>
+echo "Hello Nico" la
+</code>
+<console>
+Hello Nicola
+</console>
+</unit>
