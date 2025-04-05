@@ -10,3 +10,6 @@ tasks:
     # -DskipTests and not -Dmaven.test.skip so that test packaging is not skipped
     cmds:
       - mvn package -DskipTests
+  clean:
+    cmds:
+      - mvn clean

@@ -108,6 +108,11 @@
                 <artifactId>postgresql</artifactId>
                 <version>42.7.5</version>
             </dependency>
+            <dependency>
+                <groupId>org.ini4j</groupId>
+                <artifactId>ini4j</artifactId>
+                <version>0.5.4</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
             <dependency>
                 <groupId>jakarta.mail</groupId>

@@ -32,9 +32,14 @@
       <artifactId>bcprov-jdk18on</artifactId>
       <version>1.78</version>
     </dependency>
+    <!-- Structure -->
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ini4j</groupId>
+      <artifactId>ini4j</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
