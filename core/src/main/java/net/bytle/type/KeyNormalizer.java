@@ -77,6 +77,11 @@ public class KeyNormalizer {
     return new KeyNormalizer(key);
   }
 
+  @SuppressWarnings("unused")
+  public static KeyNormalizer createFromEnum(Enum<?> enumValue) {
+    return new KeyNormalizer(enumValue.toString());
+  }
+
   public String toCamelCase() {
     return this.parts.stream()
       .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
