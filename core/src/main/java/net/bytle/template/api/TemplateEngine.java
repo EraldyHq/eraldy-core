@@ -14,6 +14,7 @@ public interface TemplateEngine {
    * Delete the compile cache
    * Used when a new service starts up for instance with the html template in the resource map.
    */
+  @SuppressWarnings("unused")
   void clearCache();
 
 }

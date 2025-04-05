@@ -42,7 +42,7 @@ public class TextTemplate implements Template {
         if (value != null) {
           return value.toString();
         } else {
-          /**
+          /*
            * We return the original variable
            * if it has no defined variables
            * (In a pipeline, the target uri allows also template
@@ -51,7 +51,7 @@ public class TextTemplate implements Template {
           if (matchWasWithBracket) {
             return "${" + name + "}";
           } else {
-            return "$" + name + "";
+            return "$" + name;
           }
         }
       });
@@ -62,7 +62,7 @@ public class TextTemplate implements Template {
       localTokens.add(params -> tail);
     }
 
-    /**
+    /*
      * Not sure why stringBuildings is an array
      */
     this.tokens = localTokens.toArray(new StringBuilding[0]);
@@ -81,6 +81,7 @@ public class TextTemplate implements Template {
   }
 
 
+  @SuppressWarnings("unused")
   public List<String> getVariableNames() {
     return variablesNameFound;
   }

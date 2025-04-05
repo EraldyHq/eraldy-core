@@ -24,6 +24,7 @@ public class TextTemplateEngine implements TemplateEngine {
   }
 
 
+  @SuppressWarnings("unused")
   public static TextTemplateEngine getOrCreate() {
     if (templateEngine != null) {
       return templateEngine;
