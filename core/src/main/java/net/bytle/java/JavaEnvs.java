@@ -9,6 +9,9 @@ import java.nio.file.Path;
 public class JavaEnvs {
 
 
+    static String SYSTEM_PROPERTY_NAME = "web.environment";
+    static String ENV_VARIABLE_NAME = "WEB_ENVIRONMENT";
+
     public static final Path HOME_PATH;
     public static final boolean IS_IDE_DEBUGGING;
     private static Boolean IS_DEV;
@@ -20,7 +23,6 @@ public class JavaEnvs {
          */
         Path sourceCodePath = Javas.getSourceCodePath(JavaEnvs.class);
         Path homePath = sourceCodePath.getParent().getParent();
-
 
 
         /*
@@ -40,7 +42,6 @@ public class JavaEnvs {
     }
 
     /**
-     *
      * @param clazz - the class to get the location (ie to see if the class is in a build directory)
      * @return true
      */
@@ -51,13 +52,23 @@ public class JavaEnvs {
         }
 
         /*
+         *  On an idea of
+         *  https://github.com/vert-x3/vertx-web/blob/master/vertx-web-common/src/main/java/io/vertx/ext/web/common/WebEnvironment.java
+         */
+        String env = System.getProperty(SYSTEM_PROPERTY_NAME, System.getenv(ENV_VARIABLE_NAME));
+        if ("dev".equalsIgnoreCase(env) || "Development".equalsIgnoreCase(env)) {
+            IS_DEV = true;
+            return true;
+        }
+        /*
          * For vertx, the Dev mode is :
          * * with the VERTXWEB_ENVIRONMENT environment variable
          * * or `vertxweb.environment` system property
          * set to dev.
+         *
          */
-        String env = OsEnvs.getEnvOrDefault("VERTXWEB_ENVIRONMENT", "prod");
-        if (env.equals("dev")) {
+        env = OsEnvs.getEnvOrDefault("VERTXWEB_ENVIRONMENT", "prod");
+        if ("dev".equalsIgnoreCase(env) || "Development".equalsIgnoreCase(env)) {
             IS_DEV = true;
             return true;
         }
