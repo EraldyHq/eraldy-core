@@ -185,14 +185,18 @@ public class UriEnhanced {
 
     public URI toUri() {
         try {
-            /**
+            /*
              * The URI query string is quoted in the URI constructor
              */
             String nonEscapedQueryString = this.getQueryString(false);
+            String host = null;
+            if (this.host != null) {
+                host = this.host.toStringWithoutRoot();
+            }
             if (this.port == null) {
-                return new URI(this.scheme, this.host.toStringWithoutRoot(), this.path, nonEscapedQueryString, this.fragment);
+                return new URI(this.scheme, host, this.path, nonEscapedQueryString, this.fragment);
             } else {
-                return new URI(this.scheme, null, this.host.toStringWithoutRoot(), this.port, this.path, nonEscapedQueryString, this.fragment);
+                return new URI(this.scheme, null, host, this.port, this.path, nonEscapedQueryString, this.fragment);
             }
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
