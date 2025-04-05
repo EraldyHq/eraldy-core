@@ -24,6 +24,7 @@
         <module>smtp-client</module>
         <module>niofs-http</module>
         <module>dns</module>
+        <module>cli</module>
     </modules>
 
     <properties>
