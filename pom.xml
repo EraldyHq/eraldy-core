@@ -145,6 +145,12 @@
                 <artifactId>cssparser</artifactId>
                 <version>0.9.29</version>
             </dependency>
+            <!-- Graph Output -->
+            <dependency>
+                <groupId>org.jgrapht</groupId>
+                <artifactId>jgrapht-io</artifactId>
+                <version>1.4.0</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
             <dependency>
                 <groupId>jakarta.mail</groupId>

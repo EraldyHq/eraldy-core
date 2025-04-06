@@ -69,6 +69,7 @@ public class Key {
   /**
    * @param enumValue the enum value
    * @return the long option name is a series of lowercase name separated by a minus (used by the command line and in HTML template variable)
+   * @deprecated for {@link KeyNormalizer#toCliLongOptionName()}
    */
   public static String toLongOptionName(Enum<?> enumValue) {
 
@@ -78,6 +79,7 @@ public class Key {
   /**
    * @param string the enum value
    * @return the long option name is a series of lowercase name separated by a minus (used by the command line and in HTML template variable)
+   * @deprecated for {@link KeyNormalizer#toCliLongOptionName()}
    */
   public static String toLongOptionName(String string) {
 

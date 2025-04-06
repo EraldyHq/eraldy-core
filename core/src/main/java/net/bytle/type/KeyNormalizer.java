@@ -2,6 +2,7 @@ package net.bytle.type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -10,9 +11,9 @@ import java.util.stream.Collectors;
 public class KeyNormalizer {
 
 
-  private final String stringOrigin;
-
-
+  /**
+   * The parts of the name normalized to lowercase in order to support Key equality
+   */
   private final List<String> parts = new ArrayList<>();
 
 
@@ -21,11 +22,10 @@ public class KeyNormalizer {
    */
   KeyNormalizer(String stringOrigin) {
 
-    this.stringOrigin = stringOrigin;
 
     StringBuilder currentWord = new StringBuilder();
 
-    /**
+    /*
      * To handle UPPER SNAKE CASE
      * such as UPPER_SNAKE_CASE
      * We split on a UPPER case character only if the previous character is not
@@ -36,18 +36,18 @@ public class KeyNormalizer {
       // Separator (ie whitespace, comma, dollar, underscore, ...)
       boolean isCharacterSeparator = Character.isWhitespace(c) || !Character.isLetterOrDigit(c);
       boolean currentCharacterIsUpperCase = Character.isUpperCase(c);
-      /**
+      /*
        * Separate on Uppercase if the previous character is not UPPER Case
        * For example: to separate UPPER_CASE key in 2 words UPPER and CASE
        */
       boolean separateOnCase = currentCharacterIsUpperCase && previousCharacterIsNotUpperCase;
       if (isCharacterSeparator || separateOnCase) {
         if (currentWord.length() > 0) {
-          parts.add(currentWord.toString());
+          parts.add(currentWord.toString().toLowerCase());
           currentWord.setLength(0);
         }
       }
-      /**
+      /*
        * End
        */
       previousCharacterIsNotUpperCase = !currentCharacterIsUpperCase;
@@ -59,7 +59,7 @@ public class KeyNormalizer {
     }
 
     if (currentWord.length() > 0) {
-      parts.add(currentWord.toString());
+      parts.add(currentWord.toString().toLowerCase());
     }
 
   }
@@ -73,14 +73,10 @@ public class KeyNormalizer {
    *            by uppercase letter (if not preceded by another uppercase character to handle UPPER_SNAKE_CASE)
    * The words can then be printed/normalized into a {@link KeyCase}
    */
-  public static KeyNormalizer createFromString(String key) {
-    return new KeyNormalizer(key);
+  public static KeyNormalizer create(Object key) {
+    return new KeyNormalizer(key.toString());
   }
 
-  @SuppressWarnings("unused")
-  public static KeyNormalizer createFromEnum(Enum<?> enumValue) {
-    return new KeyNormalizer(enumValue.toString());
-  }
 
   public String toCamelCase() {
     return this.parts.stream()
@@ -117,12 +113,23 @@ public class KeyNormalizer {
   }
 
   /**
-   * @return the words in a Upper Snake Case (ie USER_COUNT)
+   * @return the words in a Snake Case (ie user_count)
    */
   public String toSqlCase() {
+    return this.toSnakeCase();
+  }
+
+  /**
+   * @return the words in an Upper Snake Case (ie USER_COUNT)
+   * Old case that conflicts with shouting.
+   */
+  @SuppressWarnings("unused")
+  public String toUpperSqlCase() {
     return this.toUpperSnakeCase();
   }
 
+
+  @SuppressWarnings("unused")
   public String toCase(KeyCase keyCase) {
     switch (keyCase) {
       case HANDLE:
@@ -142,13 +149,22 @@ public class KeyNormalizer {
     }
   }
 
+
   /**
-   * @return the words in a Hypen Case (ie user-count)
+   * @return the words in a Hyphen Case (ie user-count)
+   * Aeries of lowercase name separated by a minus (used by the command line and in HTML template variable)
    */
   public String toHyphenCase() {
     return this.parts.stream()
       .map(String::toLowerCase)
       .collect(Collectors.joining("-"));
+  }
+
+  /**
+   * @return the long option name used in cli (ie {@link #toHyphenCase()}
+   */
+  public String toCliLongOptionName() {
+    return toHyphenCase();
   }
 
   /**
@@ -159,10 +175,25 @@ public class KeyNormalizer {
     return toHyphenCase();
   }
 
+  /**
+   *
+   * @return {@link #toHyphenCase()}
+   */
   @Override
   public String toString() {
-    return this.stringOrigin;
+    return this.toHyphenCase();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    KeyNormalizer that = (KeyNormalizer) o;
+    return Objects.equals(parts, that.parts);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(parts);
+  }
 
 }
