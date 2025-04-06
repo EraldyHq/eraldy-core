@@ -6,8 +6,8 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <name>Eraldy Http NIO File System</name>
-  <artifactId>eraldy-niofs-http</artifactId>
+  <name>Eraldy Test</name>
+  <artifactId>eraldy-test</artifactId>
 
   <parent>
     <groupId>com.eraldy</groupId>
@@ -17,21 +17,21 @@
 
 
   <dependencies>
+
     <dependency>
-      <groupId>com.eraldy</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>eraldy-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.eraldy</groupId>
-      <artifactId>eraldy-log</artifactId>
-    </dependency>
-
-    <!-- Testing -->
+    <!-- Mandatory dependency https://github.com/testcontainers/testcontainers-java/issues/970 -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit4.version}</version>
-      <scope>test</scope>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>1.20.6</version>
     </dependency>
   </dependencies>
 </project>

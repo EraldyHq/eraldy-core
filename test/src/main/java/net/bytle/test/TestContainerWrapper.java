@@ -19,18 +19,19 @@ import java.util.List;
  */
 public class TestContainerWrapper {
 
-  private GenericContainer container;
-  private String image;
+  private GenericContainer<?> container;
+  private final String image;
   private String hostName = "localhost";
   private Integer port;
-  private String name;
+  private final String name;
 
   public TestContainerWrapper(String name, String dockerImageName) {
     this.name = name;
     this.image = dockerImageName;
-    this.container = new GenericContainer(dockerImageName);
+    this.container = new GenericContainer<>(dockerImageName);
   }
 
+  @SuppressWarnings("unused")
   public TestContainerWrapper(String name, GenericContainer container) {
     this.container = container;
     this.name = name;
@@ -42,7 +43,7 @@ public class TestContainerWrapper {
     /**
      * Do we need to start the container
      */
-    Boolean startContainer = true;
+    boolean startContainer = true;
     if (!Oss.portAvailable(this.port)){
       startContainer = false;
       System.out.println("The port is already busy, the container will not start.");
@@ -113,14 +114,17 @@ public class TestContainerWrapper {
     return this;
   }
 
+  @SuppressWarnings("unused")
   public String getHostName() {
     return this.hostName;
   }
 
+  @SuppressWarnings("unused")
   public Integer getPort() {
     return this.port;
   }
 
+  @SuppressWarnings("unused")
   public boolean isRunning() {
     return container.isRunning();
   }
