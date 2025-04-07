@@ -23,5 +23,13 @@ public class DateTest {
     Assert.assertEquals("The iso format is the good one",LocalDate.now().toString(),date.toIsoString());
   }
 
+  @Test
+  public void createFromString() {
+
+    String actual = Date.createFromString("2020-10-12").toIsoString();
+    Assert.assertEquals("equal", "2020-10-12", actual);
+
+  }
+
 
 }

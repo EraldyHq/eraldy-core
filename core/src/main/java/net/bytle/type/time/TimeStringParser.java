@@ -40,56 +40,56 @@ public class TimeStringParser {
    * In Java 8, yyyy means "year of era" (BC or AD) and the error message complains
    * that MonthOfYear, DayOfMonth and YearOfEra is not enough information to construct the date because era is not known.
    */
-  private static final Map<Pattern, String> DATE_FORMAT_REGEXPS = new HashMap<Pattern, String>() {{
-    // Iso date
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$"), "uuuu-MM-dd");
-    // SQL timestamp with 1, 2 or 3 digits
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{9}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{8}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{7}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{6}$"), "yyyy-MM-dd HH:mm:ss.SSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{5}$"), "yyyy-MM-dd HH:mm:ss.SSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{4}$"), "yyyy-MM-dd HH:mm:ss.SSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), "yyyy-MM-dd HH:mm:ss.SSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{2}$"), "yyyy-MM-dd HH:mm:ss.SS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{1}$"), "yyyy-MM-dd HH:mm:ss.S");
-    /**
-     * Iso timestamp
-     * See {@link LocalDateTime#toString()}
-     */
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{9}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{8}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{7}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{6}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{5}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{4}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), "yyyy-MM-dd'T'HH:mm:ss.SSS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{2}$"), "yyyy-MM-dd'T'HH:mm:ss.SS");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{1}$"), "yyyy-MM-dd'T'HH:mm:ss.S");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy-MM-dd'T'HH:mm:ss");
-    // others
-    put(Pattern.compile("^\\d{8}$"), "yyyyMMdd");
-    put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}$"), "dd-MM-yyyy");
-    put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$"), "MM/dd/yyyy");
-    put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}$"), "yyyy/MM/dd");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), "dd MMM yyyy");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), "dd MMMM yyyy");
-    put(Pattern.compile("^\\d{12}$"), "yyyyMMddHHmm");
-    put(Pattern.compile("^\\d{8}\\s\\d{4}$"), "yyyyMMdd HHmm");
-    put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd-MM-yyyy HH:mm");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy-MM-dd HH:mm");
-    put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM/dd/yyyy HH:mm");
-    put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy/MM/dd HH:mm");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMMM yyyy HH:mm");
-    put(Pattern.compile("^\\d{14}$"), "yyyyMMddHHmmss");
-    put(Pattern.compile("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss");
-    put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd-MM-yyyy HH:mm:ss");
-    put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy-MM-dd HH:mm:ss");
-    put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "MM/dd/yyyy HH:mm:ss");
-    put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy/MM/dd HH:mm:ss");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss");
-    put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss");
+  private static final Map<Pattern, String> DATE_FORMAT_REGEXPS = new HashMap<>() {{
+      // Iso date, not uuuu in place of yyyy. it does not work with 2020-10-12
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$"), "yyyy-MM-dd");
+      // SQL timestamp with 1, 2 or 3 digits
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{9}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{8}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{7}$"), "yyyy-MM-dd HH:mm:ss.SSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{6}$"), "yyyy-MM-dd HH:mm:ss.SSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{5}$"), "yyyy-MM-dd HH:mm:ss.SSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{4}$"), "yyyy-MM-dd HH:mm:ss.SSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), "yyyy-MM-dd HH:mm:ss.SSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{2}$"), "yyyy-MM-dd HH:mm:ss.SS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{1}$"), "yyyy-MM-dd HH:mm:ss.S");
+      /**
+       * Iso timestamp
+       * See {@link LocalDateTime#toString()}
+       */
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{9}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{8}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{7}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{6}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{5}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{4}$"), "yyyy-MM-dd'T'HH:mm:ss.SSSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), "yyyy-MM-dd'T'HH:mm:ss.SSS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{2}$"), "yyyy-MM-dd'T'HH:mm:ss.SS");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{1}$"), "yyyy-MM-dd'T'HH:mm:ss.S");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy-MM-dd'T'HH:mm:ss");
+      // others
+      put(Pattern.compile("^\\d{8}$"), "yyyyMMdd");
+      put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}$"), "dd-MM-yyyy");
+      put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$"), "MM/dd/yyyy");
+      put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}$"), "yyyy/MM/dd");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), "dd MMM yyyy");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), "dd MMMM yyyy");
+      put(Pattern.compile("^\\d{12}$"), "yyyyMMddHHmm");
+      put(Pattern.compile("^\\d{8}\\s\\d{4}$"), "yyyyMMdd HHmm");
+      put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd-MM-yyyy HH:mm");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy-MM-dd HH:mm");
+      put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM/dd/yyyy HH:mm");
+      put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy/MM/dd HH:mm");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMMM yyyy HH:mm");
+      put(Pattern.compile("^\\d{14}$"), "yyyyMMddHHmmss");
+      put(Pattern.compile("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss");
+      put(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd-MM-yyyy HH:mm:ss");
+      put(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy-MM-dd HH:mm:ss");
+      put(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "MM/dd/yyyy HH:mm:ss");
+      put(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy/MM/dd HH:mm:ss");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss");
+      put(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss");
   }};
 
 
