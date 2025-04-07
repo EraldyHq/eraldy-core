@@ -24,7 +24,7 @@ public class Timestamp {
    * (If the time needs to be local to the system,
    * use {@link ZoneId#systemDefault()}
    */
-  public static final ZoneId DEFAULT_ZONE_ID = ZoneOffset.UTC;
+  public static final ZoneId UTC_DEFAULT_ZONE_ID = ZoneOffset.UTC;
 
 
   LocalDateTime localDateTime;
@@ -71,7 +71,7 @@ public class Timestamp {
 
   public static Timestamp createFromDate(java.util.Date date) {
 
-    LocalDateTime localDateTime = Instant.ofEpochMilli(date.getTime()).atZone(DEFAULT_ZONE_ID).toLocalDateTime();
+    LocalDateTime localDateTime = Instant.ofEpochMilli(date.getTime()).atZone(UTC_DEFAULT_ZONE_ID).toLocalDateTime();
     return new Timestamp(localDateTime);
 
   }
@@ -141,7 +141,7 @@ public class Timestamp {
   }
 
   public static Timestamp createFromInstant(Instant instant) {
-    return new Timestamp(LocalDateTime.ofInstant(instant, DEFAULT_ZONE_ID));
+    return new Timestamp(LocalDateTime.ofInstant(instant, UTC_DEFAULT_ZONE_ID));
   }
 
   public static Timestamp createFromNowUtc() {
@@ -160,7 +160,7 @@ public class Timestamp {
     return new Timestamp(
       Instant
         .ofEpochMilli(epochMilli)
-        .atZone(DEFAULT_ZONE_ID)
+        .atZone(UTC_DEFAULT_ZONE_ID)
         .toLocalDateTime()
     );
 
@@ -169,12 +169,12 @@ public class Timestamp {
 
   public Long toEpochMilli() {
 
-    return localDateTime.atZone(DEFAULT_ZONE_ID).toInstant().toEpochMilli();
+    return localDateTime.atZone(UTC_DEFAULT_ZONE_ID).toInstant().toEpochMilli();
 
   }
 
   public Date toDate() {
-    return Date.from(localDateTime.atZone(DEFAULT_ZONE_ID).toInstant());
+    return Date.from(localDateTime.atZone(UTC_DEFAULT_ZONE_ID).toInstant());
   }
 
 

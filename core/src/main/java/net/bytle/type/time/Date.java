@@ -3,21 +3,26 @@ package net.bytle.type.time;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static net.bytle.type.time.TimeStringParser.detectFormat;
 
 /**
+ * A date class on day precision
+ * ie a wrapper around LocalDate
+ * <p>
  * A wrapper around all date format where Date means day precision
  * ie YYYY-MM-DD
  */
 @SuppressWarnings("unused")
 public class Date {
 
-    private static final ZoneId DEFAULT_ZONE_ID = ZoneId.systemDefault(); // ZoneId.of("GMT")
+    private static final ZoneId DEFAULT_ZONE_ID = Timestamp.UTC_DEFAULT_ZONE_ID;
     private final LocalDate localDate;
 
     /**
@@ -31,7 +36,11 @@ public class Date {
     }
 
     public Date(LocalDate localDate) {
+
         this.localDate = localDate;
+        // To date does not give a timezone, it takes the default
+        TimeZone.setDefault(TimeZone.getTimeZone(DEFAULT_ZONE_ID));
+
     }
 
     public static Date createFromEpochMilli(Long epochMilli) {
@@ -137,6 +146,7 @@ public class Date {
 
         try {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone(DEFAULT_ZONE_ID));
             java.util.Date date = simpleDateFormat.parse(s);
             return createFromDate(date);
         } catch (ParseException e) {
@@ -147,9 +157,9 @@ public class Date {
 
 
     /**
-     * A java.util.date is a time millisecond  precision without time zone
+     * A java.util.date is a time millisecond  precision with time zone
      *
-     * @param date - from an date util
+     * @param date - from a date util
      * @return a date
      */
     public static Date createFromDate(java.util.Date date) {
@@ -167,8 +177,16 @@ public class Date {
         return toIsoString();
     }
 
+    public Instant toInstant() {
+
+        return localDate.atStartOfDay(DEFAULT_ZONE_ID).toInstant();
+
+    }
+
     public java.util.Date toDate() {
-        return java.sql.Date.from(localDate.atStartOfDay(DEFAULT_ZONE_ID).toInstant());
+
+        return java.util.Date.from(toInstant());
+
     }
 
 

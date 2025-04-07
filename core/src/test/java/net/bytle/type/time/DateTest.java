@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.util.Calendar;
 
 public class DateTest {
 
@@ -26,8 +27,17 @@ public class DateTest {
   @Test
   public void createFromString() {
 
-    String actual = Date.createFromString("2020-10-12").toIsoString();
+    Date fromString = Date.createFromString("2020-10-12");
+    String actual = fromString.toIsoString();
     Assert.assertEquals("equal", "2020-10-12", actual);
+
+    Calendar instance = Calendar.getInstance();
+    java.util.Date date = fromString.toDate();
+    instance.setTime(date);
+    Assert.assertEquals(0, instance.get(Calendar.HOUR));
+    Assert.assertEquals(0, instance.get(Calendar.MINUTE));
+    Assert.assertEquals(0, instance.get(Calendar.SECOND));
+
 
   }
 
