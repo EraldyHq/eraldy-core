@@ -1,7 +1,7 @@
 package net.bytle.xml;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 
@@ -13,14 +13,13 @@ public class XmlGetTest {
 
     /**
      * Test the main function
-     * @throws Exception
      */
     @Test
-    public void xmlGetMainTest() throws Exception {
+    public void xmlGetMainTest() {
 
         InputStream inputStream = this.getClass().getResourceAsStream("/wikipedia/mediawiki.xml");
         String value = Xmls.get(inputStream, "/mediawiki/page[1]/title");
-        Assert.assertEquals("Value","Page title",value);
+        Assertions.assertEquals("Page title",value,"Value");
 
     }
 

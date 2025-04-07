@@ -1,17 +1,14 @@
 package net.bytle.xml;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-
-
-/**
- * Created by gerard on 11-06-2017.
- */
 
 public class NamespaceContextMapTest {
 
@@ -31,8 +28,8 @@ public class NamespaceContextMapTest {
             String prefix = entry.getKey();
             String namespaceURI = entry.getValue();
 
-            Assert.assertEquals("namespaceURI", namespaceURI,
-                    context.getNamespaceURI(prefix));
+            Assertions.assertEquals( namespaceURI,
+                    context.getNamespaceURI(prefix),"namespaceURI");
             boolean found = false;
             Iterator<?> prefixes = context
                     .getPrefixes(namespaceURI);
@@ -43,12 +40,12 @@ public class NamespaceContextMapTest {
                 }
                 try {
                     prefixes.remove();
-                    Assert.fail("rw");
+                    Assertions.fail("rw");
                 } catch (UnsupportedOperationException e) {
                 }
             }
-            Assert.assertTrue("prefix: " + prefix, found);
-            Assert.assertNotNull("prefix: " + prefix, context
+            Assertions.assertTrue(found, "prefix: " + prefix);
+            Assertions.assertNotNull("prefix: " + prefix, context
                     .getPrefix(namespaceURI));
         }
 
@@ -56,11 +53,11 @@ public class NamespaceContextMapTest {
                 .getMap();
         for (Map.Entry<String, String> entry : mappings
                 .entrySet()) {
-            Assert.assertEquals(entry.getValue(), ctxtMap
+            Assertions.assertEquals(entry.getValue(), ctxtMap
                     .get(entry.getKey()));
         }
 
-        System.out.println(context.toString());
+        System.out.println(context);
     }
 
     @Test
@@ -70,7 +67,7 @@ public class NamespaceContextMapTest {
         try {
             Map<String, String> ctxtMap = context.getMap();
             ctxtMap.put("a", "b");
-            Assert.fail("rw");
+            Assertions.fail("rw");
         } catch (UnsupportedOperationException e) {
         }
 
@@ -79,7 +76,7 @@ public class NamespaceContextMapTest {
                     .getPrefixes(XMLConstants.XML_NS_URI);
             it.next();
             it.remove();
-            Assert.fail("rw");
+            Assertions.fail("rw");
         } catch (UnsupportedOperationException e) {
         }
     }
@@ -87,14 +84,14 @@ public class NamespaceContextMapTest {
     @Test
     public void testConstants() {
         NamespaceContext context = new NamespaceContextMap();
-        Assert.assertEquals(XMLConstants.XML_NS_URI, context
+        Assertions.assertEquals(XMLConstants.XML_NS_URI, context
                 .getNamespaceURI(XMLConstants.XML_NS_PREFIX));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 XMLConstants.XMLNS_ATTRIBUTE_NS_URI, context
                         .getNamespaceURI(XMLConstants.XMLNS_ATTRIBUTE));
-        Assert.assertEquals(XMLConstants.XML_NS_PREFIX, context
+        Assertions.assertEquals(XMLConstants.XML_NS_PREFIX, context
                 .getPrefix(XMLConstants.XML_NS_URI));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 XMLConstants.XMLNS_ATTRIBUTE_NS_URI, context
                         .getNamespaceURI(XMLConstants.XMLNS_ATTRIBUTE));
     }
