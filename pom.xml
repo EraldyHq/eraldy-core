@@ -117,6 +117,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.eraldy</groupId>
+                <artifactId>eraldy-xml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.7.5</version>
