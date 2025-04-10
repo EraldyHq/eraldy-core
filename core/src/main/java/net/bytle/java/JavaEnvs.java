@@ -15,6 +15,7 @@ public class JavaEnvs {
     public static final Path HOME_PATH;
     public static final boolean IS_IDE_DEBUGGING;
     private static Boolean IS_DEV;
+    private static Boolean IS_TEST;
 
     static {
 
@@ -114,6 +115,21 @@ public class JavaEnvs {
         } else {
             return null;
         }
+    }
+
+    @SuppressWarnings("ConstantValue")
+    public static boolean isJUnitTest() {
+        if (IS_TEST != null) {
+            return IS_TEST;
+        }
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if (element.getClassName().startsWith("org.junit.")) {
+                IS_TEST = true;
+                return IS_TEST;
+            }
+        }
+        IS_TEST = false;
+        return IS_TEST;
     }
 
 
