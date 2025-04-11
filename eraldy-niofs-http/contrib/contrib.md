@@ -47,3 +47,16 @@ header=--user "anystring:${apikey}"'
           method: put
           body: {"email_address":"","status_if_new":"subscribed","email_type":"","status":"subscribed","merge_fields":{},"interests":{},"language":"","vip":false,"location":{"latitude":0,"longitude":0},"marketing_permissions":[],"ip_signup":"","timestamp_signup":"","ip_opt":"","timestamp_opt":""}
 ```
+
+## Authentication Management for users
+
+We should implement an Oauth server to store the client token
+in order to retrieve them locally or in a batch run (Vertx offers them luckily).
+
+Why ?
+* To make it easy for user to get access to third rest api. For instance, [Linkedin is pretty difficult](https://learn.microsoft.com/en-us/linkedin/shared/authentication/client-credentials-flow)
+  and not easy to found.
+* Not all services offer an application token for native application.
+
+
+
