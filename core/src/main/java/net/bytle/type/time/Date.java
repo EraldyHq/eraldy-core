@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -22,7 +21,7 @@ import static net.bytle.type.time.TimeStringParser.detectFormat;
 @SuppressWarnings("unused")
 public class Date {
 
-    private static final ZoneId DEFAULT_ZONE_ID = Timestamp.UTC_DEFAULT_ZONE_ID;
+
     private final LocalDate localDate;
 
     /**
@@ -31,15 +30,13 @@ public class Date {
      */
     public static Date createFromNow() {
 
-        return new Date(LocalDate.now(DEFAULT_ZONE_ID));
+        return new Date(LocalDate.now());
 
     }
 
     public Date(LocalDate localDate) {
 
         this.localDate = localDate;
-        // To date does not give a timezone, it takes the default
-        TimeZone.setDefault(TimeZone.getTimeZone(DEFAULT_ZONE_ID));
 
     }
 
@@ -146,7 +143,7 @@ public class Date {
 
         try {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-            simpleDateFormat.setTimeZone(TimeZone.getTimeZone(DEFAULT_ZONE_ID));
+            simpleDateFormat.setTimeZone(TimeZone.getDefault());
             java.util.Date date = simpleDateFormat.parse(s);
             return createFromDate(date);
         } catch (ParseException e) {
@@ -163,7 +160,7 @@ public class Date {
      * @return a date
      */
     public static Date createFromDate(java.util.Date date) {
-        LocalDate localDate = date.toInstant().atZone(DEFAULT_ZONE_ID).toLocalDate();
+        LocalDate localDate = date.toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
         return new Date(localDate);
     }
 
@@ -179,10 +176,13 @@ public class Date {
 
     public Instant toInstant() {
 
-        return localDate.atStartOfDay(DEFAULT_ZONE_ID).toInstant();
+        return localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant();
 
     }
 
+    /**
+     * @return the date with the default timezone
+     */
     public java.util.Date toDate() {
 
         return java.util.Date.from(toInstant());
