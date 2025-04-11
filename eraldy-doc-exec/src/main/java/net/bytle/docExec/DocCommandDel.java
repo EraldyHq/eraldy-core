@@ -14,25 +14,24 @@ import java.nio.file.Paths;
  * In the documentation, you would see something like that
  * <p>
  * del file.txt
- *
  * Option:
- *   /i - to make it idempotent (ie no error even if the file does not exist)
+ * /i - to make it idempotent (ie no error even if the file does not exist)
  */
-public class CommandDel {
+public class DocCommandDel {
 
     public static void main(String[] args) {
 
         try {
             // Last args
-            Path file = Paths.get(args[args.length-1]);
-            Boolean idempotent = false;
-            if (args.length > 1){
-                if (args[0].equals("/i")){
+            Path file = Paths.get(args[args.length - 1]);
+            boolean idempotent = false;
+            if (args.length > 1) {
+                if (args[0].equals("/i")) {
                     idempotent = true;
                 }
             }
-            if (idempotent){
-                if (Files.exists(file)){
+            if (idempotent) {
+                if (Files.exists(file)) {
                     Files.delete(file);
                 }
             } else {

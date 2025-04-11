@@ -207,7 +207,7 @@ public class DocExecutorUnit {
                  */
                 if (!e.getTargetException().getClass().equals(DocExitStatusException.class)) {
                     // if it's not, throw
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e.getCause());
                 }
                 DocExitStatusException exitStatusException = (DocExitStatusException) e.getTargetException();
                 if (exitStatusException.getExitStatus() != 0) {

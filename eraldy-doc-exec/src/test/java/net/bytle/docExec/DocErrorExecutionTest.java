@@ -13,7 +13,7 @@ public class DocErrorExecutionTest {
     @Test()
     public void docTestError() {
 
-        Assertions.assertThrows(RuntimeException.class, ()-> DocExecutor.Run(Paths.get("./src/test/resources/docTest/Error.txt"),"cat",CommandCat.class));
+        Assertions.assertThrows(RuntimeException.class, ()-> DocExecutor.Run(Paths.get("./src/test/resources/docTest/Error.txt"),"cat", DocCommandCat.class));
 
     }
 }

@@ -10,7 +10,7 @@ package net.bytle.docExec;
  * <p>
  * echo Hello Nico
  */
-public class CommandEcho {
+public class DocCommandEcho {
 
     public static void main(String[] args) {
         System.out.println(String.join("", args));

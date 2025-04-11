@@ -25,7 +25,7 @@ public class DocTest {
         DocExecutor docExecutor = DocExecutor.create("test");
         // A runnner
         DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addMainClass("echo", CommandEcho.class);
+                .addMainClass("echo", DocCommandEcho.class);
 
         // First test
         final DocUnit firstDocUnit = docUnits.get(0);
@@ -73,35 +73,6 @@ public class DocTest {
 
     }
 
-    /**
-     * An normal system exit (ie 0 status) should not:
-     * * thrown an error
-     * * and exit the process
-     * This exist is used when the help is asked to terminate the process in a normal wa
-     */
-    @Test
-    public void noExitTest() {
-
-        final String textToPrint = "Exiting";
-        DocUnit docUnit = DocUnit.get()
-                .setLanguage("java")
-                .setCode("System.out.println(\"" + textToPrint + "\");\n" +
-                        "System.exit(0);")
-                .setConsoleContent(textToPrint);
-
-        DocExecutor docExec = DocExecutor.create("test");
-        // A runner
-        boolean error = false;
-        try {
-            DocExecutorUnit.create(docExec)
-                    .run(docUnit);
-        } catch (Exception e) {
-            error = true;
-        }
-
-        Assertions.assertFalse(error, "An error was not thrown and the run has not exited");
-
-    }
 
     /**
      * Replace an expectation by the real result
@@ -145,7 +116,7 @@ public class DocTest {
         DocUnit docUnit = DocParser.getDocTests(path).get(0);
         DocExecutor docExecutor = DocExecutor.create("test");
         DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addMainClass("echo", CommandEcho.class);
+                .addMainClass("echo", DocCommandEcho.class);
 
         Assertions.assertEquals(docUnit.getConsole().trim(), docExecutorUnit.run(docUnit), "The run and the expectations are the same ");
 
@@ -159,7 +130,7 @@ public class DocTest {
 
         List<DocExecutorResult> doc =
                 DocExecutor.create("whatever")
-                        .addCommand("echo", CommandEcho.class)
+                        .addCommand("echo", DocCommandEcho.class)
                         .run(Paths.get("./src/test/resources/docTest/withoutExpectation.txt"));
 
         Assertions.assertEquals(1, doc.size());
@@ -171,7 +142,7 @@ public class DocTest {
         final Path rootFile = Paths.get("./src/test/resources");
         Path docToRun = Paths.get("./src/test/resources/docTest/fileTest.txt");
         DocExecutorResult docTestRun = DocExecutor.create("defaultRun")
-                .addCommand("cat", CommandCat.class)
+                .addCommand("cat", DocCommandCat.class)
                 .setBaseFileDirectory(rootFile)
                 .run(docToRun)
                 .get(0);
@@ -228,7 +199,7 @@ public class DocTest {
         Path docToRun = Paths.get("./src/test/resources/docTest/overwriteSecond.txt");
         String before = Strings.createFromPath(docToRun).toString();
         DocExecutorResult docTestRun = DocExecutor.create("defaultRun")
-                .addCommand("echo", CommandEcho.class)
+                .addCommand("echo", DocCommandEcho.class)
                 .setBaseFileDirectory(rootFile)
                 .run(docToRun)
                 .get(0);

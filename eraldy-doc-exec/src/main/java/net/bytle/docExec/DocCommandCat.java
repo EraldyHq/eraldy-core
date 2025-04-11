@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  * <p>
  * cat file.txt
  */
-public class CommandCat {
+public class DocCommandCat {
 
     public static void main(String[] args) {
 

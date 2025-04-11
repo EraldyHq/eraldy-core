@@ -20,7 +20,7 @@ public class DocShellTest {
         DocUnit docUnit = docUnits.get(0);
         DocExecutor docExecutor = DocExecutor.create("test");
         String result = DocExecutorUnit.create(docExecutor)
-                .addMainClass("echo", CommandEcho.class)
+                .addMainClass("echo", DocCommandEcho.class)
                 .run(docUnit);
         Assertions.assertEquals(docUnit.getConsole().trim(), result, "The run and the expectations are the same");
     }
