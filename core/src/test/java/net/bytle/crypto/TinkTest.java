@@ -124,8 +124,7 @@ public class TinkTest {
             byte[] plaintext = aead.decrypt(input, associatedData);
             outputStream.write(plaintext);
           } else {
-            System.err.println("The first argument must be either encrypt or decrypt, got: " + mode);
-            System.exit(1);
+            throw new RuntimeException("The first argument must be either encrypt or decrypt, got: " + mode);
           }
           break;
         case AES_SIV:
@@ -137,8 +136,7 @@ public class TinkTest {
             byte[] plaintext = aeadDeter.decryptDeterministically(input, associatedData);
             outputStream.write(plaintext);
           } else {
-            System.err.println("The first argument must be either encrypt or decrypt, got: " + mode);
-            System.exit(1);
+            throw new RuntimeException("The first argument must be either encrypt or decrypt, got: " + mode);
           }
           break;
 
