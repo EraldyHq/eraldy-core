@@ -27,6 +27,7 @@
         <module>cli</module>
         <module>test</module>
         <module>eraldy-xml</module>
+        <module>eraldy-doc-exec</module>
     </modules>
 
     <properties>
@@ -119,6 +120,11 @@
             <dependency>
                 <groupId>com.eraldy</groupId>
                 <artifactId>eraldy-xml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraldy</groupId>
+                <artifactId>eraldy-doc-exec</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
