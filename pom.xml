@@ -22,7 +22,7 @@
         <module>template</module>
         <module>html</module>
         <module>smtp-client</module>
-        <module>niofs-http</module>
+        <module>eraldy-niofs-http</module>
         <module>dns</module>
         <module>cli</module>
         <module>test</module>
