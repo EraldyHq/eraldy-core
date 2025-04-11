@@ -1,7 +1,7 @@
 # Hello
 
 
-## Nico
+## World
 
   * A normal one
 <unit>
@@ -30,9 +30,9 @@
   * A console cli
 <unit>
     <code dos>
-        echo Hello Nico
+        echo Hello Foo
     </code>
     <console>
-        HelloNico
+        HelloFoo
     </console>
 </unit>
