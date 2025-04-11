@@ -1,11 +1,11 @@
 package net.bytle.niofs.http;
 
 
-
 import net.bytle.log.Log;
 import net.bytle.log.Logs;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;

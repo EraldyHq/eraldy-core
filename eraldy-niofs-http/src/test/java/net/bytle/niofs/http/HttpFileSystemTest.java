@@ -1,9 +1,9 @@
 package net.bytle.niofs.http;
 
 import net.bytle.fs.Fs;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +24,11 @@ public class HttpFileSystemTest {
 
     URL website = new URL("https://httpbin.org/html");
     FileSystem fileSystem = FileSystems.newFileSystem(website.toURI(), new HashMap<>());
-    Assert.assertEquals(HttpFileSystem.class, fileSystem.getClass());
+    Assertions.assertEquals(HttpFileSystem.class, fileSystem.getClass());
     HttpFileSystem httpFileSystem = (HttpFileSystem) fileSystem;
     String workingPath = httpFileSystem.getWorkingStringPath();
     String expectedWorkingPath = "/html";
-    Assert.assertEquals(expectedWorkingPath, workingPath);
+    Assertions.assertEquals(expectedWorkingPath, workingPath);
 
   }
 
@@ -43,8 +43,8 @@ public class HttpFileSystemTest {
     }
     Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
     long size = Files.size(targetPath);
-    Assert.assertTrue("Target File (" + targetPath + ") has a size (" + size + ") bigger than 0", size > 0);
-    Assert.assertEquals(3741, size);
+    Assertions.assertTrue( size > 0,"Target File (" + targetPath + ") has a size (" + size + ") bigger than 0");
+    Assertions.assertEquals(3741, size);
   }
 
   /**
@@ -59,19 +59,19 @@ public class HttpFileSystemTest {
 
     try (SeekableByteChannel sbc = Files.newByteChannel(path);
          InputStream in = Channels.newInputStream(sbc)) {
-      Assert.assertEquals(HttpSeekableByteChannel.class, sbc.getClass());
+      Assertions.assertEquals(HttpSeekableByteChannel.class, sbc.getClass());
       HttpSeekableByteChannel sbcHttp = (HttpSeekableByteChannel) sbc;
 
       // The size should be known, not -1
       // because it's used by Java to create an array
       // to receive the bytes
       long size = sbcHttp.size();
-      Assert.assertNotEquals(-1, size);
+      Assertions.assertNotEquals(-1, size);
 
     }
 
     String content = Fs.getFileContent(path);
-    Assert.assertTrue(content.contains("html"));
+    Assertions.assertTrue(content.contains("html"));
 
   }
 
@@ -81,23 +81,23 @@ public class HttpFileSystemTest {
     URL website = new URL("https://httpbin.org/range/" + expectedBytes);
     Path sourcePath = Paths.get(website.toURI());
     long size = Files.size(sourcePath);
-    Assert.assertEquals("Size is good", expectedBytes, size);
+    Assertions.assertEquals( expectedBytes, size,"Size is good");
   }
 
   /**
    * Does not exist not yet fully implemented see:
    * See {@link HttpFileSystemProvider#checkAccess(Path, AccessMode...)}
    */
-  @Ignore
+  @Disabled
   @Test
   public void doesNotExistDueTo401() throws MalformedURLException, URISyntaxException {
 
     URL website = new URL("https://httpbin.org/status/401");
     Path sourcePath = Paths.get(website.toURI());
     boolean condition = Files.notExists(sourcePath);
-    Assert.assertTrue(condition);
+    Assertions.assertTrue(condition);
     boolean readable = Files.isReadable(sourcePath);
-    Assert.assertFalse(readable);
+    Assertions.assertFalse(readable);
 
   }
 

@@ -13,7 +13,7 @@ import java.util.*;
 final class HttpFileSystem extends FileSystem {
 
 
-  static final String USER_AGENT = "Bytle NioFs Http";
+  static final String USER_AGENT = "Eraldy NioFs Http";
   private final HttpFileSystemProvider provider;
   private final URL url;
   @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
