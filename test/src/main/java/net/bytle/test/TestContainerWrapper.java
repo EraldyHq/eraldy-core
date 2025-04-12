@@ -11,6 +11,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import static net.bytle.os.Oss.MAX_PORT_NUMBER;
+import static net.bytle.os.Oss.MIN_PORT_NUMBER;
+
 /**
  * A wrapper around test container
  * * to implement the singleton container <a href="https://www.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers">documentation</a>
@@ -25,7 +28,8 @@ public class TestContainerWrapper {
     private final GenericContainer<?> container;
     private final String image;
     private String hostName = "localhost";
-    private Integer port;
+    private Integer hostPort;
+    private Integer containerPort;
     private final String name;
 
     public TestContainerWrapper(String name, String dockerImageName) {
@@ -47,14 +51,35 @@ public class TestContainerWrapper {
     public TestContainerWrapper startContainer() {
 
         /**
+         * Container port check
+         */
+        if (containerPort == null) {
+            throw new RuntimeException("The container port should not be null");
+        }
+        /**
+         * Host port init
+         */
+        if (this.hostPort == null) {
+            if (this.containerPort >= MIN_PORT_NUMBER && this.containerPort <= MAX_PORT_NUMBER) {
+                this.hostPort = containerPort;
+            }
+        } else {
+            if (this.hostPort < MIN_PORT_NUMBER || this.hostPort > MAX_PORT_NUMBER) {
+                throw new RuntimeException("The host port is a privileged port" + hostPort + ". Choose one above " + MIN_PORT_NUMBER + " and below " + MAX_PORT_NUMBER);
+            }
+        }
+
+        /**
          * Do we need to start the container
          */
         boolean startContainer = true;
-        if (!Oss.portAvailable(this.port)) {
-            startContainer = false;
-            System.out.println("The port is already busy, the container will not start.");
-        } else {
-            System.out.println("The port is available, the container will start");
+        if (hostPort != null) {
+            if (!Oss.portAvailable(hostPort)) {
+                startContainer = false;
+                System.out.println("The port " + containerPort + " is already busy, the container will not start.");
+            } else {
+                System.out.println("The port is available, the container will start");
+            }
         }
 
 
@@ -62,13 +87,21 @@ public class TestContainerWrapper {
 
             System.out.println("Starting the container");
             System.out.println("If you don't want to start and stop the container for each test.");
-            System.out.println("You can start it with the following command on Windows:");
+            if (this.hostPort == null) {
+                System.out.println("Set a host port. Your container port " + this.containerPort + " is a privileged port and cannot be used on the host. Choose one above " + MIN_PORT_NUMBER + " and below " + MAX_PORT_NUMBER);
+            } else {
+                System.out.println("You can start it with the following command on Windows:");
+                System.out.println();
+                System.out.println(this.createDockerCommand());
+            }
             System.out.println();
-            System.out.println(this.createDockerCommand());
-            System.out.println();
+
             container.start();
             this.hostName = container.getHost();
-            this.port = container.getFirstMappedPort();
+            if (this.hostPort == null) {
+                this.hostPort = container.getFirstMappedPort();
+            }
+
 
         } else {
 
@@ -102,10 +135,10 @@ public class TestContainerWrapper {
                 // https://docs.docker.com/engine/storage/bind-mounts/#syntax
                 String hostPath = bind.getPath();
                 String containerPath = bind.getVolume().getPath();
-                stringBuilder.append(spaces).append("--volume ").append(hostPath).append(" ").append(containerPath).append(" ").append(separator);
+                stringBuilder.append(spaces).append("--volume ").append(hostPath).append(":").append(containerPath).append(" ").append(separator);
             }
             stringBuilder
-                    .append(spaces).append("-p ").append(port).append(":").append(port).append(" ").append(separator)
+                    .append(spaces).append("-p ").append(hostPort).append(":").append(containerPort).append(" ").append(separator)
                     .append(spaces).append("-d ").append(separator)
                     .append(spaces).append("--name ").append(this.name).append(" ").append(separator)
                     .append(spaces).append(this.image).append(Strings.EOL);
@@ -120,9 +153,22 @@ public class TestContainerWrapper {
         return this;
     }
 
-    public TestContainerWrapper withPort(Integer port) {
-        this.port = port;
-        this.container.withExposedPorts(port);
+    /**
+     * @param containerPort - the container port
+     *                      When the container starts, it will try to bind it to this port or use another one
+     */
+    public TestContainerWrapper withPort(Integer containerPort) {
+        this.containerPort = containerPort;
+        this.container.addExposedPort(containerPort);
+
+        return this;
+    }
+
+    public TestContainerWrapper withPort(Integer hostPort, Integer containerPort) {
+        this.hostPort = hostPort;
+        this.containerPort = containerPort;
+        container.setPortBindings(List.of(hostPort + ":" + containerPort));
+        container.withExposedPorts(containerPort);
         return this;
     }
 
@@ -132,8 +178,8 @@ public class TestContainerWrapper {
     }
 
     @SuppressWarnings("unused")
-    public Integer getPort() {
-        return this.port;
+    public Integer getHostPort() {
+        return this.hostPort;
     }
 
     @SuppressWarnings("unused")
@@ -148,15 +194,20 @@ public class TestContainerWrapper {
 
     /**
      * [Bind Mount](https://docs.docker.com/engine/storage/bind-mounts/)
+     *
      * @param containerPath - the container path
      * @param hostPath      - the host path
      */
-    public TestContainerWrapper addBindMount(String containerPath, Path hostPath) {
+    public TestContainerWrapper withBindMount(Path hostPath, String containerPath) {
         if (!Files.exists(hostPath)) {
             throw new RuntimeException("The host path (" + hostPath + ") does not exists");
         }
-        this.container.withFileSystemBind(hostPath.toAbsolutePath().toString(),containerPath, BindMode.READ_WRITE);
+        this.container.withFileSystemBind(hostPath.toAbsolutePath().toString(), containerPath, BindMode.READ_WRITE);
         return this;
+    }
+
+    public GenericContainer<?> getContainer() {
+        return this.container;
     }
 
 }
