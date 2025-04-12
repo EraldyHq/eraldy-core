@@ -2,8 +2,10 @@ package net.bytle.niofs.http;
 
 import net.bytle.exception.NotAbsoluteException;
 import net.bytle.fs.Fs;
+import net.bytle.test.TestContainerWrapper;
 import net.bytle.type.MediaTypes;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -20,11 +22,24 @@ import java.util.HashMap;
 
 public class HttpFileSystemTest {
 
+    private String httpBinUrl;
+
+    @BeforeEach
+    void setUp() {
+        if (this.httpBinUrl == null) {
+            // .withBindMount(Path.of("src", "test", "resources"), "/httpbin/static/resources")
+            // Does not work unfortunately, we can mount
+            TestContainerWrapper testContainerWrapper = new TestContainerWrapper("httpbin", "kennethreitz/httpbin:latest")
+                    .withPort(8081, 80)
+                    .startContainer();
+            this.httpBinUrl = "http://" + testContainerWrapper.getHostName() + ":" + testContainerWrapper.getHostPort();
+        }
+    }
 
     @Test
     public void testNewFileSystem() throws IOException, URISyntaxException {
 
-        URL website = new URL("https://httpbin.org/html");
+        URL website = new URL(httpBinUrl + "/html");
         FileSystem fileSystem = FileSystems.newFileSystem(website.toURI(), new HashMap<>());
         Assertions.assertEquals(HttpFileSystem.class, fileSystem.getClass());
         HttpFileSystem httpFileSystem = (HttpFileSystem) fileSystem;
@@ -37,7 +52,7 @@ public class HttpFileSystemTest {
 
     @Test
     public void testGetWithCopyRequest() throws IOException, URISyntaxException {
-        URL website = new URL("https://httpbin.org/html");
+        URL website = new URL(httpBinUrl + "/html");
         Path sourcePath = Paths.get(website.toURI());
         Path targetPath = Paths.get("target/index.html");
         if (Files.exists(targetPath)) {
@@ -55,7 +70,7 @@ public class HttpFileSystemTest {
     @Test
     public void readAllBytes() throws IOException, URISyntaxException, InterruptedException {
 
-        URL website = new URL("https://httpbin.org/html");
+        URL website = new URL(httpBinUrl + "/html");
         Path path = Paths.get(website.toURI());
 
         try (SeekableByteChannel sbc = Files.newByteChannel(path);
@@ -79,7 +94,7 @@ public class HttpFileSystemTest {
     @Test
     public void testSize() throws IOException, URISyntaxException, InterruptedException {
         long expectedBytes = 226L;
-        URL website = new URL("https://httpbin.org/range/" + expectedBytes);
+        URL website = new URL(httpBinUrl + "/range/" + expectedBytes);
         Path sourcePath = Paths.get(website.toURI());
         long size = Files.size(sourcePath);
         Assertions.assertEquals(expectedBytes, size, "Size is good");
@@ -93,7 +108,7 @@ public class HttpFileSystemTest {
     @Test
     public void doesNotExistDueTo401() throws MalformedURLException, URISyntaxException {
 
-        URL website = new URL("https://httpbin.org/status/401");
+        URL website = new URL(httpBinUrl + "/status/401");
         Path sourcePath = Paths.get(website.toURI());
         boolean condition = Files.notExists(sourcePath);
         Assertions.assertTrue(condition);
@@ -105,7 +120,7 @@ public class HttpFileSystemTest {
     @Test
     void mediaType() throws MalformedURLException, URISyntaxException, NotAbsoluteException {
 
-        URL website = new URL("https://httpbin.org/json");
+        URL website = new URL(httpBinUrl + "/json");
         Path path = Paths.get(website.toURI());
         Assertions.assertEquals(MediaTypes.TEXT_JSON, Fs.detectMediaType(path));
 
