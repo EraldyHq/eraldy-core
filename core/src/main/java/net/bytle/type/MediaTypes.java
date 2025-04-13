@@ -93,15 +93,13 @@ public enum MediaTypes implements MediaType {
         String mediaTypeString;
         try {
             /**
-             * This is useless if the file has a missing or wrong extension.
-             *  It seemed that on Windows Files.probeContentType(Path) always returned null.
-             *  A major limitation with this is that the file must exist on the file system.
+             * May be implemented
              */
             mediaTypeString = Files.probeContentType(absolutePath);
             try {
                 return createFromMediaTypeString(mediaTypeString);
             } catch (NullValueException e) {
-                // null
+                // mediaTypeString may be null if not detected
             }
 
         } catch (IOException e) {
