@@ -86,33 +86,37 @@ public enum MediaTypes implements MediaType {
             return MediaTypes.DIR;
         }
 
-
         /**
-         * Some file system such as http does not have any notion of
-         * dir and file such as http it https://example.com is not a dir
-         * but a file without any name
-         * Special http from content type
-         * Http file exists by default
+         * File System based
+         * They need to implement java.nio.file.spi.FileTypeDetector
          */
-        if (absolutePath.toUri().getScheme().startsWith("http")) {
+        String mediaTypeString;
+        try {
+            /**
+             * This is useless if the file has a missing or wrong extension.
+             *  It seemed that on Windows Files.probeContentType(Path) always returned null.
+             *  A major limitation with this is that the file must exist on the file system.
+             */
+            mediaTypeString = Files.probeContentType(absolutePath);
             try {
-                String contentType = absolutePath.toUri().toURL().openConnection().getContentType();
-                try {
-                    return createFromMediaTypeString(contentType);
-                } catch (NullValueException e) {
-                    // null
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                return createFromMediaTypeString(mediaTypeString);
+            } catch (NullValueException e) {
+                // null
             }
+
+        } catch (IOException e) {
+            // Log is depend on the type module unfortunately
+            // LoggerType.LOGGER.fine("Error while guessing the mime type of (" + path + ") via probeContent", e.getMessage());
         }
+
 
         /**
          * Name based
          */
         Path fileName = absolutePath.getFileName();
         if (fileName == null) {
-            // file system may not have any name in the path for file (ie http)
+            // file system may not have any name in the path for file
+            // (ie http has no directory only file, but they may have no name. Example: https://example.com)
             throw new RuntimeException("The file (" + absolutePath + ") does not have any name");
         }
 
@@ -132,10 +136,11 @@ public enum MediaTypes implements MediaType {
             }
         }
 
+
         /**
          * Name based
          */
-        String mediaTypeString = URLConnection.guessContentTypeFromName(fileName.toString());
+        mediaTypeString = URLConnection.guessContentTypeFromName(fileName.toString());
         try {
             return createFromMediaTypeString(mediaTypeString);
         } catch (NullValueException e) {
@@ -147,26 +152,7 @@ public enum MediaTypes implements MediaType {
             return MediaTypes.BINARY_FILE;
         }
 
-        /**
-         * Content based
-         */
-        try {
-            /**
-             * This is useless if the file has a missing or wrong extension.
-             *  It seemed that on windows Files.probeContentType(Path) always returned null.
-             *  A major limitation with this is that the file must exist on the file system.
-             */
-            mediaTypeString = Files.probeContentType(absolutePath);
-            try {
-                return createFromMediaTypeString(mediaTypeString);
-            } catch (NullValueException e) {
-                // null
-            }
 
-        } catch (IOException e) {
-            // Log is depend on the type module unfortunately
-            // LoggerType.LOGGER.fine("Error while guessing the mime type of (" + path + ") via probeContent", e.getMessage());
-        }
 
         /**
          * Open and guess content

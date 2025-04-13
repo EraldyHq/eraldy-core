@@ -63,7 +63,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
       fileSystem = newFileSystem(uri, null);
     }
 
-    return fileSystem.getPath(uri.getPath());
+    return fileSystem.getPath(uri);
 
 
   }

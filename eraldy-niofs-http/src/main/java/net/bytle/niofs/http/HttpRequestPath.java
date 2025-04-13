@@ -27,11 +27,13 @@ public class HttpRequestPath implements Path {
     private final Map<String, String> attributes = new HashMap<>();
     private final String pathString;
     private final List<String> names;
+    private final String query;
 
 
-    public HttpRequestPath(HttpFileSystem httpFileSystem, String pathString) {
+    public HttpRequestPath(HttpFileSystem httpFileSystem, String pathString, String query) {
         this.httpFileSystem = httpFileSystem;
         this.pathString = pathString;
+        this.query = query;
         String pathStringToSplit = pathString;
 
         if (this.isAbsolute()) {
@@ -58,7 +60,7 @@ public class HttpRequestPath implements Path {
             return null;
         }
 
-        return new HttpRequestPath(httpFileSystem, httpFileSystem.getRootCharacter());
+        return new HttpRequestPath(httpFileSystem, httpFileSystem.getRootCharacter(), this.query);
 
     }
 
@@ -82,15 +84,15 @@ public class HttpRequestPath implements Path {
             String stringWithoutSeparatorAtTheEnd = this.pathString.substring(0, i);
             int j = stringWithoutSeparatorAtTheEnd.lastIndexOf(httpFileSystem.getSeparator());
             if (j == -1) {
-                return new HttpRequestPath(this.getFileSystem(), stringWithoutSeparatorAtTheEnd);
+                return new HttpRequestPath(this.getFileSystem(), stringWithoutSeparatorAtTheEnd, this.query);
             }
             String fileName = stringWithoutSeparatorAtTheEnd.substring(j + 1);
-            return new HttpRequestPath(this.getFileSystem(), fileName);
+            return new HttpRequestPath(this.getFileSystem(), fileName, this.query);
         }
 
         // file
         String fileName = this.pathString.substring(i + 1);
-        return new HttpRequestPath(this.getFileSystem(), fileName);
+        return new HttpRequestPath(this.getFileSystem(), fileName, this.query);
     }
 
     @Override
@@ -115,7 +117,7 @@ public class HttpRequestPath implements Path {
             parentString = httpFileSystem.getRootCharacter() + parentString;
         }
 
-        return new HttpRequestPath(this.getFileSystem(), parentString);
+        return new HttpRequestPath(this.getFileSystem(), parentString, this.query);
 
     }
 
@@ -127,7 +129,7 @@ public class HttpRequestPath implements Path {
 
     @Override
     public Path getName(int index) {
-        return new HttpRequestPath(httpFileSystem, this.names.get(index));
+        return new HttpRequestPath(httpFileSystem, this.names.get(index), this.query);
     }
 
     @Override
@@ -181,7 +183,7 @@ public class HttpRequestPath implements Path {
 
         // absolute path
         if (other.startsWith(httpFileSystem.getRootCharacter())) {
-            return new HttpRequestPath(httpFileSystem, other);
+            return new HttpRequestPath(httpFileSystem, other, this.query);
         }
 
         // the actual object is considered a directory path
@@ -191,7 +193,7 @@ public class HttpRequestPath implements Path {
         }
         newPath += other; // other is relative
 
-        return new HttpRequestPath(httpFileSystem, newPath);
+        return new HttpRequestPath(httpFileSystem, newPath, this.query);
 
     }
 
@@ -212,7 +214,7 @@ public class HttpRequestPath implements Path {
         if (this.isAbsolute()) {
             siblingPath = httpFileSystem.getRootCharacter() + siblingPath;
         }
-        return new HttpRequestPath(this.getFileSystem(), siblingPath);
+        return new HttpRequestPath(this.getFileSystem(), siblingPath, this.query);
     }
 
     private List<String> getParentNames() {
@@ -228,7 +230,7 @@ public class HttpRequestPath implements Path {
             throw new IllegalArgumentException("The path argument (" + this + ") is not absolute and cannot therefore be used to relativized");
         }
         if (this.equals(other)) {
-            return new HttpRequestPath(this.getFileSystem(), "");
+            return new HttpRequestPath(this.getFileSystem(), "", this.query);
         }
         HttpRequestPath otherHttpPath;
         if (!other.isAbsolute()) {
@@ -241,7 +243,7 @@ public class HttpRequestPath implements Path {
             if (relative.startsWith("/")) {
                 relative = relative.substring(1);
             }
-            return new HttpRequestPath(this.getFileSystem(), relative);
+            return new HttpRequestPath(this.getFileSystem(), relative, this.query);
         } else {
             throw new IllegalArgumentException("The other path argument (" + other + ") is not a subset of this path (" + this + ")");
         }
@@ -261,12 +263,15 @@ public class HttpRequestPath implements Path {
         URL workingUrl = httpFileSystem.getConnectionUrl();
 
         try {
-            return UriEnhanced.create()
+            UriEnhanced uri = UriEnhanced.create()
                     .setScheme(workingUrl.getProtocol())
                     .setHost(workingUrl.getHost())
                     .setPort(workingUrl.getPort())
-                    .setPath(absolutePath)
-                    .toUri();
+                    .setPath(absolutePath);
+            if (this.query != null) {
+                uri.setQueryString(this.query);
+            }
+            return uri.toUri();
         } catch (IllegalStructure e) {
             throw IllegalArgumentExceptions.createFromException(e);
         }
@@ -285,7 +290,7 @@ public class HttpRequestPath implements Path {
             } else {
                 absolutePath = workingStringPath + this.httpFileSystem.getSeparator() + this.pathString;
             }
-            return new HttpRequestPath(httpFileSystem, absolutePath);
+            return new HttpRequestPath(httpFileSystem, absolutePath, this.query);
         }
     }
 
