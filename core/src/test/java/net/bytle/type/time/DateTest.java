@@ -1,5 +1,6 @@
 package net.bytle.type.time;
 
+import net.bytle.exception.CastException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class DateTest {
   }
 
   @Test
-  public void createFromString() {
+  public void createFromString() throws CastException {
 
     Date fromString = Date.createFromString("2020-10-12");
     String actual = fromString.toIsoString();

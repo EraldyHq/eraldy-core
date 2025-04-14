@@ -1,5 +1,7 @@
 package net.bytle.type.time;
 
+import net.bytle.exception.CastException;
+
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,7 +56,7 @@ public class Date {
         return new Date(LocalDate.ofEpochDay(epochDay));
     }
 
-    public static Date createFromObject(Object o) {
+    public static Date createFromObject(Object o) throws CastException {
         if (o instanceof Date) {
             return (Date) o;
         } else if (o instanceof LocalDate) {
@@ -128,7 +130,7 @@ public class Date {
     /**
      * @param s any date string - This function will perform a format detection. If you know the format use the {@link #createFromStringWithFormat(String, String)}
      */
-    public static Date createFromString(String s) {
+    public static Date createFromString(String s) throws CastException {
 
         String pattern = detectFormat(s);
         return createFromStringWithFormat(s, pattern);

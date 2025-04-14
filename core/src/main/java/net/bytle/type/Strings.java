@@ -416,7 +416,7 @@ public class Strings {
   }
 
 
-  public Date toSqlDate() {
+  public Date toSqlDate() throws CastException {
     return net.bytle.type.time.Date.createFromString(stringBuilderField.toString()).toSqlDate();
   }
 

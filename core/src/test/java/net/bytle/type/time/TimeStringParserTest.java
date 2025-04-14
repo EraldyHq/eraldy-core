@@ -1,5 +1,6 @@
 package net.bytle.type.time;
 
+import net.bytle.exception.CastException;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -21,7 +22,7 @@ public class TimeStringParserTest {
       .map(s-> {
         try {
           return new SimpleDateFormat(TimeStringParser.detectFormat(s)).parse(s);
-        } catch (ParseException e) {
+        } catch (ParseException | CastException e) {
           throw new RuntimeException(e);
         }
       });

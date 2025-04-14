@@ -1,5 +1,7 @@
 package net.bytle.type.time;
 
+import net.bytle.exception.CastException;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -22,13 +24,13 @@ public class TimeStringParser {
    * @return The matching SimpleDateFormat pattern, or null if format is unknown.
    * @see SimpleDateFormat
    */
-  public static String detectFormat(String s) {
+  public static String detectFormat(String s) throws CastException {
     for (Pattern regexpPattern : DATE_FORMAT_REGEXPS.keySet()) {
       if (regexpPattern.matcher(s).find()) {
         return DATE_FORMAT_REGEXPS.get(regexpPattern);
       }
     }
-    throw new RuntimeException("The string (" + s + ") has a format that is not recognized as a date");
+    throw new CastException("The string (" + s + ") has a format that is not recognized as a date");
   }
 
   /**
