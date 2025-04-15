@@ -7,6 +7,7 @@ import net.bytle.type.time.Time;
 import net.bytle.type.time.Timestamp;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -21,6 +22,49 @@ public class Casts {
 
   protected static Set<String> nullableStrings = new HashSet<>(Arrays.asList("", "null", "na"));
 
+
+  /**
+   * Cast to a collection
+   */
+  public static <T, E> T cast(Object sourceObject, Class<T> typeClazz, Class<E> elementClass) throws CastException {
+
+    if (sourceObject == null) {
+      return null;
+    }
+
+    if (elementClass == null) {
+      return cast(sourceObject, typeClazz);
+    }
+
+    boolean isCollection = Collection.class.isAssignableFrom(typeClazz);
+    if (!isCollection) {
+      throw new CastException("The class " + typeClazz + " is not a collection");
+    }
+
+    if (sourceObject.getClass().equals(typeClazz)) {
+      if (sourceObject.getClass().getComponentType() == elementClass) {
+        return typeClazz.cast(sourceObject);
+      }
+    }
+
+    // Collection Target Type or Element Type is different
+    // We need to create a new one and to add the element
+    Collection<E> target;
+    try {
+      //noinspection unchecked
+      target = (Collection<E>) typeClazz.getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new CastException(e);
+    } catch (NoSuchMethodException e) {
+      throw new CastException(typeClazz + " is a interface, not a collection type", e);
+    }
+    for (Object value : (Collection<?>) sourceObject) {
+      target.add(Casts.cast(value, elementClass));
+    }
+    return typeClazz.cast(target);
+
+
+  }
 
   /**
    * @param sourceObject - the object to cast
@@ -50,6 +94,9 @@ public class Casts {
         return targetClass.cast(sourceObject);
       }
 
+      /**
+       * Array
+       */
       if (sourceObjectClass.isArray()) {
         if (!targetClass.isArray()) {
           if (targetClass.equals(String.class)) {
@@ -201,12 +248,12 @@ public class Casts {
          * {@link Enums#valueOf(Class, String)} is not used
          * because it needs exact match
          */
-        String normalizedLookupKey = Key.toNormalizedKey(sourceObject.toString());
+        String normalizedLookupKey = KeyNormalizer.create(sourceObject.toString()).toString();
         for (T constant : targetClass.getEnumConstants()) {
           if (constant == null) {
             throw new InternalError("The enum class (" + targetClass + ") does not have any constants");
           }
-          String normalizedConstantKey = Key.toNormalizedKey(((Enum<?>) constant).name());
+          String normalizedConstantKey = KeyNormalizer.create(constant).toString();
           if (normalizedConstantKey.equals(normalizedLookupKey)) {
             return constant;
           }
