@@ -16,24 +16,25 @@ public class Variable implements Comparable<Variable> {
 
 
   private Attribute attribute;
-  private final String column;
-  private Object originalValue;
+
   private final Origin origin;
+
+  /**
+   * Raw/first value
+   */
+  private Object originalValue;
 
   /**
    * A decrypted value by a passphrase
    * If this value is not null, the original value is encrypted
-   */
-  private String clearValue;
-
-  /**
    * A value that was template processed or that was calculated by a function
    * if the value does not exist
    */
-  private Object processedValue;
+  private Object clearValue;
+
 
   /**
-   * The unique identifier for a variable by name
+   * The unique normalized identifier for a variable by name
    */
   private final String normalizedKey;
 
@@ -45,8 +46,7 @@ public class Variable implements Comparable<Variable> {
   private Variable(Attribute attribute, Origin origin) {
 
     this.attribute = attribute;
-    this.normalizedKey = Key.toNormalizedKey(attribute.toString());
-    this.column = Key.toColumnName(attribute.toString());
+    this.normalizedKey = KeyNormalizer.create(this.attribute.toString()).toCliLongOptionName();
     if (origin == null) {
       throw new IllegalArgumentException("The origin of the variable (" + this + ") was null, it should not");
     }
@@ -98,14 +98,23 @@ public class Variable implements Comparable<Variable> {
   }
 
   /**
-   * @param originalValue - the value as found in the file
+   * @param originalValue - the raw/origina value as found in the file
    * @return the variable for chaining
    */
   public Variable setOriginalValue(Object originalValue) {
     if (this.originalValue != null && !originalValue.equals(this.originalValue)) {
-      throw new RuntimeException("You can't change the original value");
+      throw new RuntimeException("You can't change the original value of the variable " + this);
     }
-    this.originalValue = originalValue;
+    Class<?> valueClazz = this.attribute.getValueClazz();
+    if (valueClazz == null) {
+      throw new ClassCastException("The class of the attribute " + this.attribute + " should not be null");
+    }
+    try {
+      this.originalValue = Casts.cast(originalValue, valueClazz);
+    } catch (CastException e) {
+      // It's not a secret as it's the original value
+      throw new ClassCastException("The value " + originalValue + " of " + this.getAttribute() + " is not a " + valueClazz);
+    }
     return this;
   }
 
@@ -164,7 +173,7 @@ public class Variable implements Comparable<Variable> {
     return this.normalizedKey.compareTo(o.normalizedKey);
   }
 
-  public Variable setClearValue(String decrypted) {
+  public Variable setClearValue(Object decrypted) {
     this.clearValue = decrypted;
     return this;
   }
@@ -177,10 +186,6 @@ public class Variable implements Comparable<Variable> {
     return this.getPublicName() + " = " + Strings.createFromObjectNullSafe(this.originalValue);
   }
 
-  public Variable setProcessedValue(Object processValue) {
-    this.processedValue = processValue;
-    return this;
-  }
 
   @Override
   public boolean equals(Object o) {
@@ -203,31 +208,23 @@ public class Variable implements Comparable<Variable> {
     return Casts.cast(object, clazz);
   }
 
-  public String getColumn() {
-    return column;
-  }
 
   public String getUniqueName() {
     return this.normalizedKey;
   }
 
   /**
-   * @return the name in a public format fashion (utility function that wraps {@link Key#toCamelCaseValue(String)} )
+   * @return the name in a public format fashion
    */
   public String getPublicName() {
-    /**
-     * Uri format is the public format
-     * it's used in yaml, in command line option, everywhere
-     */
-    return Key.toUriName(this.attribute.toString());
+
+    return this.normalizedKey;
+
   }
 
   public Object getValue() throws NoValueException {
     if (this.clearValue != null) {
       return this.clearValue;
-    }
-    if (this.processedValue != null) {
-      return this.processedValue;
     }
     if (this.originalValue != null) {
       return this.originalValue;
