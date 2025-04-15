@@ -60,7 +60,7 @@ public class Variable implements Comparable<Variable> {
   }
 
 
-  public static Variable createWithClass(String name, Origin origin , Class<?> clazz) {
+  public static Variable createWithClass(String name, Origin origin, Class<?> clazz) {
     return createWithClassAndDefault(name, origin, clazz, null);
   }
 
@@ -102,12 +102,15 @@ public class Variable implements Comparable<Variable> {
    * @return the variable for chaining
    */
   public Variable setOriginalValue(Object originalValue) {
+    if (this.originalValue != null && !originalValue.equals(this.originalValue)) {
+      throw new RuntimeException("You can't change the original value");
+    }
     this.originalValue = originalValue;
     return this;
   }
 
 
-  public Origin getOrigin()  {
+  public Origin getOrigin() {
     return this.origin;
   }
 
