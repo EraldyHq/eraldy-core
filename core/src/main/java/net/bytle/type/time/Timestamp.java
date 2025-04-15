@@ -104,6 +104,7 @@ public class Timestamp {
    * therefore we know with great certainty that we will not have any problem
    * @param sourceObject - the source
    */
+  @SuppressWarnings("unused")
   public static Timestamp createFromObjectSafeCast(Object sourceObject)  {
       try {
           return createFromObject(sourceObject);

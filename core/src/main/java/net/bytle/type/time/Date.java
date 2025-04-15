@@ -24,204 +24,220 @@ import static net.bytle.type.time.TimeStringParser.detectFormat;
 public class Date {
 
 
-    private final LocalDate localDate;
+  private final LocalDate localDate;
 
-    /**
-     * @return a local date on the gmt zone
-     * same as {@link LocalDate#now()} but more explicit
-     */
-    public static Date createFromNow() {
+  /**
+   * @return a local date on the gmt zone
+   * same as {@link LocalDate#now()} but more explicit
+   */
+  public static Date createFromNow() {
 
-        return new Date(LocalDate.now());
+    return new Date(LocalDate.now());
 
+  }
+
+  public Date(LocalDate localDate) {
+
+    this.localDate = localDate;
+
+  }
+
+  /**
+   * Throw only at runtime
+   * Used when we don't know what to do and that we are responsible for the data
+   * therefore we know with great certainty that we will not have any problem
+   *
+   * @param sourceObject - the source
+   */
+  @SuppressWarnings("unused")
+  public static Date createFromObjectSafeCast(Object sourceObject) {
+    try {
+      return createFromObject(sourceObject);
+    } catch (CastException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static Date createFromEpochMilli(Long epochMilli) {
+
+    return new Date((new java.sql.Date(epochMilli)).toLocalDate());
+
+  }
+
+  public static Date createFromSqlDate(java.sql.Date date) {
+    return new Date(date.toLocalDate());
+  }
+
+  public static Date createFromEpochDay(Long epochDay) {
+    return new Date(LocalDate.ofEpochDay(epochDay));
+  }
+
+  public static Date createFromObject(Object o) throws CastException {
+    if (o instanceof Date) {
+      return (Date) o;
+    } else if (o instanceof LocalDate) {
+      return new Date((LocalDate) o);
+    } else if (o instanceof Long) {
+      return createFromEpochDay((Long) o);
+    } else if (o instanceof java.sql.Date) {
+      return createFromSqlDate((java.sql.Date) o);
+    } else if (o instanceof java.util.Date) {
+      return createFromDate((java.util.Date) o);
+    } else if (o instanceof String) {
+      return createFromString((String) o);
+    } else if (o instanceof Integer) {
+      return createFromEpochDay(((Integer) o).longValue());
+    } else {
+      throw new IllegalArgumentException("The object (" + o + ") has an class (" + o.getClass().getSimpleName() + ") that is not yet seen as a date.");
+    }
+  }
+
+  public static Date createFromEpochSec(Long epochSec) {
+    return createFromEpochMilli(epochSec * 1000);
+  }
+
+  @SuppressWarnings("unused")
+  public static Date createFromFileTime(FileTime time) {
+    return new Date(LocalDate.from(time.toInstant()));
+  }
+
+
+  /**
+   * Return a {@link java.sql.Date} YYYY-MM-DD
+   *
+   * @return the date in SQL format
+   */
+  public java.sql.Date toSqlDate() {
+
+    return java.sql.Date.valueOf(localDate);
+
+  }
+
+
+  /**
+   * @param to the date
+   * @return the number of days to
+   * <p>
+   * Positive if from < to
+   * and that the date is not below 1970 (new Date(0L) = 1970-01-01
+   * Otherwise negative
+   */
+  public long daysTo(Date to) {
+    return DAYS.between(localDate, to.toLocalDate());
+  }
+
+  /**
+   * @param from the date
+   * @return the number of days from the
+   * <p>
+   * Positive if from < to
+   * and that the date is not below 1970 (new Date(0L) = 1970-01-01
+   * Otherwise negative
+   */
+  public long daysFrom(Date from) {
+    return DAYS.between(from.toLocalDate(), localDate);
+  }
+
+  public LocalDate toLocalDate() {
+    return this.localDate;
+  }
+
+
+  /**
+   * @param s any date string - This function will perform a format detection. If you know the format use the {@link #createFromStringWithFormat(String, String)}
+   */
+  public static Date createFromString(String s) throws CastException {
+
+    String pattern = detectFormat(s);
+    return createFromStringWithFormat(s, pattern);
+
+  }
+
+  /**
+   * @param s      a date in string format
+   * @param format the format for SimpleDateFormat. Example for Iso: yyyy-DD-mm
+   */
+  public static Date createFromStringWithFormat(String s, String format) {
+
+    try {
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+      simpleDateFormat.setTimeZone(TimeZone.getDefault());
+      java.util.Date date = simpleDateFormat.parse(s);
+      return createFromDate(date);
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
     }
 
-    public Date(LocalDate localDate) {
-
-        this.localDate = localDate;
-
-    }
-
-    public static Date createFromEpochMilli(Long epochMilli) {
-
-        return new Date((new java.sql.Date(epochMilli)).toLocalDate());
-
-    }
-
-    public static Date createFromSqlDate(java.sql.Date date) {
-        return new Date(date.toLocalDate());
-    }
-
-    public static Date createFromEpochDay(Long epochDay) {
-        return new Date(LocalDate.ofEpochDay(epochDay));
-    }
-
-    public static Date createFromObject(Object o) throws CastException {
-        if (o instanceof Date) {
-            return (Date) o;
-        } else if (o instanceof LocalDate) {
-            return new Date((LocalDate) o);
-        } else if (o instanceof Long) {
-            return createFromEpochDay((Long) o);
-        } else if (o instanceof java.sql.Date) {
-            return createFromSqlDate((java.sql.Date) o);
-        } else if (o instanceof java.util.Date) {
-            return createFromDate((java.util.Date) o);
-        } else if (o instanceof String) {
-            return createFromString((String) o);
-        } else if (o instanceof Integer) {
-            return createFromEpochDay(((Integer) o).longValue());
-        } else {
-            throw new IllegalArgumentException("The object (" + o + ") has an class (" + o.getClass().getSimpleName() + ") that is not yet seen as a date.");
-        }
-    }
-
-    public static Date createFromEpochSec(Long epochSec) {
-        return createFromEpochMilli(epochSec * 1000);
-    }
-
-    @SuppressWarnings("unused")
-    public static Date createFromFileTime(FileTime time) {
-        return new Date(LocalDate.from(time.toInstant()));
-    }
+  }
 
 
-    /**
-     * Return a {@link java.sql.Date} YYYY-MM-DD
-     *
-     * @return the date in SQL format
-     */
-    public java.sql.Date toSqlDate() {
+  /**
+   * A java.util.date is a time millisecond  precision with time zone
+   *
+   * @param date - from a date util
+   * @return a date
+   */
+  public static Date createFromDate(java.util.Date date) {
+    LocalDate localDate = date.toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+    return new Date(localDate);
+  }
 
-        return java.sql.Date.valueOf(localDate);
+  public String toString(String format) {
+    SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.getDefault());
+    return sdf.format(toDate());
+  }
 
-    }
+  @Override
+  public String toString() {
+    return toIsoString();
+  }
 
+  public Instant toInstant() {
 
-    /**
-     * @param to the date
-     * @return the number of days to
-     * <p>
-     * Positive if from < to
-     * and that the date is not below 1970 (new Date(0L) = 1970-01-01
-     * Otherwise negative
-     */
-    public long daysTo(Date to) {
-        return DAYS.between(localDate, to.toLocalDate());
-    }
+    return localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant();
 
-    /**
-     * @param from the date
-     * @return the number of days from the
-     * <p>
-     * Positive if from < to
-     * and that the date is not below 1970 (new Date(0L) = 1970-01-01
-     * Otherwise negative
-     */
-    public long daysFrom(Date from) {
-        return DAYS.between(from.toLocalDate(), localDate);
-    }
+  }
 
-    public LocalDate toLocalDate() {
-        return this.localDate;
-    }
+  /**
+   * @return the date with the default timezone
+   */
+  public java.util.Date toDate() {
+
+    return java.util.Date.from(toInstant());
+
+  }
 
 
-    /**
-     * @param s any date string - This function will perform a format detection. If you know the format use the {@link #createFromStringWithFormat(String, String)}
-     */
-    public static Date createFromString(String s) throws CastException {
+  public String toIsoString() {
+    return localDate.toString();
+  }
 
-        String pattern = detectFormat(s);
-        return createFromStringWithFormat(s, pattern);
+  public Date plusDays(long daysToAdd) {
+    return new Date(localDate.plusDays(daysToAdd));
+  }
 
-    }
-
-    /**
-     * @param s a date in string format
-     * @param format the format for SimpleDateFormat. Example for Iso: yyyy-DD-mm
-     */
-    public static Date createFromStringWithFormat(String s, String format) {
-
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-            simpleDateFormat.setTimeZone(TimeZone.getDefault());
-            java.util.Date date = simpleDateFormat.parse(s);
-            return createFromDate(date);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+  public Date minusDays(long daysToAdd) {
+    return new Date(localDate.minusDays(daysToAdd));
+  }
 
 
-    /**
-     * A java.util.date is a time millisecond  precision with time zone
-     *
-     * @param date - from a date util
-     * @return a date
-     */
-    public static Date createFromDate(java.util.Date date) {
-        LocalDate localDate = date.toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
-        return new Date(localDate);
-    }
+  public Long toEpochDay() {
+    return localDate.toEpochDay();
+  }
 
-    public String toString(String format) {
-        SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.getDefault());
-        return sdf.format(toDate());
-    }
-
-    @Override
-    public String toString() {
-        return toIsoString();
-    }
-
-    public Instant toInstant() {
-
-        return localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant();
-
-    }
-
-    /**
-     * @return the date with the default timezone
-     */
-    public java.util.Date toDate() {
-
-        return java.util.Date.from(toInstant());
-
-    }
+  public Long toEpochMillis() {
+    return toEpochDay() * 1000 * 60 * 60 * 24;
+  }
 
 
-    public String toIsoString() {
-        return localDate.toString();
-    }
-
-    public Date plusDays(long daysToAdd) {
-        return new Date(localDate.plusDays(daysToAdd));
-    }
-
-    public Date minusDays(long daysToAdd) {
-        return new Date(localDate.minusDays(daysToAdd));
-    }
-
-
-    public Long toEpochDay() {
-        return localDate.toEpochDay();
-    }
-
-    public Long toEpochMillis() {
-        return toEpochDay() * 1000 * 60 * 60 * 24;
-    }
-
-
-    /**
-     * Epoch in second
-     *
-     * @return the second from epoch
-     */
-    public Long toEpochSec() {
-        return localDate.toEpochDay() * 24 * 60 * 60;
-    }
+  /**
+   * Epoch in second
+   *
+   * @return the second from epoch
+   */
+  public Long toEpochSec() {
+    return localDate.toEpochDay() * 24 * 60 * 60;
+  }
 
 
 }
