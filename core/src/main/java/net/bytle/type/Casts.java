@@ -6,6 +6,9 @@ import net.bytle.type.time.Date;
 import net.bytle.type.time.Time;
 import net.bytle.type.time.Timestamp;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -223,7 +226,14 @@ public class Casts {
        * Time
        */
       if (targetClass == java.sql.SQLXML.class) {
-        return targetClass.cast(SqlXmlFromString.create(sourceObject.toString()));
+        boolean isSqlXmlObject = java.sql.SQLXML.class.isAssignableFrom(sourceObject.getClass());
+        if (isSqlXmlObject) {
+          return targetClass.cast(sourceObject);
+        }
+        if (sourceObject.getClass() == String.class) {
+          return targetClass.cast(SqlXmlFromString.create(sourceObject.toString()));
+        }
+        throw new CastException("The source value is not a string, nor a java.sql.SQLXML object");
       }
 
       /**
@@ -537,6 +547,36 @@ public class Casts {
       return (Collection<T>) array;
     }
     throw new ClassCastException("The object (" + o + ") is not a collection but a " + o.getClass().getSimpleName());
+
+  }
+
+
+  /**
+   * Converts a Reader (character stream) to a String.
+   *
+   * @param reader The character stream to read from
+   * @return The string content from the reader
+   * @throws CastException If an I/O error occurs during reading
+   */
+  @SuppressWarnings("unused")
+  public static String castReaderToString(Reader reader) throws CastException {
+
+    if (reader == null) {
+      return null;
+    }
+
+    StringBuilder stringBuilder = new StringBuilder();
+    try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        stringBuilder.append(line);
+        stringBuilder.append(System.lineSeparator());
+      }
+    } catch (IOException e) {
+      throw new CastException(e);
+    }
+
+    return stringBuilder.toString();
 
   }
 }
