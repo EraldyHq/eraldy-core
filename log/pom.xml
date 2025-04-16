@@ -23,10 +23,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jakarta-smtp</artifactId>
-        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
