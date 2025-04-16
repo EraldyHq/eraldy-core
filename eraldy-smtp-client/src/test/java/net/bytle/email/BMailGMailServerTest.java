@@ -3,16 +3,21 @@ package net.bytle.email;
 import jakarta.mail.MessagingException;
 import net.bytle.os.Oss;
 import net.bytle.type.time.Timestamp;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 
+/**
+ * Should have its own module
+ */
 public class BMailGMailServerTest {
 
 
-  @Test
+  @Disabled
+  @Test()
   public void sendMail() throws GeneralSecurityException, IOException, MessagingException {
 
 
@@ -38,7 +43,8 @@ public class BMailGMailServerTest {
     return fqdn.equals(localDevName);
   }
 
-  @Test
+  @Disabled
+  @Test()
   public void printLabel() throws GeneralSecurityException, IOException {
 
     BMailGMailServer

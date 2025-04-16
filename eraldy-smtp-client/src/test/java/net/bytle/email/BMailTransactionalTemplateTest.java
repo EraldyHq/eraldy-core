@@ -3,14 +3,14 @@ package net.bytle.email;
 import jakarta.mail.MessagingException;
 import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.email.test.fixtures.WiserBaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 public class BMailTransactionalTemplateTest extends WiserBaseTest {
 
-  @Test
+  @Test()
   public void base() throws GeneralSecurityException, IOException, MessagingException {
 
     String subject = "Email Account confirmation";
@@ -54,7 +54,7 @@ public class BMailTransactionalTemplateTest extends WiserBaseTest {
 
   }
 
-  @Test
+  @Test()
   public void accountCreation() {
     BMailTransactionalTemplate.createForAccountCreation();
   }

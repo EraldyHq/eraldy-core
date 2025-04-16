@@ -7,7 +7,7 @@ import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.email.test.fixtures.WiserBaseTest;
 import net.bytle.exception.NotFoundException;
 import net.bytle.fs.Fs;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,10 +43,10 @@ public class BMailMimeMessageTest extends WiserBaseTest {
     "<H1>Hallo</h1><p>This is the text</p>\n" +
     "------=_Part_2_1636610998.1612815121479--";
 
-  public static final String EOL = System.getProperty("line.separator");
+  public static final String EOL = System.lineSeparator();
 
 
-  @Test
+  @Test()
   public void toRawTextTest() throws MessagingException, IOException, NotFoundException {
 
 
@@ -80,7 +80,7 @@ public class BMailMimeMessageTest extends WiserBaseTest {
 
   }
 
-  @Test
+  @Test()
   public void toRawTextWithAttachmentTest() throws MessagingException, IOException, GeneralSecurityException {
 
 
@@ -107,7 +107,7 @@ public class BMailMimeMessageTest extends WiserBaseTest {
      */
     String mimeMessage = bMailMimeMessageFirst.toEml();
     Path path = Fs.getUserDesktop().resolve("mail-before.eml");
-    Fs.write(path, mimeMessage);
+    Fs.write(path, mimeMessage,);
     System.out.println("Message was written at " + path);
 
     assertThat(mimeMessage.contains("multipart"),is(true));
@@ -163,7 +163,7 @@ public class BMailMimeMessageTest extends WiserBaseTest {
    * @throws IOException        if io exception
    * @throws MessagingException if message exception
    */
-  @Test
+  @Test()
   public void createFromRawText() throws IOException, MessagingException {
 
 

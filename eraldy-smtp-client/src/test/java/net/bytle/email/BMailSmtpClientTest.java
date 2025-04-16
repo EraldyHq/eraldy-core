@@ -4,7 +4,7 @@ import jakarta.mail.MessagingException;
 import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.email.test.fixtures.WiserBaseTest;
 import net.bytle.exception.NotFoundException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.subethamail.wiser.WiserMessage;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class BMailSmtpClientTest extends WiserBaseTest {
 
   public static final String EOL = System.lineSeparator();
 
-  @Test
+  @Test()
   public void name() throws MessagingException, IOException, GeneralSecurityException, NotFoundException {
 
 
@@ -61,7 +61,7 @@ public class BMailSmtpClientTest extends WiserBaseTest {
 
   }
 
-  @Test
+  @Test()
   public void ping() throws GeneralSecurityException, IOException, MessagingException {
     BMailSmtpClient dotSmtpServer = TestSenderUtility.create()
       .getDotSmtpServer();

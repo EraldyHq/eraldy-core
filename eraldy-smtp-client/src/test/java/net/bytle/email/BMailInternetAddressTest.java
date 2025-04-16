@@ -4,14 +4,14 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import net.bytle.type.DnsName;
 import net.bytle.type.EmailAddress;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 public class BMailInternetAddressTest {
 
-  @Test
+  @Test()
   public void basicEmailTest() throws AddressException {
 
     final String localPart = "CameronFrayne53";
@@ -20,16 +20,16 @@ public class BMailInternetAddressTest {
     BMailInternetAddress bmailInternetAddress = BMailInternetAddress.of(localPart + "@" + domain);
     EmailAddress emailAddress = bmailInternetAddress.getEmailAddress();
     DnsName domainName = emailAddress.getDomainName();
-    Assert.assertEquals("domain", domain, domainName.toStringWithoutRoot());
-    Assert.assertEquals("local-part", localPart, emailAddress.getLocalPart());
-    Assert.assertEquals("apex domain", rootDomain, domainName.getApexName().toStringWithoutRoot());
+    Assertions.assertEquals(domain, domainName.toStringWithoutRoot(), "domain");
+    Assertions.assertEquals(localPart, emailAddress.getLocalPart(), "local-part");
+    Assertions.assertEquals(rootDomain, domainName.getApexName().toStringWithoutRoot(), "apex domain");
     List<String> parts = domainName.getLabels();
-    Assert.assertEquals("3 domain parts", 3, parts.size());
-    Assert.assertEquals("local part digit count", (Integer) 2, emailAddress.getLocalPartDigitCount());
+    Assertions.assertEquals(3, parts.size(), "3 domain parts");
+    Assertions.assertEquals((Integer) 2, emailAddress.getLocalPartDigitCount(), "local part digit count");
 
   }
 
-  @Test
+  @Test()
   public void rootDomainTest() throws AddressException {
 
     final String localPart = "nico";
@@ -37,20 +37,20 @@ public class BMailInternetAddressTest {
 
     // RootDomain
     BMailInternetAddress bmailInternetAddress = BMailInternetAddress.of(localPart + "@" + apexDomain);
-    Assert.assertEquals("root domain", apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot());
+    Assertions.assertEquals(apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot(), "root domain");
 
     final String subDomain = "blog." + apexDomain;
     bmailInternetAddress = BMailInternetAddress.of(localPart + "@" + subDomain);
-    Assert.assertEquals("root domain from SubDomain", apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot());
+    Assertions.assertEquals(apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot(), "root domain from SubDomain");
 
     final String subSubDomain = "sub.blog." + apexDomain;
     bmailInternetAddress = BMailInternetAddress.of(localPart + "@" + subSubDomain);
-    Assert.assertEquals("root domain from subSubDomain", apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot());
+    Assertions.assertEquals(apexDomain, bmailInternetAddress.getEmailAddress().getDomainName().getApexName().toStringWithoutRoot(), "root domain from subSubDomain");
 
 
   }
 
-  @Test
+  @Test()
   public void internetAddressRfc822Test() throws AddressException {
 
     String address = "youpla@golo.com";
@@ -61,11 +61,11 @@ public class BMailInternetAddressTest {
      * Zero format
      */
     InternetAddress internetAddress = new InternetAddress(address);
-    Assert.assertEquals(address, internetAddress.getAddress());
-    Assert.assertNull(internetAddress.getPersonal());
-    Assert.assertEquals(rfc822Type, internetAddress.getType());
-    Assert.assertFalse(internetAddress.isGroup());
-    Assert.assertNull(internetAddress.getGroup(false));
+    Assertions.assertEquals(address, internetAddress.getAddress());
+    Assertions.assertNull(internetAddress.getPersonal());
+    Assertions.assertEquals(rfc822Type, internetAddress.getType());
+    Assertions.assertFalse(internetAddress.isGroup());
+    Assertions.assertNull(internetAddress.getGroup(false));
     internetAddress.validate();
 
     /**
@@ -73,11 +73,11 @@ public class BMailInternetAddressTest {
      */
     String emailAddress = personal + " <" + address + "> (A comment)";
     internetAddress = new InternetAddress(emailAddress);
-    Assert.assertEquals(address, internetAddress.getAddress());
-    Assert.assertEquals(personal, internetAddress.getPersonal());
-    Assert.assertEquals(rfc822Type, internetAddress.getType());
-    Assert.assertFalse(internetAddress.isGroup());
-    Assert.assertNull(internetAddress.getGroup(false));
+    Assertions.assertEquals(address, internetAddress.getAddress());
+    Assertions.assertEquals(personal, internetAddress.getPersonal());
+    Assertions.assertEquals(rfc822Type, internetAddress.getType());
+    Assertions.assertFalse(internetAddress.isGroup());
+    Assertions.assertNull(internetAddress.getGroup(false));
     internetAddress.validate();
 
     /**
@@ -85,11 +85,11 @@ public class BMailInternetAddressTest {
      */
     emailAddress = " " + address + " (" + personal + ")";
     internetAddress = new InternetAddress(emailAddress);
-    Assert.assertEquals(address, internetAddress.getAddress());
-    Assert.assertEquals(personal, internetAddress.getPersonal());
-    Assert.assertEquals(rfc822Type, internetAddress.getType());
-    Assert.assertFalse(internetAddress.isGroup());
-    Assert.assertNull(internetAddress.getGroup(false));
+    Assertions.assertEquals(address, internetAddress.getAddress());
+    Assertions.assertEquals(personal, internetAddress.getPersonal());
+    Assertions.assertEquals(rfc822Type, internetAddress.getType());
+    Assertions.assertFalse(internetAddress.isGroup());
+    Assertions.assertNull(internetAddress.getGroup(false));
     internetAddress.validate();
 
 
@@ -98,16 +98,16 @@ public class BMailInternetAddressTest {
      */
     address = "user@[10.9.8.7]";
     internetAddress = new InternetAddress(address);
-    Assert.assertEquals(address, internetAddress.getAddress());
-    Assert.assertNull(internetAddress.getPersonal());
-    Assert.assertEquals(rfc822Type, internetAddress.getType());
-    Assert.assertFalse(internetAddress.isGroup());
-    Assert.assertNull(internetAddress.getGroup(false));
+    Assertions.assertEquals(address, internetAddress.getAddress());
+    Assertions.assertNull(internetAddress.getPersonal());
+    Assertions.assertEquals(rfc822Type, internetAddress.getType());
+    Assertions.assertFalse(internetAddress.isGroup());
+    Assertions.assertNull(internetAddress.getGroup(false));
     internetAddress.validate();
 
   }
 
-  @Test
+  @Test()
   public void internetAddressValidateRfc822() throws AddressException {
 
     InternetAddress internetAddress = new InternetAddress("youpla@golo.com");
@@ -121,28 +121,28 @@ public class BMailInternetAddressTest {
       new InternetAddress("@golo");
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("Missing local name", e.getMessage());
+      Assertions.assertEquals("Missing local name", e.getMessage());
     }
 
     try {
       new InternetAddress("youpla@");
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("Missing domain", e.getMessage());
+      Assertions.assertEquals("Missing domain", e.getMessage());
     }
 
     try {
       internetAddress = new InternetAddress("youpla");
-      Assert.assertEquals("youpla", internetAddress.getAddress());
-      Assert.assertNull(internetAddress.getPersonal());
+      Assertions.assertEquals("youpla", internetAddress.getAddress());
+      Assertions.assertNull(internetAddress.getPersonal());
       internetAddress.validate();
     } catch (AddressException e) {
-      Assert.assertEquals("Missing final '@domain'", e.getMessage());
+      Assertions.assertEquals("Missing final '@domain'", e.getMessage());
     }
 
   }
 
-  @Test
+  @Test()
   public void internetAddressGroupRfc822Test() throws AddressException {
     /**
      * Email fields are Strings using the common formats for email with or without real name
@@ -155,36 +155,36 @@ public class BMailInternetAddressTest {
     //String groupAddress = groupName + ":foo@bar," + emailAddress + ";";
     String groupAddress = groupName + ": \"Foo\" <Foo@localhost> (A comment), bar@example.com (Name), Barney;";
     InternetAddress groupedInternetAddress = new InternetAddress(groupAddress);
-    Assert.assertEquals("Address is the whole string", groupAddress, groupedInternetAddress.getAddress());
-    Assert.assertNull("Personal is null", groupedInternetAddress.getPersonal());
+    Assertions.assertEquals(groupAddress, groupedInternetAddress.getAddress(), "Address is the whole string");
+    Assertions.assertNull(groupedInternetAddress.getPersonal(), "Personal is null");
     InternetAddress[] group = groupedInternetAddress.getGroup(false);
-    Assert.assertTrue(groupedInternetAddress.isGroup());
-    Assert.assertEquals(3, group.length);
+    Assertions.assertTrue(groupedInternetAddress.isGroup());
+    Assertions.assertEquals(3, group.length);
     // first
     InternetAddress internetAddress1 = group[0];
-    Assert.assertEquals("Foo@localhost", internetAddress1.getAddress());
-    Assert.assertEquals("Foo", internetAddress1.getPersonal());
+    Assertions.assertEquals("Foo@localhost", internetAddress1.getAddress());
+    Assertions.assertEquals("Foo", internetAddress1.getPersonal());
     internetAddress1.validate();
     // second
     InternetAddress internetAddress2 = group[1];
-    Assert.assertEquals("bar@example.com", internetAddress2.getAddress());
-    Assert.assertEquals("Name", internetAddress2.getPersonal());
+    Assertions.assertEquals("bar@example.com", internetAddress2.getAddress());
+    Assertions.assertEquals("Name", internetAddress2.getPersonal());
     internetAddress2.validate();
 
     // third
     InternetAddress internetAddress3 = group[2];
-    Assert.assertEquals("Barney", internetAddress3.getAddress());
-    Assert.assertNull("Personal is null", internetAddress3.getPersonal());
+    Assertions.assertEquals("Barney", internetAddress3.getAddress());
+    Assertions.assertNull(internetAddress3.getPersonal(), "Personal is null");
     try {
       internetAddress3.validate();
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("Missing final '@domain'", e.getMessage());
+      Assertions.assertEquals("Missing final '@domain'", e.getMessage());
     }
 
   }
 
-  @Test
+  @Test()
   public void externalEmailValidation() {
 
     // no tld
@@ -202,18 +202,20 @@ public class BMailInternetAddressTest {
       BMailInternetAddress.of(emailString);
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("Local address starts with dot", e.getMessage());
+      Assertions.assertEquals("Local address starts with dot", e.getMessage());
     }
 
     // no final domain
     // same with `abc`
     emailString = "com.";
-    try {
-      BMailInternetAddress.of(emailString);
-      throw new RuntimeException("Should throw");
-    } catch (AddressException e) {
-      Assert.assertEquals("Missing final '@domain'", e.getMessage());
-    }
+    String finalEmailString = emailString;
+    Assertions.assertThrows(
+      AddressException.class,
+      ()->BMailInternetAddress.of(finalEmailString),
+      "Missing final '@domain'"
+    );
+
+
 
     // no tld
     emailString = "com@com";
@@ -221,7 +223,7 @@ public class BMailInternetAddressTest {
       BMailInternetAddress.of(emailString);
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("The domain should have at minimal a TLD domain (.com, ...)", e.getMessage());
+      Assertions.assertEquals("The domain should have at minimal a TLD domain (.com, ...)", e.getMessage());
     }
 
     emailString = "user@[10.9.8.7]";
@@ -229,27 +231,28 @@ public class BMailInternetAddressTest {
       BMailInternetAddress.of(emailString);
       throw new RuntimeException("Should throw");
     } catch (AddressException e) {
-      Assert.assertEquals("The domain should not start with a [", e.getMessage());
+      Assertions.assertEquals("The domain should not start with a [", e.getMessage());
     }
 
     emailString = "user@10.9.8.7";
-    try {
-      BMailInternetAddress.of(emailString);
-      throw new RuntimeException("Should throw");
-    } catch (AddressException e) {
-      Assert.assertEquals("A domain part should not be a number. The part (10) is a number.", e.getMessage());
-    }
+    String finalEmailString1 = emailString;
+    Assertions.assertThrows(
+      AddressException.class,
+      ()->BMailInternetAddress.of(finalEmailString1),
+      "A domain part should not be a number. The part (10) is a number."
+    );
+
 
 
   }
 
-  @Test
+  @Test()
   public void bounceReversePathTest() throws AddressException {
     String domain = "forward.domain.net";
     String local = "SRS0=155e=FQ=gmail.com=gerardnico";
     BMailInternetAddress email = BMailInternetAddress.of("<" + local + "@" + domain + ">");
-    Assert.assertEquals(domain, email.getEmailAddress().getDomainName().toStringWithoutRoot());
-    Assert.assertEquals(local, email.getEmailAddress().getLocalPart());
+    Assertions.assertEquals(domain, email.getEmailAddress().getDomainName().toStringWithoutRoot());
+    Assertions.assertEquals(local, email.getEmailAddress().getLocalPart());
   }
 
 

@@ -1,8 +1,8 @@
 package net.bytle.email;
 
 import jakarta.mail.MessagingException;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 public class BMailDeliverEmail {
@@ -14,7 +14,8 @@ public class BMailDeliverEmail {
    * <a href="https://jakartaee.github.io/mail-api/FAQ.html#pr<a href="oxy">...</a>
    ">* https://en.wikipe</a>dia.org/wiki/SOCKS
    */
-  @Test
+  @Disabled
+  @Test()
   public void gmailSendEmailTest() throws MessagingException {
     // Host alt4.gmail-smtp-in.l.google.com. has preference 40
     // Host alt3.gmail-smtp-in.l.google.com. has preference 30

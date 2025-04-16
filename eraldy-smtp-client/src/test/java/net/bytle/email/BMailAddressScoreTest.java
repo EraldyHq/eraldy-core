@@ -6,9 +6,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import jakarta.mail.internet.AddressException;
 import net.bytle.type.Maps;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,8 +18,8 @@ import java.util.Map;
 
 public class BMailAddressScoreTest {
 
-    @Ignore
-    @Test
+    @Disabled
+    @Test()
     public void basicTest() throws AddressException, IOException {
 
 
@@ -50,8 +50,8 @@ public class BMailAddressScoreTest {
                 rootDomainCounts.put(rootDomain, rootDomainCount);
                 count++;
             }
-            Assert.assertEquals("count", (Integer) 924, count);
-            Assert.assertEquals("rootDomainCount", 141, rootDomainCounts.keySet().size());
+            Assertions.assertEquals((Integer) 924, count, "count");
+            Assertions.assertEquals(141, rootDomainCounts.keySet().size(), "rootDomainCount");
             for (Map.Entry<String, Integer> entry : Maps.getMapAsListEntrySortedByValue(rootDomainCounts)) {
                 System.out.println(entry.getKey() + " " + entry.getValue());
             }

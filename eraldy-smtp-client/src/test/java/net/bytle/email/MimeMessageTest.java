@@ -5,7 +5,7 @@ import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import net.bytle.type.Strings;
 import org.hamcrest.core.IsNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MimeMessageTest {
 
-  @Test
+  @Test()
   public void contentIsEmptyTest() throws MessagingException {
     Session session = Session.getInstance(new Properties());
     MimeMessage mimeMessage = new MimeMessage(session);
@@ -32,7 +32,7 @@ public class MimeMessageTest {
    * @throws IOException io exception
    * @throws MessagingException messaging exception
    */
-  @Test
+  @Test()
   public void rawDataContentStreamTest() throws IOException, MessagingException {
     Session session = Session.getInstance(new Properties());
     MimeMessage mimeMessage = new MimeMessage(session);
