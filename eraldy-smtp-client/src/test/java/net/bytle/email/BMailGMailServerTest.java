@@ -1,7 +1,6 @@
 package net.bytle.email;
 
 import jakarta.mail.MessagingException;
-import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.os.Oss;
 import net.bytle.type.time.Timestamp;
 import org.junit.Test;
@@ -25,9 +24,8 @@ public class BMailGMailServerTest {
         .setSubject("Email Send via Gmail Api + " + date)
         .setBodyPlainText("My Text Body")
         .build();
-
-      TestSenderUtility.createFromMessage(bmail)
-        .sendToGmail();
+      BMailGMailServer.create()
+          .send(bmail);
 
     }
 

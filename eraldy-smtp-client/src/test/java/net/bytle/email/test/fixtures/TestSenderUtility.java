@@ -1,15 +1,18 @@
 package net.bytle.email.test.fixtures;
 
 import jakarta.mail.MessagingException;
-import net.bytle.email.*;
+import net.bytle.email.BMailMimeMessage;
+import net.bytle.email.BMailSmtpClient;
+import net.bytle.email.BMailSmtpConnection;
+import net.bytle.email.BMailStartTls;
 import net.bytle.exception.CastException;
 import net.bytle.java.JavaEnvs;
 import net.bytle.os.Oss;
 import net.bytle.type.Casts;
-import net.bytle.type.env.DotEnv;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Map;
 
 /**
  * Utility class to send to different smtp server at once
@@ -26,31 +29,29 @@ public class TestSenderUtility {
   private final BMailSmtpClient wiser;
   private BMailMimeMessage message;
   private final BMailSmtpClient dotSmtpServer;
-  private final DotEnv dotenv;
+  private final Map<String, String> osEnvs;
   private final BMailSmtpClient paperCutLocalSmtpServer;
-  private final BMailGMailServer gmail;
 
   public TestSenderUtility() throws GeneralSecurityException, IOException {
 
     wiser = WiserConfiguration.getSession();
 
-    gmail = BMailGMailServer.create();
 
-    dotenv = DotEnv.createFromCurrentDirectory();
+    osEnvs = System.getenv();
     Boolean debug;
-    String smtpDebug = dotenv.get("SMTP_DEBUG");
+    String smtpDebug = osEnvs.get("SMTP_DEBUG");
     try {
       debug = Casts.cast(smtpDebug, Boolean.class);
     } catch (CastException e) {
       throw new RuntimeException("The debug value " + smtpDebug + " of SMTP_DEBUG is not a valid boolean");
     }
-    String smtpUser = dotenv.get("SMTP_USER");
+    String smtpUser = osEnvs.get("SMTP_USER");
     if (smtpUser != null) {
       dotSmtpServer = BMailSmtpClient.create()
-        .setHost(dotenv.get("SMTP_HOST"))
-        .setPort(Integer.parseInt(dotenv.get("SMTP_PORT")))
+        .setHost(osEnvs.get("SMTP_HOST"))
+        .setPort(Integer.parseInt(osEnvs.get("SMTP_PORT")))
         .setUsername(smtpUser)
-        .setPassword(dotenv.get("SMTP_PWD"))
+        .setPassword(osEnvs.get("SMTP_PWD"))
         .setStartTls(BMailStartTls.REQUIRE)
         .setDebug(debug)
         .build();
@@ -139,8 +140,8 @@ public class TestSenderUtility {
     }
 
     BMailMimeMessage localMessage = BMailMimeMessage.createFromBMail(message)
-      .setFrom(dotenv.get("SMTP_FROM"))
-      .setTo(dotenv.get("SMTP_TO"));
+      .setFrom(osEnvs.get("SMTP_FROM"))
+      .setTo(osEnvs.get("SMTP_TO"));
 
     dotSmtpServer.sendMessage(localMessage);
 
@@ -148,15 +149,7 @@ public class TestSenderUtility {
 
   }
 
-
-  public TestSenderUtility sendToGmail() throws MessagingException, IOException {
-
-    gmail.send(this.message);
-    return this;
-
-  }
-
-  public BMailSmtpClient getPaperCutSmtpServer() {
+    public BMailSmtpClient getPaperCutSmtpServer() {
     return this.paperCutLocalSmtpServer;
   }
 
