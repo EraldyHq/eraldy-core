@@ -60,7 +60,7 @@
     <exec.version>1.12</exec.version>
     <!-- email SMTP server
     https://mvnrepository.com/artifact/com.github.davidmoten/subethasmtp -->
-    <subetha.version>6.0.7</subetha.version>
+    <subetha.version>7.1.7</subetha.version>
   </properties>
 
   <dependencyManagement>

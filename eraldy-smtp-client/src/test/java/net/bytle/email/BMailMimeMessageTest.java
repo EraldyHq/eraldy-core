@@ -107,7 +107,7 @@ public class BMailMimeMessageTest extends WiserBaseTest {
      */
     String mimeMessage = bMailMimeMessageFirst.toEml();
     Path path = Fs.getUserDesktop().resolve("mail-before.eml");
-    Fs.write(path, mimeMessage,);
+    Fs.write(path, mimeMessage);
     System.out.println("Message was written at " + path);
 
     assertThat(mimeMessage.contains("multipart"),is(true));
