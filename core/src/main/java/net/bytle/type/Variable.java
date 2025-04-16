@@ -103,7 +103,7 @@ public class Variable implements Comparable<Variable> {
    */
   public Variable setOriginalValue(Object originalValue) {
     if (this.originalValue != null && !originalValue.equals(this.originalValue)) {
-      throw new RuntimeException("You can't change the original value of the variable " + this);
+      throw new RuntimeException("You can't change the original value of the variable " + this + " from (" + this.originalValue + ") to " + this.originalValue);
     }
     Class<?> valueClazz = this.attribute.getValueClazz();
     if (valueClazz == null) {
