@@ -21,7 +21,7 @@
         <module>log</module>
         <module>template</module>
         <module>html</module>
-        <module>smtp-client</module>
+        <module>eraldy-smtp-client</module>
         <module>eraldy-niofs-http</module>
         <module>dns</module>
         <module>cli</module>

@@ -79,11 +79,11 @@
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
-                        <configuration>
-                            <includes>
-                                <include>net/bytle/email/test/*</include>
-                            </includes>
-                        </configuration>
+<!--                        <configuration>-->
+<!--                            <includes>-->
+<!--                                <include>net/bytle/email/test/*</include>-->
+<!--                            </includes>-->
+<!--                        </configuration>-->
                     </execution>
                 </executions>
             </plugin>

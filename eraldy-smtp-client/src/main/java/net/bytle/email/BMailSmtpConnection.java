@@ -3,7 +3,6 @@ package net.bytle.email;
 import jakarta.mail.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.Transport;
 import jakarta.mail.event.TransportEvent;
 import jakarta.mail.event.TransportListener;
 import jakarta.mail.internet.MimeMessage;
