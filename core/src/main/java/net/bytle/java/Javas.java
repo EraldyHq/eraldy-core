@@ -1,5 +1,7 @@
 package net.bytle.java;
 
+import net.bytle.exception.NotFoundException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -14,6 +16,30 @@ import java.util.Objects;
  * Static function around the JVM
  */
 public class Javas {
+
+  /**
+   *
+   * @param clazz - the class where the resource is collocated
+   * @param name - the name (starting with a /) example: /pipeline/email_record_run.yml
+   */
+  public static Path getResourcePath(Class<?> clazz, String name) throws NotFoundException {
+    URL resource = clazz.getResource(name);
+    if(resource==null){
+      throw new NotFoundException("The resource was not found");
+    }
+    return getFilePathFromUrl(resource);
+  }
+
+  /**
+   * Same as {@link #getResourcePath(Class, String)} without exception
+   */
+  public static Path getResourcePathSafe(Class<?> clazz, String name)  {
+    try {
+      return getResourcePath(clazz,name);
+    } catch (NotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * @return return the class file path or the jar if located in a jar
