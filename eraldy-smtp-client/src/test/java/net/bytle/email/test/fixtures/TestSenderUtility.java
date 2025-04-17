@@ -4,9 +4,6 @@ import jakarta.mail.MessagingException;
 import net.bytle.email.BMailMimeMessage;
 import net.bytle.email.BMailSmtpClient;
 import net.bytle.email.BMailSmtpConnection;
-import net.bytle.email.BMailStartTls;
-import net.bytle.exception.CastException;
-import net.bytle.type.Casts;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -34,23 +31,30 @@ public class TestSenderUtility {
 
     wiser = WiserConfiguration.getSession();
 
+    Boolean debug = true;
 
     osEnvs = System.getenv();
-    Boolean debug;
-    String smtpDebug = osEnvs.get("SMTP_DEBUG");
-    try {
-      debug = Casts.cast(smtpDebug, Boolean.class);
-    } catch (CastException e) {
-      throw new RuntimeException("The debug value " + smtpDebug + " of SMTP_DEBUG is not a valid boolean");
-    }
-    String smtpUser = osEnvs.get("SMTP_USER");
-    if (smtpUser != null) {
+
+
+    String mailpitSmtpHost = osEnvs.get("MAILPIT_SMTP_HOST");
+    if (mailpitSmtpHost != null) {
+      String envPort = osEnvs.get("MAILPIT_SMTP_PORT");
+      int mailPitport = 25;
+      if (envPort != null) {
+        mailPitport = Integer.parseInt(envPort);
+      }
+      String tlsEnabled = osEnvs.get("MAILPIT_SMTP_TLS");
+      boolean isTlsEnabled = mailPitport == 465;
+      if (tlsEnabled != null) {
+        isTlsEnabled = Boolean.getBoolean(tlsEnabled);
+      }
       mailPitClient = BMailSmtpClient.create()
-        .setHost(osEnvs.get("SMTP_HOST"))
-        .setPort(Integer.parseInt(osEnvs.get("SMTP_PORT")))
-        .setUsername(smtpUser)
-        .setPassword(osEnvs.get("SMTP_PWD"))
-        .setStartTls(BMailStartTls.REQUIRE)
+        .setHost(mailpitSmtpHost)
+        .setPort(mailPitport)
+        .setUsername(osEnvs.get("MAILPIT_SMTP_USER"))
+        .setPassword(osEnvs.get("MAILPIT_SMTP_PASSWORD"))
+        .setTrustAll(true)
+        .setEnableTls(isTlsEnabled)
         .setDebug(debug)
         .build();
     }
@@ -116,26 +120,6 @@ public class TestSenderUtility {
     } catch (MessagingException e) {
       throw new RuntimeException(e);
     }
-    return this;
-
-  }
-
-  /**
-   * Send the message specified in a dot file if
-   */
-  @SuppressWarnings("UnusedReturnValue")
-  public TestSenderUtility sendToDotSmtpIfAvailable() throws MessagingException {
-
-    if (mailPitClient == null) {
-      return this;
-    }
-
-    BMailMimeMessage localMessage = BMailMimeMessage.createFromBMail(message)
-      .setFrom(osEnvs.get("SMTP_FROM"))
-      .setTo(osEnvs.get("SMTP_TO"));
-
-    mailPitClient.sendMessage(localMessage);
-
     return this;
 
   }

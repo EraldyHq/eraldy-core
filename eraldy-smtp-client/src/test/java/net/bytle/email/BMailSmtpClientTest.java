@@ -42,7 +42,6 @@ public class BMailSmtpClientTest extends WiserBaseTest {
 
     TestSenderUtility
       .createAndSendMessageToWiserSmtp(mimeMessage)
-      .sendToDotSmtpIfAvailable()
       .sendToMailPitIfAvailable();
 
 

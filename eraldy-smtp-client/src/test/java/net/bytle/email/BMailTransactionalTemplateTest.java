@@ -50,8 +50,7 @@ public class BMailTransactionalTemplateTest extends WiserBaseTest {
 
     TestSenderUtility
       .createAndSendMessageToWiserSmtp(message.build())
-      .sendToMailPitIfAvailable()
-      .sendToDotSmtpIfAvailable();
+      .sendToMailPitIfAvailable();
 
   }
 

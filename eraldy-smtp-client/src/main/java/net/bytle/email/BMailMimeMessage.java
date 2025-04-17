@@ -98,8 +98,12 @@ public class BMailMimeMessage {
 
   public BMailMimeMessage setFrom(String from) {
 
+    if (from == null) {
+      throw new RuntimeException("From cannot be null");
+    }
     try {
-      mimeMessage.setFrom(new InternetAddress(from));
+      InternetAddress address = new InternetAddress(from);
+      mimeMessage.setFrom(address);
     } catch (MessagingException e) {
       throw new RuntimeException(e);
     }
