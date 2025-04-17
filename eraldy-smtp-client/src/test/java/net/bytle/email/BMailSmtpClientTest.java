@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.email.test.fixtures.WiserBaseTest;
 import net.bytle.exception.NotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.subethamail.wiser.WiserMessage;
 
@@ -18,7 +19,7 @@ import static org.hamcrest.Matchers.is;
 public class BMailSmtpClientTest extends WiserBaseTest {
 
 
-  public static final String EOL = System.lineSeparator();
+  public static final String OS_EOL = System.lineSeparator();
 
   @Test()
   public void name() throws MessagingException, IOException, GeneralSecurityException, NotFoundException {
@@ -27,8 +28,9 @@ public class BMailSmtpClientTest extends WiserBaseTest {
     String title = "An multi-part mail example";
     String to = "gerardnico@gmail.com";
 
-
-    String plainText = "Hallo," + EOL + " This is the text";
+    String Email_EOL = "\r\n";
+    String plainText = "Hallo," + OS_EOL + " This is the text";
+    String emailText = "Hallo," + Email_EOL + " This is the text";
     String html = "<H1>Hallo</h1><p>This is the text</p>";
     BMailMimeMessage mimeMessage = BMailMimeMessage.createFromBuilder()
       .setFrom("support@combostrap.com")
@@ -41,7 +43,7 @@ public class BMailSmtpClientTest extends WiserBaseTest {
     TestSenderUtility
       .createAndSendMessageToWiserSmtp(mimeMessage)
       .sendToDotSmtpIfAvailable()
-      .sendToLocalSmtpIfAvailable();
+      .sendToMailPitIfAvailable();
 
 
     List<WiserMessage> emails = wiser.getMessages();
@@ -54,17 +56,16 @@ public class BMailSmtpClientTest extends WiserBaseTest {
       .createFromMimeMessage(email.getMimeMessage());
 
     assertThat(storedBMailMimeMessage.getSubject(), is(title));
-    assertThat(storedBMailMimeMessage.getToAsAddresses(), is(to));
-    assertThat(storedBMailMimeMessage.getToAsAddresses(), is(to));
+    Assertions.assertTrue(storedBMailMimeMessage.getToAsAddresses().toAddresses().get(0).contains(to));
     assertThat(storedBMailMimeMessage.getHtml(), is(html));
-    assertThat(storedBMailMimeMessage.getPlainText(), is(plainText));
+    assertThat(storedBMailMimeMessage.getPlainText(), is(emailText));
 
   }
 
   @Test()
   public void ping() throws GeneralSecurityException, IOException, MessagingException {
     BMailSmtpClient dotSmtpServer = TestSenderUtility.create()
-      .getEnvSmtpServer();
+      .getMailPitClient();
     if(dotSmtpServer!=null){
       dotSmtpServer.pingHello();
     }

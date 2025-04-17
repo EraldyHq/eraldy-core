@@ -6,8 +6,6 @@ import net.bytle.email.BMailSmtpClient;
 import net.bytle.email.BMailSmtpConnection;
 import net.bytle.email.BMailStartTls;
 import net.bytle.exception.CastException;
-import net.bytle.java.JavaEnvs;
-import net.bytle.os.Oss;
 import net.bytle.type.Casts;
 
 import java.io.IOException;
@@ -28,9 +26,9 @@ public class TestSenderUtility {
   public static final String DEFAULT_SUBJECT = "Mail Send from Bytle Mail";
   private final BMailSmtpClient wiser;
   private BMailMimeMessage message;
-  private final BMailSmtpClient envSmtpServer;
+  private BMailSmtpClient mailPitClient;
   private final Map<String, String> osEnvs;
-  private final BMailSmtpClient paperCutLocalSmtpServer;
+
 
   public TestSenderUtility() throws GeneralSecurityException, IOException {
 
@@ -47,7 +45,7 @@ public class TestSenderUtility {
     }
     String smtpUser = osEnvs.get("SMTP_USER");
     if (smtpUser != null) {
-      envSmtpServer = BMailSmtpClient.create()
+      mailPitClient = BMailSmtpClient.create()
         .setHost(osEnvs.get("SMTP_HOST"))
         .setPort(Integer.parseInt(osEnvs.get("SMTP_PORT")))
         .setUsername(smtpUser)
@@ -55,20 +53,8 @@ public class TestSenderUtility {
         .setStartTls(BMailStartTls.REQUIRE)
         .setDebug(debug)
         .build();
-    } else {
-      envSmtpServer = null;
     }
 
-    if (!Oss.portAvailable(PORT_GUI_LOCAL_SMTP_SERVER)) {
-      paperCutLocalSmtpServer = BMailSmtpClient.create()
-        .setPort(PORT_GUI_LOCAL_SMTP_SERVER)
-        .build();
-    } else {
-      if (JavaEnvs.isDev(TestSenderUtility.class)) {
-        throw new RuntimeException("The local development server (Papercut) is not started, you can send an email");
-      }
-      paperCutLocalSmtpServer = null;
-    }
 
   }
 
@@ -116,17 +102,17 @@ public class TestSenderUtility {
   }
 
   /**
-   * Send to the local SMTP server (Papercut)
+   * Send to the MailPit SMTP server (Papercut, Mailpit, ...)
    * if up
    */
-  public TestSenderUtility sendToLocalSmtpIfAvailable() throws MessagingException {
+  public TestSenderUtility sendToMailPitIfAvailable() throws MessagingException {
 
-    // Not null if port is running
-    if (paperCutLocalSmtpServer == null) {
+
+    if (mailPitClient == null) {
       return this;
     }
     try {
-      paperCutLocalSmtpServer.sendMessage(message);
+      mailPitClient.sendMessage(message);
     } catch (MessagingException e) {
       throw new RuntimeException(e);
     }
@@ -140,7 +126,7 @@ public class TestSenderUtility {
   @SuppressWarnings("UnusedReturnValue")
   public TestSenderUtility sendToDotSmtpIfAvailable() throws MessagingException {
 
-    if (envSmtpServer == null) {
+    if (mailPitClient == null) {
       return this;
     }
 
@@ -148,22 +134,19 @@ public class TestSenderUtility {
       .setFrom(osEnvs.get("SMTP_FROM"))
       .setTo(osEnvs.get("SMTP_TO"));
 
-    envSmtpServer.sendMessage(localMessage);
+    mailPitClient.sendMessage(localMessage);
 
     return this;
 
   }
 
-  public BMailSmtpClient getPaperCutSmtpServer() {
-    return this.paperCutLocalSmtpServer;
-  }
 
   public BMailSmtpClient getWiserSmtpServer() {
     return this.wiser;
   }
 
-  public BMailSmtpClient getEnvSmtpServer() {
-    return this.envSmtpServer;
+  public BMailSmtpClient getMailPitClient() {
+    return this.mailPitClient;
   }
 
 }

@@ -49,7 +49,7 @@ public class BMailTransactionalTemplateTest extends WiserBaseTest {
 
     TestSenderUtility
       .createAndSendMessageToWiserSmtp(message.build())
-      .sendToLocalSmtpIfAvailable()
+      .sendToMailPitIfAvailable()
       .sendToDotSmtpIfAvailable();
 
   }

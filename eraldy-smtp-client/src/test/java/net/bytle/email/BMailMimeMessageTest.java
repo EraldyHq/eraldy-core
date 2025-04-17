@@ -128,8 +128,9 @@ public class BMailMimeMessageTest extends WiserBaseTest {
      * Can we send it
      */
     TestSenderUtility
+      .createFromMessage(bMailMimeMessageFirst)
       .createAndSendMessageToWiserSmtp(bMailMimeMessageFirst)
-      .sendToLocalSmtpIfAvailable();
+      .sendToMailPitIfAvailable();
 
 
     /**
