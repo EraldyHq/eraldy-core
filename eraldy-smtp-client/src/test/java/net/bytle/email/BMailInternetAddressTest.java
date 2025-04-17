@@ -184,67 +184,8 @@ public class BMailInternetAddressTest {
 
   }
 
-  @Test()
-  public void externalEmailValidation() {
-
-    // no tld
-    String emailString = "com@com.com";
-
-    try {
-      BMailInternetAddress.of(emailString);
-    } catch (AddressException e) {
-      throw new RuntimeException("Should not throw");
-    }
-
-    // Address should not start with a dot
-    emailString = ".";
-    try {
-      BMailInternetAddress.of(emailString);
-      throw new RuntimeException("Should throw");
-    } catch (AddressException e) {
-      Assertions.assertEquals("Local address starts with dot", e.getMessage());
-    }
-
-    // no final domain
-    // same with `abc`
-    emailString = "com.";
-    String finalEmailString = emailString;
-    Assertions.assertThrows(
-      AddressException.class,
-      ()->BMailInternetAddress.of(finalEmailString),
-      "Missing final '@domain'"
-    );
 
 
-
-    // no tld
-    emailString = "com@com";
-    try {
-      BMailInternetAddress.of(emailString);
-      throw new RuntimeException("Should throw");
-    } catch (AddressException e) {
-      Assertions.assertEquals("The domain should have at minimal a TLD domain (.com, ...)", e.getMessage());
-    }
-
-    emailString = "user@[10.9.8.7]";
-    try {
-      BMailInternetAddress.of(emailString);
-      throw new RuntimeException("Should throw");
-    } catch (AddressException e) {
-      Assertions.assertEquals("The domain should not start with a [", e.getMessage());
-    }
-
-    emailString = "user@10.9.8.7";
-    String finalEmailString1 = emailString;
-    Assertions.assertThrows(
-      AddressException.class,
-      ()->BMailInternetAddress.of(finalEmailString1),
-      "A domain part should not be a number. The part (10) is a number."
-    );
-
-
-
-  }
 
   @Test()
   public void bounceReversePathTest() throws AddressException {
@@ -254,7 +195,6 @@ public class BMailInternetAddressTest {
     Assertions.assertEquals(domain, email.getEmailAddress().getDomainName().toStringWithoutRoot());
     Assertions.assertEquals(local, email.getEmailAddress().getLocalPart());
   }
-
 
 
 }

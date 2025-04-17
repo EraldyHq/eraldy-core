@@ -28,7 +28,7 @@ public class TestSenderUtility {
   public static final String DEFAULT_SUBJECT = "Mail Send from Bytle Mail";
   private final BMailSmtpClient wiser;
   private BMailMimeMessage message;
-  private final BMailSmtpClient dotSmtpServer;
+  private final BMailSmtpClient envSmtpServer;
   private final Map<String, String> osEnvs;
   private final BMailSmtpClient paperCutLocalSmtpServer;
 
@@ -47,7 +47,7 @@ public class TestSenderUtility {
     }
     String smtpUser = osEnvs.get("SMTP_USER");
     if (smtpUser != null) {
-      dotSmtpServer = BMailSmtpClient.create()
+      envSmtpServer = BMailSmtpClient.create()
         .setHost(osEnvs.get("SMTP_HOST"))
         .setPort(Integer.parseInt(osEnvs.get("SMTP_PORT")))
         .setUsername(smtpUser)
@@ -56,7 +56,7 @@ public class TestSenderUtility {
         .setDebug(debug)
         .build();
     } else {
-      dotSmtpServer = null;
+      envSmtpServer = null;
     }
 
     if (!Oss.portAvailable(PORT_GUI_LOCAL_SMTP_SERVER)) {
@@ -73,7 +73,8 @@ public class TestSenderUtility {
   }
 
   public static TestSenderUtility createAndSendMessageToWiserSmtp(BMailMimeMessage message) throws MessagingException, GeneralSecurityException, IOException {
-    return TestSenderUtility.create()
+    return TestSenderUtility
+      .create()
       .setMessage(message)
       .sendMessageToLocalWiserSmtpServer();
   }
@@ -120,11 +121,15 @@ public class TestSenderUtility {
    */
   public TestSenderUtility sendToLocalSmtpIfAvailable() throws MessagingException {
 
-
+    // Not null if port is running
     if (paperCutLocalSmtpServer == null) {
       return this;
     }
-    paperCutLocalSmtpServer.sendMessage(message);
+    try {
+      paperCutLocalSmtpServer.sendMessage(message);
+    } catch (MessagingException e) {
+      throw new RuntimeException(e);
+    }
     return this;
 
   }
@@ -135,7 +140,7 @@ public class TestSenderUtility {
   @SuppressWarnings("UnusedReturnValue")
   public TestSenderUtility sendToDotSmtpIfAvailable() throws MessagingException {
 
-    if (dotSmtpServer == null) {
+    if (envSmtpServer == null) {
       return this;
     }
 
@@ -143,13 +148,13 @@ public class TestSenderUtility {
       .setFrom(osEnvs.get("SMTP_FROM"))
       .setTo(osEnvs.get("SMTP_TO"));
 
-    dotSmtpServer.sendMessage(localMessage);
+    envSmtpServer.sendMessage(localMessage);
 
     return this;
 
   }
 
-    public BMailSmtpClient getPaperCutSmtpServer() {
+  public BMailSmtpClient getPaperCutSmtpServer() {
     return this.paperCutLocalSmtpServer;
   }
 
@@ -157,8 +162,8 @@ public class TestSenderUtility {
     return this.wiser;
   }
 
-  public BMailSmtpClient getDotSmtpServer() {
-    return this.dotSmtpServer;
+  public BMailSmtpClient getEnvSmtpServer() {
+    return this.envSmtpServer;
   }
 
 }

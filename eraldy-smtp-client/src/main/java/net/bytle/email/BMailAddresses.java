@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a list
+ * Represents a valid list of email addresses found in an email
  */
 public class BMailAddresses {
   public static final String SEP = ";";

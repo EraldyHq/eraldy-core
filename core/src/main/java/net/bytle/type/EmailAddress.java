@@ -1,5 +1,8 @@
 package net.bytle.type;
 
+import com.sanctionco.jmail.EmailValidator;
+import com.sanctionco.jmail.InvalidEmailException;
+import com.sanctionco.jmail.JMail;
 import net.bytle.exception.CastException;
 import net.bytle.exception.InternalException;
 
@@ -16,7 +19,8 @@ import java.util.Objects;
  * Why, do we have extracted the email address.
  * It's difficult to not create a circular dependencies between DNS and the Smtp Package. ie
  * * There is an email in dmarc, we need it then in DNS to verify that this an email.
- * * And if the smtp package does need it also.
+ * * And if the smtp package does need it also
+ * We may also use a third email package such as Vertx in place of SimpleEmail
  */
 public class EmailAddress {
 
@@ -39,9 +43,15 @@ public class EmailAddress {
    * And you can reach john at john@gmail.com
    */
   private final String localPartBox;
+  private final static EmailValidator validator;
 
+  static {
+    validator = JMail.strictValidator()
+      .requireTopLevelDomain();
+  }
 
   public EmailAddress(String mailAddress) throws EmailCastException {
+
     if (mailAddress == null) {
       throw new InternalException("The email value should not be null");
     }
@@ -54,7 +64,7 @@ public class EmailAddress {
     try {
       this.domain = DnsName.create(absoluteName);
     } catch (CastException e) {
-      throw new EmailCastException("The domain (" + absoluteName + ")is not valid (");
+      throw new EmailCastException("The domain (" + absoluteName + ") is not valid (");
     }
     this.localPart = split[0];
 
@@ -65,19 +75,24 @@ public class EmailAddress {
     } else {
       this.localPartBox = this.localPart;
     }
-
-
     /**
      * Basic validation
-     * user@[10.9.8.7] and user@localhost are also valid
+     * user@[10.9.8.7] and user@localhost are also valid,
      * but we don't accept them
      */
     if (this.domain.toStringWithoutRoot().equals("localhost")) {
       throw new EmailCastException("The domain should not be localhost");
     }
-
     if (this.domain.toStringWithoutRoot().startsWith("[")) {
       throw new EmailCastException("The domain should not start with a [");
+    }
+    if (this.domain.getLabels().size() == 1) {
+      throw new EmailCastException("The domain should have a tld");
+    }
+    try {
+      validator.enforceValid(mailAddress);
+    } catch (InvalidEmailException e) {
+      throw new EmailCastException(e);
     }
 
   }
@@ -91,11 +106,11 @@ public class EmailAddress {
    * we retrieve in a database an email that we already have validated on write
    */
   public static EmailAddress ofFailSafe(String emailAddress) {
-      try {
-          return EmailAddress.of(emailAddress);
-      } catch (EmailCastException e) {
-          throw new RuntimeException("The email address is not valid ("+emailAddress+"). Error: "+e.getMessage(),e);
-      }
+    try {
+      return EmailAddress.of(emailAddress);
+    } catch (EmailCastException e) {
+      throw new RuntimeException("The email address is not valid (" + emailAddress + "). Error: " + e.getMessage(), e);
+    }
   }
 
   @Override

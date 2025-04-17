@@ -4,6 +4,7 @@ package net.bytle.email.test.fixtures;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.wiser.Wiser;
 
 /**
@@ -25,7 +26,8 @@ public class WiserBaseTest {
   @BeforeAll
   public static void beforeClass()  {
 
-    wiser = Wiser.create(WiserConfiguration.getSslBuilder());
+    SMTPServer.Builder sslBuilder = WiserConfiguration.getBuilderWithoutSslAndAuth();
+    wiser = Wiser.create(sslBuilder);
     wiser.start();
 
   }

@@ -33,7 +33,7 @@ public class BMailSmtpClient {
   private final BMailSmtpClient.config config;
 
 
-  public BMailSmtpClient(config config) {
+  private BMailSmtpClient(config config) {
     this.config = config;
     Properties mailProps = this.getSmtpTransportProperties();
     Authenticator authenticator = null;
@@ -108,7 +108,7 @@ public class BMailSmtpClient {
      * Config by Protocol
      */
     String smtpProtocolConfigurationPrefix;
-    if (this.config.isDirectTlsConnection) {
+    if (this.isExplicitTlsSmtpsConnection()) {
 
       // mail.transport.protocol specifies the default message transport protocol
       smtpServerProps.put(MAIL_PROPERTY_PREFIX + ".transport.protocol", BMailSmtpProtocol.SMTPS.toString());
@@ -119,6 +119,7 @@ public class BMailSmtpClient {
        * will use the default transport protocol, which remains "smtp" ie {@link com.sun.mail.smtp.SMTPTransport}
        * To enable SMTP connections over SSL, set the "mail.smtp.ssl.enable" property to "true".
        * It will use the {@link com.sun.mail.smtp.SMTPSSLTransport}
+       * implicit SSL directly after TCP connect (port 465)
        */
       smtpServerProps.put(MAIL_SMTP_PROPERTY_PREFIX + ".ssl.enable", true);
 
@@ -186,6 +187,15 @@ public class BMailSmtpClient {
       smtpServerProps.put(smtpProtocolConfigurationPrefix + ".from", bounceAddress.getAddress());
     }
     return smtpServerProps;
+
+  }
+
+  /**
+   * Should it be a smtps connection direct
+   */
+  public boolean isExplicitTlsSmtpsConnection() {
+
+    return this.config.isExplicitSSlConnection;
 
   }
 
@@ -271,14 +281,14 @@ public class BMailSmtpClient {
     }
   }
 
-  public boolean isDirectTlsConnection() {
-    return this.config.isDirectTlsConnection;
+  public int getPort() {
+    return this.config.port;
   }
 
 
   public static class config {
 
-    public Boolean isDirectTlsConnection = null;
+
     int port = 25;
     String smtpHost = "localhost";
     String username;
@@ -290,6 +300,7 @@ public class BMailSmtpClient {
     Boolean trustAll = false;
     private BMailInternetAddress sender;
     private int connectionTimeout = 5000;
+    private boolean isExplicitSSlConnection = false;
 
     public config() {
 
@@ -306,6 +317,9 @@ public class BMailSmtpClient {
 
     public config setPort(int port) {
       this.port = port;
+      if(this.port == 465){
+        this.isExplicitSSlConnection = true;
+      }
       return this;
     }
 
@@ -314,10 +328,7 @@ public class BMailSmtpClient {
       return this;
     }
 
-    public config isSslConnection(boolean isSsl) {
-      this.isDirectTlsConnection = isSsl;
-      return this;
-    }
+
 
     public config setPassword(String password) {
       this.password = password;
@@ -361,21 +372,6 @@ public class BMailSmtpClient {
 
     public BMailSmtpClient build() {
 
-      /*
-       * Default SSL by port
-       */
-      if (this.isDirectTlsConnection == null) {
-        this.isDirectTlsConnection = (this.port == PORT_465);
-      }
-      /*
-       * Default StartTls by port
-       */
-      if (this.startTls == null) {
-        if (!isDirectTlsConnection) {
-          this.startTls = BMailStartTls.ENABLE;
-        }
-      }
-
       return new BMailSmtpClient(this);
 
     }
@@ -392,6 +388,14 @@ public class BMailSmtpClient {
      */
     public BMailSmtpClient.config setConnectionTimeout(int connectionTimeout) {
       this.connectionTimeout = connectionTimeout;
+      return this;
+    }
+
+    /**
+     * The connection should be in ssl from the start
+     */
+    public config setEnableTls(boolean isSsl) {
+      this.isExplicitSSlConnection = isSsl;
       return this;
     }
   }

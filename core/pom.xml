@@ -41,6 +41,11 @@
       <groupId>org.ini4j</groupId>
       <artifactId>ini4j</artifactId>
     </dependency>
+    <!-- Email Validation  -->
+    <dependency>
+      <groupId>com.sanctionco.jmail</groupId>
+      <artifactId>jmail</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-csv</artifactId>

@@ -725,7 +725,11 @@ public class Fs {
 
   }
 
+
   public static Path getUserDesktop() {
+    // Mac OS X: /Users/username/Desktop.
+    // Windows: C:/Users/username/Desktop.
+    // Linux: /home/username/Desktop.
     return Fs.getUserHome()
       .resolve("Desktop");
   }

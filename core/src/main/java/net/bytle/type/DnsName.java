@@ -38,7 +38,6 @@ public class DnsName {
   }
 
   /**
-   *
    * @param absoluteName - an absolute name with or without the root dot (We add it)
    * @return a DNS Name
    * @throws DnsCastException if the name is not valid
@@ -170,7 +169,11 @@ public class DnsName {
   public List<String> getLabels() {
     List<String> labels = new ArrayList<>();
     for (int i = 0; i < this.xBillDnsName.labels(); i++) {
-      labels.add(this.xBillDnsName.getLabelString(i));
+      String labelString = this.xBillDnsName.getLabelString(i);
+      if (labelString.isEmpty()) {
+        continue;
+      }
+      labels.add(labelString);
     }
     return labels;
   }

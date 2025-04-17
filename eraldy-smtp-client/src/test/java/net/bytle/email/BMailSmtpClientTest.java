@@ -64,7 +64,7 @@ public class BMailSmtpClientTest extends WiserBaseTest {
   @Test()
   public void ping() throws GeneralSecurityException, IOException, MessagingException {
     BMailSmtpClient dotSmtpServer = TestSenderUtility.create()
-      .getDotSmtpServer();
+      .getEnvSmtpServer();
     if(dotSmtpServer!=null){
       dotSmtpServer.pingHello();
     }

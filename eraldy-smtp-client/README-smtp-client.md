@@ -2,12 +2,8 @@
 
 ## About
 
-A library to send an email and create template that wraps:
-  * SimpleJavaMail
-  * gmail API (client credentials are in the resources)
+A library to send an email and create template that wraps [SimpleJavaMail]( http://www.simplejavamail.org/)
 
-Jakarta Mail is only a test runtime dependency (ie gradle api) and is not added in the path
-because every web framework has its own email module (ie vertx has a non-blocking email module for instance)
 
 ## Jakarta
 
@@ -15,14 +11,18 @@ Dependencies: Jakarta the new mail api needs Angus SMTPTransport
 ie `com.sun.mail.smtp.SMTPTransport` is now `org.eclipse.angus.mail.smtp.SMTPTransport`
 See https://eclipse-ee4j.github.io/angus-mail/
 
+Jakarta Mail is only a test runtime dependency (ie gradle api) and is not added in the path
+because every web framework has its own email module (ie vertx has a non-blocking email module for instance)
+
+
 ## Template
 
-There is a collection of template in the resources directory.
+There is a collection of template in the resource directory.
 
 
 # Test
 
-We are using [Wiser](https://github.com/voodoodyne/subethasmtp/blob/master/src/main/java/org/subethamail/wiser/Wiser.java)
+We are using [Wiser](https://github.com/davidmoten/subethasmtp/tree/master)
 
 It starts a fake SMTP server and let us get the email back.
 
@@ -35,5 +35,4 @@ For more information on email test, see [How to test email](https://datacadamia.
 ## Note
 ### Other Library
 
-  * http://www.simplejavamail.org/
   * https://commons.apache.org/proper/commons-email/

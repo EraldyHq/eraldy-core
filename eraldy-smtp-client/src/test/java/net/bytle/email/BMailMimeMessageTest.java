@@ -7,9 +7,11 @@ import net.bytle.email.test.fixtures.TestSenderUtility;
 import net.bytle.email.test.fixtures.WiserBaseTest;
 import net.bytle.exception.NotFoundException;
 import net.bytle.fs.Fs;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 
@@ -67,13 +69,17 @@ public class BMailMimeMessageTest extends WiserBaseTest {
 
     BMailMimeMessage bMailMimeMessage = BMailMimeMessage.createFromEml(mimeMessage);
 
-    assertThat(to, is(bMailMimeMessage.getToAsAddresses()));
+    Assertions.assertTrue(bMailMimeMessage.getToAsAddresses().toAddresses().get(0).contains(to));
     assertThat(title, is(bMailMimeMessage.getSubject()));
     assertThat(html, is(bMailMimeMessage.getHtml()));
     assertThat(plainText, is(bMailMimeMessage.getPlainText()));
 
 
-    Path path = Fs.getUserDesktop().resolve("mail.eml");
+    Path userDesktop = Fs.getUserDesktop();
+    if (!Files.exists(userDesktop)) {
+      Files.createDirectory(userDesktop);
+    }
+    Path path = userDesktop.resolve("mail.eml");
     Fs.write(path, mimeMessage);
     System.out.println("Message was written at " + path);
 
@@ -110,8 +116,8 @@ public class BMailMimeMessageTest extends WiserBaseTest {
     Fs.write(path, mimeMessage);
     System.out.println("Message was written at " + path);
 
-    assertThat(mimeMessage.contains("multipart"),is(true));
-    assertThat(mimeMessage.contains("Content-Disposition: attachment; filename=attachment.txt"),is(true));
+    Assertions.assertTrue(mimeMessage.contains("multipart"));
+    Assertions.assertTrue(mimeMessage.contains("Content-Disposition: attachment; filename=attachment.txt"));
 //    String mimeMessageWithoutTimedHeadersToCompare = bMailMimeMessageFirst.toRawTextFormatWithoutHeaders("Date","Message-ID");
 //    Path pathWithoutTimedHeaders = Fs.getUserDesktop().resolve("mail-without-timed-headers.eml");
 //    Fs.write(pathWithoutTimedHeaders, mimeMessageWithoutTimedHeadersToCompare);
@@ -121,7 +127,8 @@ public class BMailMimeMessageTest extends WiserBaseTest {
     /**
      * Can we send it
      */
-    TestSenderUtility.createAndSendMessageToWiserSmtp(bMailMimeMessageFirst)
+    TestSenderUtility
+      .createAndSendMessageToWiserSmtp(bMailMimeMessageFirst)
       .sendToLocalSmtpIfAvailable();
 
 

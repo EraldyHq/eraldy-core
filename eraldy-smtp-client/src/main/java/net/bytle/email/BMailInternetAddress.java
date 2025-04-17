@@ -35,6 +35,7 @@ public class BMailInternetAddress {
   private final InternetAddress internetAddress;
 
   public static BMailInternetAddress of(String email, String name) throws AddressException {
+
     if (email == null) {
       throw new AddressException("The email given was null");
     }
@@ -123,8 +124,8 @@ public class BMailInternetAddress {
 
   public static BMailInternetAddress of(String email) throws AddressException {
 
-
     return of(email, null);
+
   }
 
   public static BMailInternetAddress of(InternetAddress internetAddress) throws AddressException {
