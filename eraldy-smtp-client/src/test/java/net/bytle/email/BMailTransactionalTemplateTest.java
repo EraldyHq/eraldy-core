@@ -41,6 +41,7 @@ public class BMailTransactionalTemplateTest extends WiserBaseTest {
 
     BMailMimeMessage.builder message = BMailMimeMessage
       .createFromBuilder()
+      .setTo("foo@bar.com")
       .setSubject(subject)
       .setBodyHtml(html);
     if (text != null) {

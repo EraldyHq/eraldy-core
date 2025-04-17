@@ -251,16 +251,20 @@ public class BMailMimeMessage {
 
   public BMailInternetAddress getFrom() {
 
-      try {
-          return BMailInternetAddress.of(getFromInternetAddress());
-      } catch (AddressException e) {
-          throw new RuntimeException(e);
-      }
+    try {
+      return BMailInternetAddress.of(getFromInternetAddress());
+    } catch (AddressException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
   public String getFromAsString() {
-    return getFromInternetAddress().toString();
+    InternetAddress fromInternetAddress = getFromInternetAddress();
+    if (fromInternetAddress == null) {
+      return null;
+    }
+    return fromInternetAddress.toString();
   }
 
 
