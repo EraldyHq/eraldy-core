@@ -2,8 +2,8 @@ package net.bytle.type;
 
 
 import net.bytle.exception.IllegalStructure;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
@@ -19,15 +19,15 @@ public class UriEnhancedTest {
       .setHost("example.com")
       .addQueryProperty(uriKey, uriValue);
 
-    Assert.assertEquals("https://example.com?uri=https://example.com", uriEnhanced.toUri().toString());
+    Assertions.assertEquals("https://example.com?uri=https://example.com", uriEnhanced.toUri().toString());
 
     String urlString = uriEnhanced.toUrl().toString();
-    Assert.assertEquals("https://example.com?uri=https://example.com", urlString);
+    Assertions.assertEquals("https://example.com?uri=https://example.com", urlString);
 
     String actualUriValue = UriEnhanced.createFromString(urlString)
       .getQueryProperty(uriKey);
 
-    Assert.assertEquals(uriValue, actualUriValue);
+    Assertions.assertEquals(uriValue, actualUriValue);
 
 
   }
@@ -37,7 +37,7 @@ public class UriEnhancedTest {
     // the symbol | in the query is illegal, need to be encoded
     UriEnhanced uriEnhanced = UriEnhanced
             .createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=json&prop=description|categories");
-    Assert.assertEquals("description|categories", uriEnhanced.getQueryProperty("prop"));
+    Assertions.assertEquals("description|categories", uriEnhanced.getQueryProperty("prop"));
   }
 
   /**
@@ -48,6 +48,20 @@ public class UriEnhancedTest {
     // the symbol | in the query is illegal, need to be encoded
     URI uriEnhanced = UriEnhanced
             .createFromString("file:///my/path").toUri();
-    Assert.assertEquals("/my/path", uriEnhanced.getPath());
+    Assertions.assertEquals("/my/path", uriEnhanced.getPath());
   }
+
+  @Test
+  public void jdbcUri() throws IllegalStructure {
+    // the symbol | in the query is illegal, need to be encoded
+    String uriString = "jdbc:sqlite:////home/admin/.tabli/log.db";
+    URI uri = URI.create(uriString);
+    Assertions.assertEquals("jdbc", uri.getScheme());
+    Assertions.assertEquals("sqlite:////home/admin/.tabli/log.db", uri.getSchemeSpecificPart());
+    URI uriEnhanced = UriEnhanced
+      .createFromString(uriString).toUri();
+    Assertions.assertEquals("jdbc", uriEnhanced.getScheme());
+  }
+
+
 }
