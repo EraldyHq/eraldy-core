@@ -188,6 +188,9 @@ public class TestContainerWrapper {
     return container.isRunning();
   }
 
+  /**
+   * Note that Test Container Ryuk monitor and terminate Testcontainers containers on JVM exit
+   */
   public void stop() {
     container.stop();
   }
