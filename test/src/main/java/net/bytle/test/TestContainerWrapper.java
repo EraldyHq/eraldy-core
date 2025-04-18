@@ -17,11 +17,15 @@ import static net.bytle.os.Oss.MIN_PORT_NUMBER;
 /**
  * A wrapper around test container
  * * to implement the singleton container <a href="https://www.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers">documentation</a>
- * * to print the command so that the container is long lived
+ * * to print the command so that the container is long-lived
  * <p>
  * Features, if the port is not available:
  * * the container will not be started
  * * otherwise, it will be started and the docker command will be printed (in order to help the dev)
+ * <p>
+ * WaitingFor is not part of the api.
+ * You can also use the correspondent test container in the constructor
+ * that will have most of this default value.
  */
 public class TestContainerWrapper {
 
@@ -38,6 +42,11 @@ public class TestContainerWrapper {
     this.container = new GenericContainer<>(dockerImageName);
   }
 
+  /**
+   * By default, you should use this constructor as the pre-created container
+   * of test container have also defaults
+   * such as the WaitingFor conditions against logs to check if the container has started.
+   */
   @SuppressWarnings("unused")
   public TestContainerWrapper(String name, GenericContainer<?> container) {
     this.container = container;
