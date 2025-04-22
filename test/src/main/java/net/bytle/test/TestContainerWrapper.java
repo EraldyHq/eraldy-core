@@ -86,7 +86,7 @@ public class TestContainerWrapper {
     if (hostPort != null) {
       if (!Oss.portAvailable(hostPort)) {
         startContainer = false;
-        System.out.println("The port " + containerPort + " is already busy, the container will not start.");
+        System.out.println("The port " + hostPort + " is already busy, the container will not start.");
       } else {
         System.out.println("The port is available, the container will start");
       }
