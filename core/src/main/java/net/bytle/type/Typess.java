@@ -7,29 +7,31 @@ public class Typess {
 
 
   /**
-   * The number of element for data type
+   * The number of element for a data type
    * By default, {@link Long#MAX_VALUE}
-   * @param clazz
-   * @return
    */
-  public static  Long getMaxByClass(Class clazz) {
+  @SuppressWarnings("unused")
+  public static  Long getMaxByClass(Class<?> clazz) {
 
+
+    if (clazz.equals(BigInteger.class)){
+      /**
+       * From the doc
+       */
+      return (long) Math.pow(2, Integer.MAX_VALUE);
+    }
+    if (clazz.equals(Integer.class)){
+      return (long) Integer.MAX_VALUE;
+    }
+    if (clazz.equals(Short.class)){
+     return (long) Short.MAX_VALUE;
+    }
     /**
      * For the date, the {@link Date constructor} is based on a long
      * By default, no date will go so far,
      * this is then a good approximation
      */
-    long maxSize = Long.MAX_VALUE;
-    if (clazz.equals(BigInteger.class)){
-      /**
-       * From the doc
-       */
-      maxSize = (long) Math.pow(2, Integer.MAX_VALUE);
-    } else if (clazz.equals(Integer.class)){
-      maxSize = (long) Integer.MAX_VALUE;
-    } else if (clazz.equals(Short.class)){
-      maxSize = (long) Short.MAX_VALUE;
-    }
-    return maxSize;
+    return Long.MAX_VALUE;
+
   }
 }
