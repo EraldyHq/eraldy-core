@@ -3,6 +3,7 @@ package net.bytle.type;
 import net.bytle.log.Logs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -13,10 +14,7 @@ import java.util.stream.Collectors;
 public class KeyNormalizer {
 
 
-  /**
-   * The parts of the name normalized to lowercase in order to support Key equality
-   */
-  private final List<String> parts = new ArrayList<>();
+  private final String stringOrigin;
 
 
   /**
@@ -24,16 +22,46 @@ public class KeyNormalizer {
    */
   KeyNormalizer(String stringOrigin) {
 
+    this.stringOrigin = stringOrigin;
 
+  }
+
+  /**
+   * @param key - the name key to normalize
+   *            This normalizer accepts all cases.
+   *            It will split the key in words that are separated
+   *            by separators characters (not letter or digit)
+   *            by uppercase letter (if not preceded by another uppercase character to handle UPPER_SNAKE_CASE)
+   *            The words can then be printed/normalized into a {@link KeyCase}
+   */
+  public static KeyNormalizer create(Object key) {
+    return new KeyNormalizer(key.toString());
+  }
+
+
+  public String toCamelCase() {
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
+      .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
+      .collect(Collectors.joining());
+  }
+
+
+  /**
+   * @return the parts of a string in lowercase
+   */
+  private List<String> toParts(String s) {
+
+    List<String> parts = new ArrayList<>();
     StringBuilder currentWord = new StringBuilder();
-
     /*
      * To handle UPPER SNAKE CASE
      * such as UPPER_SNAKE_CASE
      * We split on a UPPER case character only if the previous character is not
      */
     boolean previousCharacterIsNotUpperCase = false;
-    for (char c : stringOrigin.toCharArray()) {
+    for (char c : s.toCharArray()) {
 
       // Separator (ie whitespace, comma, dollar, underscore, ...)
       boolean isCharacterSeparator = Character.isWhitespace(c) || !Character.isLetterOrDigit(c);
@@ -63,33 +91,16 @@ public class KeyNormalizer {
     if (currentWord.length() > 0) {
       parts.add(currentWord.toString().toLowerCase());
     }
-
-  }
-
-  /**
-   * @param key - the name key to normalize
-   *            This normalizer accepts all cases.
-   *            It will split the key in words that are separated
-   *            by separators characters (not letter or digit)
-   *            by uppercase letter (if not preceded by another uppercase character to handle UPPER_SNAKE_CASE)
-   *            The words can then be printed/normalized into a {@link KeyCase}
-   */
-  public static KeyNormalizer create(Object key) {
-    return new KeyNormalizer(key.toString());
-  }
-
-
-  public String toCamelCase() {
-    return this.parts.stream()
-      .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
-      .collect(Collectors.joining());
+    return parts;
   }
 
   /**
    * @return a name in event case. ie camel case with a space between words
    */
   public String toHandleCase() {
-    return this.parts.stream()
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
       .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
       .collect(Collectors.joining(" "));
   }
@@ -98,7 +109,19 @@ public class KeyNormalizer {
    * @return the words in a Snake Case (ie user_count)
    */
   public String toSnakeCase() {
-    return this.parts.stream()
+    return toSnakeCase(this.toParts(this.stringOrigin));
+  }
+
+  private String toSnakeCase(List<String> parts) {
+    return parts
+      .stream()
+      .map(String::toLowerCase)
+      .collect(Collectors.joining("_"));
+  }
+
+  private String toUpperSnakeCase(List<String> parts) {
+    return parts
+      .stream()
       .map(String::toLowerCase)
       .collect(Collectors.joining("_"));
   }
@@ -107,9 +130,7 @@ public class KeyNormalizer {
    * @return the words in a Upper Snake Case (ie USER_COUNT)
    */
   public String toUpperSnakeCase() {
-    return this.parts.stream()
-      .map(String::toLowerCase)
-      .collect(Collectors.joining("_"));
+    return toUpperSnakeCase(this.toParts(this.stringOrigin));
   }
 
   /**
@@ -119,7 +140,10 @@ public class KeyNormalizer {
    * The first character is transformed to `a` if it's not a latin letter
    */
   public String toSqlCase() {
-    String sqlName = this.toSnakeCase();
+    return toSnakeCase(this.toParts(this.toSqlName(this.stringOrigin)));
+  }
+
+  private String toSqlName(String sqlName) {
     char firstChar = sqlName.charAt(0);
     if (!String.valueOf(firstChar).matches("[a-zA-Z]")) {
       // throw new IllegalArgumentException("Name ("+sqlName+") is not valid for sql as it should start with a Latin letter (a-z, A-Z), not "+firstChar);
@@ -140,7 +164,13 @@ public class KeyNormalizer {
     }
 
     return sanitized.toString();
+  }
 
+  /**
+   * @return normalize a string to a valid SQL Name
+   */
+  public String toSqlName() {
+    return toSqlName(this.stringOrigin);
   }
 
   /**
@@ -179,7 +209,9 @@ public class KeyNormalizer {
    * Aeries of lowercase name separated by a minus (used by the command line and in HTML template variable)
    */
   public String toHyphenCase() {
-    return this.parts.stream()
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
       .map(String::toLowerCase)
       .collect(Collectors.joining("-"));
   }
@@ -210,12 +242,12 @@ public class KeyNormalizer {
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
     KeyNormalizer that = (KeyNormalizer) o;
-    return Objects.equals(parts, that.parts);
+    return Objects.equals(this.toParts(this.stringOrigin), that.toParts(that.stringOrigin));
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(parts);
+    return Objects.hashCode(this.toParts(this.stringOrigin));
   }
 
   /**
@@ -223,7 +255,9 @@ public class KeyNormalizer {
    * This is not posix compliant
    */
   public String toCliShortOptionName() {
-    return this.parts.stream()
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
       .map(s -> String.valueOf(s.charAt(0)).toLowerCase())
       .collect(Collectors.joining());
   }
