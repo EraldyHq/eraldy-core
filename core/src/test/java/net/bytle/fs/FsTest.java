@@ -1,9 +1,8 @@
 package net.bytle.fs;
 
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,49 +19,57 @@ public class FsTest {
 
     List<String> names = Fs.getDirectoryNamesInBetween(path, basePath);
     String[] strings = {"foo", "bar"};
-    Assert.assertEquals("There is two names", Arrays.asList(strings), names);
+    Assertions.assertEquals(Arrays.asList(strings), names, "There is two names");
   }
 
   /**
    * basePath does't share the same root with path
    */
-  @Test(expected = RuntimeException.class)
+  @Test()
   public void failGetDirectoryNamesInBetweenTest() {
 
     Path basePath = Paths.get("tmp");
     Path path = Paths.get("foo", "bar", "hello");
 
-    Fs.getDirectoryNamesInBetween(path, basePath);
+    Assertions.assertThrows(
+      RuntimeException.class,
+      () -> Fs.getDirectoryNamesInBetween(path, basePath)
+    );
 
   }
 
   /**
    * basePath should be path returns nothing
    */
-  @Test(expected = RuntimeException.class)
+  @Test()
   public void fail2GetDirectoryNamesInBetweenTest() {
 
     Path basePath = Paths.get("tmp");
     Path path = Paths.get("tmp", "foo", "bar", "hello");
 
-    Fs.getDirectoryNamesInBetween(basePath, path);
+    Assertions.assertThrows(
+      RuntimeException.class,
+      () -> Fs.getDirectoryNamesInBetween(basePath, path)
+    );
+
 
   }
 
   @Test
-  public void getPathUntilNameTest() {
+  public void getPathUntilNameTest() throws FileNotFoundException {
 
+    Path rootPath = Paths.get("src","test","resources","fs","foo");
     String nameToFound = "bar";
-    Path pathToFound = Paths.get("foo").resolve(nameToFound);
+    Path pathToFound = rootPath.resolve(nameToFound);
     Path leafPath = pathToFound.resolve("ni").resolve("co");
 
     Path foundPath = Fs.getPathUntilName(leafPath, nameToFound);
-    Assert.assertNotNull("The path should have been found ", foundPath);
-    Assert.assertEquals("The paths should be the same", pathToFound, foundPath);
+    Assertions.assertNotNull(foundPath, "The path should have been found ");
+    Assertions.assertEquals(pathToFound, foundPath, "The paths should be the same");
 
     foundPath = Fs.getPathUntilName(leafPath.toAbsolutePath(), nameToFound);
-    Assert.assertNotNull("The absolute path should have been found ", foundPath);
-    Assert.assertEquals("The absolute paths should be the same", pathToFound.toAbsolutePath(), foundPath);
+    Assertions.assertNotNull(foundPath, "The absolute path should have been found ");
+    Assertions.assertEquals(pathToFound.toAbsolutePath(), foundPath, "The absolute paths should be the same");
 
   }
 
@@ -76,7 +83,7 @@ public class FsTest {
     Path fileContext = tempDirectory.resolve("directory").resolve("long").resolve("inthedirectory");
 
     Path closest = Fs.closest(fileContext, name);
-    Assert.assertEquals(closerFileToFind.toAbsolutePath(), closest);
+    Assertions.assertEquals(closerFileToFind.toAbsolutePath(), closest);
 
   }
 

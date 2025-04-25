@@ -278,6 +278,7 @@ public class Fs {
   /**
    * Create a file and all subdirectories if needed
    * It fails if the file exists
+   *
    * @param path the file to create
    */
   public static void createEmptyFile(Path path) {
@@ -292,6 +293,7 @@ public class Fs {
 
   /**
    * Create an empty file if not exists
+   *
    * @param path the file to create
    */
   public static void createEmptyFileIfNotExist(Path path) {
@@ -603,31 +605,27 @@ public class Fs {
    * @param name - a name
    * @return the path until a certain name was found (name included)
    */
-  public static Path getPathUntilName(Path path, String name) {
+  public static Path getPathUntilName(Path path, String name) throws FileNotFoundException {
 
-    Path pathUntil = null;
-    boolean found = false;
-    for (int i = 0; i < path.getNameCount(); i++) {
-      Path subName = path.getName(i);
-      if (pathUntil == null) {
-        if (path.isAbsolute()) {
-          pathUntil = path.getRoot().resolve(subName);
-        } else {
-          pathUntil = subName;
-        }
-      } else {
-        pathUntil = pathUntil.resolve(subName);
-      }
-      if (subName.getFileName().toString().equals(name)) {
-        found = true;
-        break;
-      }
+    if (!path.isAbsolute()) {
+      // mandatory because getParent is a meta operation
+      // parent of the current directory '.' is null
+      path = path.toAbsolutePath();
     }
-    if (found) {
+    Path pathUntil = path.resolve(name);
+    if (Files.exists(pathUntil)) {
       return pathUntil;
-    } else {
-      return null;
     }
+    Path parent = path.getParent();
+    while (parent != null) {
+      pathUntil = parent.resolve(name);
+      if (Files.exists(pathUntil)) {
+        return pathUntil;
+      }
+      parent = parent.getParent();
+    }
+    throw new FileNotFoundException();
+
   }
 
   /**

@@ -1,7 +1,9 @@
 package net.bytle.java;
 
 import net.bytle.exception.NotFoundException;
+import net.bytle.fs.Fs;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -18,13 +20,12 @@ import java.util.Objects;
 public class Javas {
 
   /**
-   *
    * @param clazz - the class where the resource is collocated
-   * @param name - the name (starting with a /) example: /pipeline/email_record_run.yml
+   * @param name  - the name (starting with a /) example: /pipeline/email_record_run.yml
    */
   public static Path getResourcePath(Class<?> clazz, String name) throws NotFoundException {
     URL resource = clazz.getResource(name);
-    if(resource==null){
+    if (resource == null) {
       throw new NotFoundException("The resource was not found");
     }
     return getFilePathFromUrl(resource);
@@ -33,9 +34,9 @@ public class Javas {
   /**
    * Same as {@link #getResourcePath(Class, String)} without exception
    */
-  public static Path getResourcePathSafe(Class<?> clazz, String name)  {
+  public static Path getResourcePathSafe(Class<?> clazz, String name) {
     try {
-      return getResourcePath(clazz,name);
+      return getResourcePath(clazz, name);
     } catch (NotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -113,7 +114,20 @@ public class Javas {
    */
   public static Path getBuildDirectory(Class<?> clazz) throws NotDirectoryException {
 
-    Path sourceCodePath = Javas.getSourceCodePath(clazz);
+
+    URL url = Objects.requireNonNull(clazz.getResource(clazz.getSimpleName() + ".class"));
+    if (url.getProtocol().equals("jar")) {
+      throw new NotDirectoryException("No build path can be found as the class (" + clazz + ") is in a jar (" + url + ")");
+    }
+
+    Path sourceCodePath;
+    try {
+      sourceCodePath = Paths.get(url.toURI());
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+
+
     List<String> buildPathNames = Arrays.asList(
       "build", // gradle
       "out", // idea
@@ -121,9 +135,10 @@ public class Javas {
     );
 
     for (String buildPathName : buildPathNames) {
-      Path buildPath = JavaEnvs.getPathUntilName(sourceCodePath.getParent(), buildPathName);
-      if (buildPath != null) {
-        return buildPath;
+      try {
+        return Fs.getPathUntilName(sourceCodePath.getParent(), buildPathName);
+      } catch (FileNotFoundException e) {
+        // not found
       }
     }
 

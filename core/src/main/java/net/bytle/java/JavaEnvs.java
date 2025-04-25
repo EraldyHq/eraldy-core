@@ -87,36 +87,6 @@ public class JavaEnvs {
 
     }
 
-    /**
-     * This function is not in the file system module to avoid circular dependency
-     */
-    public static Path getPathUntilName(Path path, String name) {
-
-        Path pathUntil = null;
-        boolean found = false;
-        for (int i = 0; i < path.getNameCount(); i++) {
-            Path subName = path.getName(i);
-            if (pathUntil == null) {
-                if (path.isAbsolute()) {
-                    pathUntil = path.getRoot().resolve(subName);
-                } else {
-                    pathUntil = subName;
-                }
-            } else {
-                pathUntil = pathUntil.resolve(subName);
-            }
-            if (subName.getFileName().toString().equals(name)) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            return pathUntil;
-        } else {
-            return null;
-        }
-    }
-
     @SuppressWarnings("ConstantValue")
     public static boolean isJUnitTest() {
         if (IS_TEST != null) {
