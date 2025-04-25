@@ -19,33 +19,36 @@ package net.bytle.type;
  */
 public interface MediaType {
 
-  public static final String TEXT_TYPE = "text";
+  String TEXT_TYPE = "text";
 
   /**
-   *
    * @return the format (plain, jpeg, mpeg, ...)
+   * This is generally also the file extension
    */
   String getSubType();
 
   /**
-   *
    * @return the top-level type (text, image, video, audio, application)
+   * This is a file type category
    */
   String getType();
 
   /**
-   *
    * @return true if this is a container of object (directory, schema, catalog, ...)
+   * ie an object without any content
    */
   boolean isContainer();
 
   /**
-   *
-   * @return the file extension if any
+   * @return the file extension (by default the {@link #getSubType() subtype}
    */
   String getExtension();
 
 
+  /**
+   * Utility
+   * @return true if this media type is a text file
+   */
   default Boolean isText() {
 
     return getType().equals(TEXT_TYPE);
