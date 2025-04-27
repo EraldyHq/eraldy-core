@@ -6,14 +6,11 @@ public class Maps {
 
   /**
    * Search the map for a key where the case does not matter
-   *
-   * @param properties
-   * @param key
-   * @return an object
+   * @return an object or null if not found
    */
   public static Object getPropertyCaseIndependent(Map<String, Object> properties, String key) {
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
-      if (key.toLowerCase().equals(entry.getKey().toLowerCase())) {
+      if (KeyNormalizer.create(key).equals(KeyNormalizer.create(entry.getKey()))) {
         return entry.getValue();
       }
     }
@@ -51,7 +48,7 @@ public class Maps {
     /**
      * A tree map sort the map naturally by key
      */
-    if (map instanceof TreeMap){
+    if (map instanceof TreeMap) {
       return map;
     } else {
       return new TreeMap<>(map);
@@ -77,7 +74,7 @@ public class Maps {
     return map;
   }
 
-  public static <K,V> Properties toProperties(Map<K, V> mapProperties) {
+  public static <K, V> Properties toProperties(Map<K, V> mapProperties) {
     Properties properties = new Properties();
     properties.putAll(mapProperties);
     return properties;

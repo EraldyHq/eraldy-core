@@ -13,22 +13,25 @@ public class MapKeyIndependentTest {
 
     MapKeyIndependent<Integer> map = new MapKeyIndependent<>();
     String lowercase = "smtp_to";
-    map.put(lowercase,1);
+    map.put(lowercase, 1);
     Assert.assertEquals(1, map.size());
     String uppercase = "SMTP_TO";
-    map.put(uppercase,1);
+    map.put(uppercase, 1);
+    Assert.assertEquals(1, map.size());
+    String javaCase = "smtpTo";
+    map.put(javaCase, 1);
     Assert.assertEquals(1, map.size());
     Assert.assertEquals((Integer) 1, map.get(uppercase));
     Assert.assertEquals((Integer) 1, map.get(lowercase));
 
     Map.Entry<String, Integer> entry = map.entrySet().iterator().next();
-    Assert.assertEquals(uppercase, entry.getKey());
+    Assert.assertEquals(javaCase, entry.getKey());
 
     /**
      * Put all
      */
     Map<String, Integer> collection = new HashMap<>();
-    collection.put(lowercase,1);
+    collection.put(lowercase, 1);
     map.putAll(collection);
     Assert.assertEquals(1, map.size());
 

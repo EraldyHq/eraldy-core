@@ -1,9 +1,6 @@
 package net.bytle.type;
 
-import net.bytle.log.Logs;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -16,6 +13,7 @@ public class KeyNormalizer {
 
   private final String stringOrigin;
 
+  private List<String> parts = new ArrayList<>();
 
   /**
    * @param stringOrigin - the string to normalize
@@ -38,7 +36,9 @@ public class KeyNormalizer {
     return new KeyNormalizer(key.toString());
   }
 
-
+  /**
+   * @return the words in a camel case (ie UserCount)
+   */
   public String toCamelCase() {
     return this
       .toParts(this.stringOrigin)
@@ -50,10 +50,15 @@ public class KeyNormalizer {
 
   /**
    * @return the parts of a string in lowercase
+   * @param s - normally the {@link #stringOrigin} but it may be first process to
+   *          normalize the string to a valid name before. Example: sql
    */
   private List<String> toParts(String s) {
 
-    List<String> parts = new ArrayList<>();
+    if (!parts.isEmpty()) {
+      return parts;
+    }
+
     StringBuilder currentWord = new StringBuilder();
     /*
      * To handle UPPER SNAKE CASE
@@ -61,6 +66,7 @@ public class KeyNormalizer {
      * We split on a UPPER case character only if the previous character is not
      */
     boolean previousCharacterIsNotUpperCase = false;
+
     for (char c : s.toCharArray()) {
 
       // Separator (ie whitespace, comma, dollar, underscore, ...)
@@ -140,7 +146,7 @@ public class KeyNormalizer {
    * The first character is transformed to `a` if it's not a latin letter
    */
   public String toSqlCase() {
-    return toSnakeCase(this.toParts(this.toSqlName(this.stringOrigin)));
+    return toSnakeCase(this.toParts(this.toSqlName()));
   }
 
   private String toSqlName(String sqlName) {

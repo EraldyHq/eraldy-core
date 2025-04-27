@@ -17,8 +17,14 @@ import java.util.*;
  */
 public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<String, V> {
 
-  Map<String, String> mapKey = new HashMap<>();
+  /**
+   * A map of normalized key to natural key
+   */
+  Map<KeyNormalizer, String> normalizedToNormalKeyMap = new HashMap<>();
 
+  /**
+   * The original map
+   */
   Map<String, V> map = new HashMap<>();
 
   public static <V> MapKeyIndependent<V> createFrom(Map<?, ?> map, Class<V> classKey) {
@@ -45,7 +51,7 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
   @Override
   public boolean containsKey(Object key) {
     String normalizedKey = Key.toNormalizedKey(key.toString());
-    return mapKey.containsKey(normalizedKey);
+    return normalizedToNormalKeyMap.containsKey(normalizedKey);
   }
 
   @Override
@@ -55,8 +61,8 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
 
   @Override
   public V get(Object key) {
-    String normalizedKey = Key.toNormalizedKey(key.toString());
-    String naturalKey = mapKey.get(normalizedKey);
+    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
+    String naturalKey = normalizedToNormalKeyMap.get(normalizedKey);
     if (naturalKey == null) {
       return null;
     }
@@ -65,13 +71,13 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
 
   @Override
   public V put(String key, V value) {
-    String normalizedKey = Key.toNormalizedKey(key);
-    String naturalKey = mapKey.get(normalizedKey);
+    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
+    String naturalKey = normalizedToNormalKeyMap.get(normalizedKey);
     V oldValue = null;
     if (naturalKey != null) {
       oldValue = remove(key);
     }
-    mapKey.put(normalizedKey, key);
+    normalizedToNormalKeyMap.put(normalizedKey, key);
     map.put(key, value);
     return oldValue;
 
@@ -80,11 +86,12 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
 
   @Override
   public V remove(Object key) {
-    String normalizedKey = Key.toNormalizedKey(key.toString());
-    String naturalKey = mapKey.remove(normalizedKey);
+    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
+    String naturalKey = normalizedToNormalKeyMap.remove(normalizedKey);
     return map.remove(naturalKey);
 
   }
+
 
   @Override
   public void putAll(Map<? extends String, ? extends V> m) {
@@ -96,8 +103,9 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
   @Override
   public void clear() {
     map.clear();
-    mapKey.clear();
+    normalizedToNormalKeyMap.clear();
   }
+
 
   @Override
   public Set<String> keySet() {
