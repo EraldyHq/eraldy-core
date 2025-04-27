@@ -268,4 +268,11 @@ public class KeyNormalizer {
       .collect(Collectors.joining());
   }
 
+  /**
+   * @return the words, parts of the name in lowercase to implement your own case
+   */
+  public List<String> getParts() {
+    return toParts(this.stringOrigin);
+  }
+
 }

@@ -69,6 +69,15 @@ public class Casts {
 
   }
 
+  public static <E extends Attribute<?>> E castToAttribute(Object sourceObject, Set<E> attributes) throws CastException {
+    for (E attribute : attributes) {
+      if (KeyNormalizer.create(sourceObject.toString()).equals(attribute.getNormalizedName())) {
+        return attribute;
+      }
+    }
+    throw new CastException();
+  }
+
   /**
    * @param sourceObject - the object to cast
    * @param targetClass  - the class to cast
@@ -579,4 +588,6 @@ public class Casts {
     return stringBuilder.toString();
 
   }
+
+
 }

@@ -1,28 +1,25 @@
 package net.bytle.type;
 
 /**
- * An interface for an attribute that is used normally against an enum
+ * An interface for an attribute.
+ * Every attribute should be created with {@link AttributeAbs}
+ * so that the equality function works
  * <p>
- * <p>
- * attribute and not property because the product is called `tabulify`
+ * Attribute and not property because the product is called `tabulify`
+ * <p></p>
+ *
  */
-public interface Attribute {
+public interface Attribute<T> {
 
 
   /**
-   * They key is the to string function
    *
-   * This key is normalized {@link Key#toNormalizedKey(String)} (that is not uppercase, minus or underscore and trim dependent)
-   * to:
-   * - determine uniqueness
-   * - cast to an enum (ie {@link Casts#cast(Object, Class)}})
-   *
-   * The key published to the outside world is done with the {@link Key#toCamelCaseValue(String)}
-   * Public key are key that are going into external artifacts
-   * such as configuration file, console output or workflow file
-   *
+   * @return the name of an attribute
+   * ie the unique key
+   * This value is normalized with {@link KeyNormalizer} so that the case
+   * does not have any effect
    */
-
+  String getName();
 
   /**
    * @return the description of the attribute
@@ -35,14 +32,32 @@ public interface Attribute {
    * (that could/should implement {@link AttributeValue} to define a domain)
    * It's used to validate the value when a {@link Variable} is created
    */
-  Class<?> getValueClazz();
-
+  Class<T> getClazz();
 
   /**
    *
    * @return a fix default value
    */
-  Object getDefaultValue();
+  T getDefaultValue();
 
+  /**
+   * @return the {@link KeyNormalizer} so that the name can be output in any case wanted case
+   */
+  KeyNormalizer getNormalizedName();
+
+  /**
+   * @return if the {@link #getClazz()} is a list or map, the class of the value or null
+   */
+  Class<?> getValueClazz();
+
+  /**
+   * @return if the {@link #getClazz()} is a map, the class of the key
+   */
+  Class<?> getKeyClazz();
+
+  /**
+   * For sorting
+   */
+  int compareTo(Attribute<T> o);
 
 }

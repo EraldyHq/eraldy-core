@@ -11,14 +11,14 @@ public class AttributeTest {
   @Test
   public void setTest() {
 
-    Variable variable = Variable.createWithClass("blue", Origin.INTERNAL, String.class);
-    Variable variable2 = Variable.create(AttributeEnumForTest.BLUE, Origin.INTERNAL);
+    Variable<String> variable = Variable.createWithClass("blue", Origin.INTERNAL, String.class);
+    Variable<String> variable2 = Variable.create(AttributeEnumForTest.BLUE, Origin.INTERNAL);
     Assert.assertEquals(variable, variable2);
-    Set<Variable> attributes = new HashSet<>();
+    Set<Variable<String>> attributes = new HashSet<>();
     attributes.add(variable);
     attributes.add(variable2);
     Assert.assertEquals(1, attributes.size());
 
-
   }
+
 }

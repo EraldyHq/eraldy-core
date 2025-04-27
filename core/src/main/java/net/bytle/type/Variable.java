@@ -9,20 +9,23 @@ import java.util.function.Supplier;
 /**
  * A super set of a key pair value
  * adding functionality such:
- * * as encryption/decryption
- * * key case independence
+ * * as conf/secret via {@link #setOriginalValue(Object)} and {@link #setClearValue(Object)}
+ * * key case independence (via {@link Attribute} that uses a {@link KeyNormalizer})
  */
-public class Variable implements Comparable<Variable> {
+public class Variable<T> implements Comparable<Variable<T>> {
 
 
-  private Attribute attribute;
+  private Attribute<T> attribute;
 
+  /**
+   * Origin of the value
+   */
   private final Origin origin;
 
   /**
    * Raw/first value
    */
-  private Object originalValue;
+  private T originalValue;
 
   /**
    * A decrypted value by a passphrase
@@ -30,23 +33,17 @@ public class Variable implements Comparable<Variable> {
    * A value that was template processed or that was calculated by a function
    * if the value does not exist
    */
-  private Object clearValue;
+  private T clearValue;
 
-
-  /**
-   * The unique normalized identifier for a variable by name
-   */
-  private final String normalizedKey;
 
   /**
    * A function that gives the value
    */
-  private Supplier<?> valueProvider;
+  private Supplier<T> valueProvider;
 
-  private Variable(Attribute attribute, Origin origin) {
+  private Variable(Attribute<T> attribute, Origin origin) {
 
     this.attribute = attribute;
-    this.normalizedKey = KeyNormalizer.create(this.attribute.toString()).toCliLongOptionName();
     if (origin == null) {
       throw new IllegalArgumentException("The origin of the variable (" + this + ") was null, it should not");
     }
@@ -55,57 +52,55 @@ public class Variable implements Comparable<Variable> {
 
   }
 
-  public static Variable create(String name, Origin origin) {
+  public static Variable<String> create(String name, Origin origin) {
     return createWithClass(name, origin, String.class);
   }
 
 
-  public static Variable createWithClass(String name, Origin origin, Class<?> clazz) {
+  public static <T> Variable<T> createWithClass(String name, Origin origin, Class<T> clazz) {
     return createWithClassAndDefault(name, origin, clazz, null);
   }
 
-  public static Variable createWithClassAndDefault(String name, Origin origin, Class<?> clazz, Object defaultValue) {
+  public static <T> Variable<T> createWithClassAndDefault(String name, Origin origin, Class<T> clazz, T defaultValue) {
 
-    Attribute attributeFromName = new Attribute() {
+
+    Attribute<T> attributeFromName = new AttributeAbs<>() {
+
 
       @Override
-      public String getDescription() {
+      public String getName() {
         return name;
       }
 
       @Override
-      public Class<?> getValueClazz() {
+      public Class<T> getClazz() {
         return clazz;
       }
 
       @Override
-      public Object getDefaultValue() {
+      public T getDefaultValue() {
         return defaultValue;
-      }
-
-      @Override
-      public String toString() {
-        return name;
       }
 
     };
 
-    return new Variable(attributeFromName, origin);
+    return new Variable<>(attributeFromName, origin);
   }
 
-  public static Variable create(Attribute attribute, Origin origin) {
-    return new Variable(attribute, origin);
+  public static <T> Variable<T> create(Attribute<T> attribute, Origin origin) {
+
+    return new Variable<>(attribute, origin);
   }
 
   /**
    * @param originalValue - the raw/origina value as found in the file
    * @return the variable for chaining
    */
-  public Variable setOriginalValue(Object originalValue) {
+  public Variable<T> setOriginalValue(T originalValue) {
     if (this.originalValue != null && !originalValue.equals(this.originalValue)) {
       throw new RuntimeException("You can't change the original value of the variable " + this + " from (" + this.originalValue + ") to " + this.originalValue);
     }
-    Class<?> valueClazz = this.attribute.getValueClazz();
+    Class<T> valueClazz = this.attribute.getClazz();
     if (valueClazz == null) {
       throw new ClassCastException("The class of the attribute " + this.attribute + " should not be null");
     }
@@ -129,16 +124,14 @@ public class Variable implements Comparable<Variable> {
   }
 
   /**
-   * @return the value to be used in the application in clear and cast as specified by the {@link Attribute#getValueClazz()}
+   * @return the value to be used in the application in clear and cast as specified by the {@link Attribute#getClazz()}
    */
-  public Object getValueOrDefault() throws NoValueException {
+  public T getValueOrDefault() throws NoValueException {
 
     Object valueOrDefaultNonCasted = this.getValueOrDefaultNonCasted();
 
-    Class<?> valueClazz = this.attribute.getValueClazz();
-    if (valueClazz == null) {
-      return valueOrDefaultNonCasted;
-    }
+    Class<T> valueClazz = this.attribute.getClazz();
+
     try {
       return Casts.cast(valueOrDefaultNonCasted, valueClazz);
     } catch (CastException e) {
@@ -169,11 +162,12 @@ public class Variable implements Comparable<Variable> {
 
 
   @Override
-  public int compareTo(Variable o) {
-    return this.normalizedKey.compareTo(o.normalizedKey);
+  public int compareTo(Variable<T> o) {
+    return this.attribute.compareTo(o.attribute);
   }
 
-  public Variable setClearValue(Object decrypted) {
+  @SuppressWarnings("unused")
+  public Variable<T> setClearValue(T decrypted) {
     this.clearValue = decrypted;
     return this;
   }
@@ -183,7 +177,7 @@ public class Variable implements Comparable<Variable> {
     /**
      * No clear value in the log
      */
-    return this.getPublicName() + " = " + Strings.createFromObjectNullSafe(this.originalValue);
+    return this.attribute.toString() + " = " + Strings.createFromObjectNullSafe(this.originalValue);
   }
 
 
@@ -191,38 +185,26 @@ public class Variable implements Comparable<Variable> {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    return this.normalizedKey.equals(((Variable) o).normalizedKey);
+    return this.attribute.equals(((Variable<?>) o).attribute);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.normalizedKey);
+    return Objects.hash(this.attribute.hashCode());
   }
 
-  public Attribute getAttribute() {
+  public Attribute<T> getAttribute() {
     return this.attribute;
   }
 
-  public <T> T getValueOrDefaultCastAs(Class<T> clazz) throws NoValueException, CastException {
-    Object object = this.getValueOrDefault();
+  @SuppressWarnings("unused")
+  public T getValueOrDefaultCastAs(Class<T> clazz) throws NoValueException, CastException {
+    T object = this.getValueOrDefault();
     return Casts.cast(object, clazz);
   }
 
 
-  public String getUniqueName() {
-    return this.normalizedKey;
-  }
-
-  /**
-   * @return the name in a public format fashion
-   */
-  public String getPublicName() {
-
-    return this.normalizedKey;
-
-  }
-
-  public Object getValue() throws NoValueException {
+  public T getValue() throws NoValueException {
     if (this.clearValue != null) {
       return this.clearValue;
     }
@@ -235,6 +217,7 @@ public class Variable implements Comparable<Variable> {
     throw new NoValueException("No value found");
   }
 
+  @SuppressWarnings("unused")
   public boolean hasNullValue() {
     try {
       this.getValueOrDefault();
@@ -244,7 +227,8 @@ public class Variable implements Comparable<Variable> {
     }
   }
 
-  public Object getValueOrDefaultOrNull() {
+  @SuppressWarnings("unused")
+  public T getValueOrDefaultOrNull() {
     try {
       return this.getValueOrDefault();
     } catch (NoValueException e) {
@@ -252,9 +236,6 @@ public class Variable implements Comparable<Variable> {
     }
   }
 
-  public String getWebName() {
-    return Key.toUriName(this.attribute.toString());
-  }
 
   /**
    * @return the string value or the empty string if not found
@@ -268,17 +249,19 @@ public class Variable implements Comparable<Variable> {
   }
 
   /**
-   * @param valueProvider - the function that should return the default value (use it if you want to get the value at runtime)
    * @return the variable
+   * @param valueProvider - the function that should return the value (use it if you want to get the value at runtime
+   *                      such as with external vault)
    */
-  public Variable setValueProvider(Supplier<?> valueProvider) {
+  public Variable<T> setValueProvider(Supplier<T> valueProvider) {
     this.valueProvider = valueProvider;
     return this;
   }
 
 
-  public void setAttribute(Attribute attribute) {
+  public void setAttribute(Attribute<T> attribute) {
     this.attribute = attribute;
   }
+
 
 }
