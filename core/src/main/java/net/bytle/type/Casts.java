@@ -87,6 +87,13 @@ public class Casts {
       return null;
     }
 
+    /**
+     * Interface can't be instantiated
+     */
+    if (targetClass == Number.class) {
+      throw new CastException("The target class Number is an interface and cannot be instantiated. Choose a class with a constructor");
+    }
+
     try {
 
       Class<?> sourceObjectClass = sourceObject.getClass();
