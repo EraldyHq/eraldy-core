@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  * * as conf/secret via {@link #setOriginalValue(Object)} and {@link #setClearValue(Object)} (Object)}
  * * key case independence (via {@link Attribute} that uses a {@link KeyNormalizer})
  */
-public class Variable  {
+public class Variable implements Comparable<Variable> {
 
 
   private Attribute attribute;
@@ -57,10 +57,21 @@ public class Variable  {
   }
 
 
+  /**
+   * Utility class of {@link #createWithClassAndDefault(String, Origin, Class, Object)}
+   * where the default value is null
+   */
   public static Variable createWithClass(String name, Origin origin, Class<?> clazz) {
     return createWithClassAndDefault(name, origin, clazz, null);
   }
 
+  /**
+   * Variable may be instantiated at runtime without knowing the name at compile time.
+   * For instance,
+   * * the properties of a jdbc driver. We don't master that
+   * * dynamic variable such as the backref reference of a regexp $1, ...
+   * So we need to be able to create a variable by name
+   */
   public static Variable createWithClassAndDefault(String name, Origin origin, Class<?> clazz, Object defaultValue) {
 
 
@@ -80,6 +91,14 @@ public class Variable  {
       @Override
       public Object getDefaultValue() {
         return defaultValue;
+      }
+
+      /**
+       * @return the unique string identifier
+       */
+      @Override
+      public String toString() {
+        return name;
       }
 
     };
@@ -196,7 +215,7 @@ public class Variable  {
    * Utility wrapper around {@link Casts#cast(Object, Class)}
    */
   @SuppressWarnings("unused")
-  public Object getValueOrDefaultCastAs(Class<?> clazz) throws NoValueException, CastException {
+  public <T> T getValueOrDefaultCastAs(Class<T> clazz) throws NoValueException, CastException {
     Object object = this.getValueOrDefault();
     return Casts.cast(object, clazz);
   }
@@ -261,5 +280,10 @@ public class Variable  {
     this.attribute = attribute;
   }
 
+
+  @Override
+  public int compareTo(Variable o) {
+    return this.attribute.toString().compareTo(o.attribute.toString());
+  }
 
 }

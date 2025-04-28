@@ -1,6 +1,8 @@
 package net.bytle.type;
 
 /**
+ * An attribute is a name for a {@link Variable variable} with extra properties.
+ * <p></p>
  * An interface for an attribute that is used against an enum
  * so that we get:
  * * a description
@@ -16,19 +18,20 @@ package net.bytle.type;
  * Disadvantage over {@link AttributeNoEnum}
  * * No inheritance (adding a function in the interface will break all attribute)
  * * No equality for attribute created on the fly (not used though)
+ * * No simple get identifier (toString should be implemented right)
  */
 @SuppressWarnings("deprecation")
 public interface Attribute {
 
 
   /**
-   * They key is the to string function
-   *
+   * They key is the toString function
+   * <p></p>
    * This key is normalized {@link Key#toNormalizedKey(String)} (that is not uppercase, minus or underscore and trim dependent)
    * to:
    * - determine uniqueness
    * - cast to an enum (ie {@link Casts#cast(Object, Class)}})
-   *
+   * <p></p>
    * The key published to the outside world is done with the {@link Key#toCamelCaseValue(String)}
    * Public key are key that are going into external artifacts
    * such as configuration file, console output or workflow file
