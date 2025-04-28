@@ -3,6 +3,7 @@ package net.bytle.fs;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -58,14 +59,13 @@ public class FsTest {
   @Test
   public void getPathUntilNameTest() throws FileNotFoundException {
 
-    Path rootPath = Paths.get("src","test","resources","fs","foo");
+    Path pathToFound = Paths.get("src","test","resources","fs","foo");
     String nameToFound = "bar";
-    Path pathToFound = rootPath.resolve(nameToFound);
     Path leafPath = pathToFound.resolve("ni").resolve("co");
 
     Path foundPath = Fs.getPathUntilName(leafPath, nameToFound);
     Assertions.assertNotNull(foundPath, "The path should have been found ");
-    Assertions.assertEquals(pathToFound, foundPath, "The paths should be the same");
+    Assertions.assertEquals(pathToFound.toAbsolutePath(), foundPath, "The paths should be the same");
 
     foundPath = Fs.getPathUntilName(leafPath.toAbsolutePath(), nameToFound);
     Assertions.assertNotNull(foundPath, "The absolute path should have been found ");

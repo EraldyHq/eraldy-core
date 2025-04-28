@@ -603,7 +603,8 @@ public class Fs {
   /**
    * @param path - an absolute or relative path
    * @param name - a name
-   * @return the path until a certain name was found (name included)
+   * @return the path until a certain name was found (name not included)
+   * This is used to get the root/project directory based on a file or a directory found in it
    */
   public static Path getPathUntilName(Path path, String name) throws FileNotFoundException {
 
@@ -620,7 +621,7 @@ public class Fs {
     while (parent != null) {
       pathUntil = parent.resolve(name);
       if (Files.exists(pathUntil)) {
-        return pathUntil;
+        return parent;
       }
       parent = parent.getParent();
     }

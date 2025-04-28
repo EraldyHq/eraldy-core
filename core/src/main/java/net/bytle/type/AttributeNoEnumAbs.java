@@ -2,7 +2,8 @@ package net.bytle.type;
 
 import java.util.Objects;
 
-public abstract class AttributeAbs<T> implements Attribute<T>, Comparable<Attribute<T>> {
+@Deprecated
+public abstract class AttributeNoEnumAbs<T> implements AttributeNoEnum<T>, Comparable<AttributeNoEnum<T>> {
 
     /**
      * The name normalized so that it's unique
@@ -32,7 +33,7 @@ public abstract class AttributeAbs<T> implements Attribute<T>, Comparable<Attrib
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Attribute)) return false;
-        return this.getNormalizedName().equals(((AttributeAbs<?>) o).getNormalizedName());
+        return this.getNormalizedName().equals(((AttributeNoEnumAbs<?>) o).getNormalizedName());
     }
 
     @Override
@@ -51,7 +52,7 @@ public abstract class AttributeAbs<T> implements Attribute<T>, Comparable<Attrib
     }
 
     @Override
-    public int compareTo(Attribute<T> o) {
+    public int compareTo(AttributeNoEnum<T> o) {
         return getNormalizedName().toString().compareTo(o.getNormalizedName().toString());
     }
 

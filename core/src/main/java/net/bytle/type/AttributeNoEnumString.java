@@ -1,7 +1,7 @@
 package net.bytle.type;
 
-
-public abstract class AttributeString<T> extends AttributeAbs<T> {
+@Deprecated
+public abstract class AttributeNoEnumString<T> extends AttributeNoEnumAbs<T> {
 
 
   @Override

@@ -16,7 +16,7 @@ public class SetKeyIndependentTest {
     Assert.assertTrue(modified);
     modified = mapKey.add("Hallo");
     Assert.assertFalse(modified);
-    modified = mapKey.add("HallO");
+    modified = mapKey.add("hallo");
     Assert.assertTrue(modified);
     Assert.assertEquals(1,mapKey.size());
 

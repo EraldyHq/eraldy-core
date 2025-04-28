@@ -12,7 +12,7 @@ public class VariableTest {
 
 
     String yolo = "Yolo";
-    Variable<String> name = Variable.create("name", Origin.INTERNAL)
+    Variable name = Variable.create("name", Origin.INTERNAL)
       .setValueProvider(() -> yolo);
 
     Assert.assertEquals(yolo, name.getValue());

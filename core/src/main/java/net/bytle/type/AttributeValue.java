@@ -1,7 +1,9 @@
 package net.bytle.type;
 
 /**
- * Note the key is to string
+ * An interface that represents an enum value (not a key)
+ * so that we have a description to show to the user
+ * and the value can be cast
  */
 public interface AttributeValue {
 
