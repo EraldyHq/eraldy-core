@@ -27,16 +27,16 @@ public enum ManifestAttribute implements Attribute {
   SPECIFICATION_VENDOR("manifest attribute used for package versioning", false),
   // The below parameters are not standard
   DESCRIPTION("The package description", false),
-  PACKAGE_TITLE ("The name of the package", true),
-  PACKAGE_VERSION ("The version", true),
-  PACKAGE_VENDOR ("The package vendor", true),
+  PACKAGE_TITLE("The name of the package", true),
+  PACKAGE_VERSION("The version", true),
+  PACKAGE_VENDOR("The package vendor", true),
   BUILD_COMMIT("The build commit", true),
   BUILD_TIME("The build time", true),
   BUILD_JAVA_VERSION("The build java version", true),
   BUILD_GRADLE_VERSION("The build gradle version", true),
-  BUILD_OS_VERSION ("The build os version", true),
-  BUILD_OS_NAME ("The os name", true),
-  BUILD_OS_ARCH ("The os architecture", true);
+  BUILD_OS_VERSION("The build os version", true),
+  BUILD_OS_NAME("The os name", true),
+  BUILD_OS_ARCH("The os architecture", true);
 
   private final String description;
   /**
@@ -65,7 +65,7 @@ public enum ManifestAttribute implements Attribute {
   }
 
   @SuppressWarnings("unused")
-  public Boolean isVersion(){
+  public Boolean isVersion() {
     return isVersion;
   }
 

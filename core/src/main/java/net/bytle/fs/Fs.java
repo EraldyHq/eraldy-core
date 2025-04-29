@@ -605,7 +605,9 @@ public class Fs {
    * @param name - a name
    * @return the path until a certain name was found (name not included)
    * This is used to get the root/project directory based on a file or a directory found in it
+   * @deprecated use {@link #closest(Path, String)} followed {@link Path#getParent()} instead
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   public static Path getPathUntilName(Path path, String name) throws FileNotFoundException {
 
     if (!path.isAbsolute()) {

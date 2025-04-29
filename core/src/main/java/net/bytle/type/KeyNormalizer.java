@@ -269,6 +269,53 @@ public class KeyNormalizer {
   }
 
   /**
+   *
+   * @return a css compliant name in {@link #toHyphenCase()}
+   */
+  public String toCssPropertyName(){
+    return toHyphenCase();
+  }
+
+  /**
+   *
+   * @return a standard case for java system property in {@link #toHyphenCase()}
+   * There is no default but this is the most used
+   */
+  public String toJavaSystemPropertyName(){
+    return toHyphenCase();
+  }
+
+  /**
+   *
+   * @return a html attribute name compliant case in {@link #toHyphenCase()}
+   */
+  public String toHtmlAttributeName(){
+    return toHyphenCase();
+  }
+
+  /**
+   *
+   * @return kebab case (ie user-count). Alias for {@link #toHyphenCase()}
+   * The name comes from the similarity of the words to meat on a kebab skewer.
+   * <a href="https://developer.mozilla.org/en-US/docs/Glossary/Kebab_case">...</a>
+   */
+  public String toKebabCase(){
+   return toHyphenCase();
+  }
+
+  /**
+   * @return env name (ie USER_NAME)
+   */
+  @SuppressWarnings("unused")
+  public String toEnvName() {
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
+      .map(String::toUpperCase)
+      .collect(Collectors.joining("_"));
+  }
+
+  /**
    * @return the words, parts of the name in lowercase to implement your own case
    */
   public List<String> getParts() {

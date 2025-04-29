@@ -7,13 +7,14 @@ package net.bytle.type;
  * so that we get:
  * * a description
  * * a default value
+ * Class is an attribute of the value of the variable.
  * <p>
  * <p>
- * attribute and not property because the product is called `tabulify`
+ * Attribute and not property because the product is called `tabulify`
  * <p></p>
  * Advantage over {@link AttributeNoEnum}
  * * easy casting
- * * easy switching (switch require an enum, object are not allowed)
+ * * easy switch statement (switch require an enum, object are not allowed)
  * * no need to create a list of all attributes (builtin)
  * Disadvantage over {@link AttributeNoEnum}
  * * No inheritance (adding a function in the interface will break all attribute)
@@ -25,39 +26,19 @@ public interface Attribute {
 
 
   /**
-   * They key is the toString function
-   * <p></p>
-   * This key is normalized {@link Key#toNormalizedKey(String)} (that is not uppercase, minus or underscore and trim dependent)
-   * to:
-   * - determine uniqueness
-   * - cast to an enum (ie {@link Casts#cast(Object, Class)}})
-   * <p></p>
-   * The key published to the outside world is done with the {@link Key#toCamelCaseValue(String)}
-   * Public key are key that are going into external artifacts
-   * such as configuration file, console output or workflow file
-   *
-   */
-
-
-  /**
    * @return the description of the attribute
    */
   String getDescription();
 
   /**
-   *
    * @return a fix default value
+   * Used when listing attribute
    */
   Object getDefaultValue();
 
   /**
-   * Optional the class of the value
-   * It may be:
-   * * a java class
-   * * or an enum class (that should implement {@link AttributeValue} for scalar value to define a domain)
-   * It's used to:
-   * * validate the value when a {@link Variable} is created
-   * * create relational column
+   * Optional as info the target class of the value
+   * It's used to create relational column
    * For complex value such as map and list, you need to take over
    */
   Class<?> getValueClazz();

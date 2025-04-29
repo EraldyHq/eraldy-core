@@ -27,10 +27,10 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
    */
   Map<String, V> map = new HashMap<>();
 
-  public static <V> MapKeyIndependent<V> createFrom(Map<?, ?> map, Class<V> classKey) {
+  public static <V> MapKeyIndependent<V> createFrom(Map<?, ?> map, Class<V> classValue) {
     MapKeyIndependent<V> mapKey = new MapKeyIndependent<>();
     try {
-      mapKey.putAll(Casts.castToSameMap(map, String.class, classKey));
+      mapKey.putAll(Casts.castToSameMap(map, String.class, classValue));
     } catch (CastException e) {
       throw new InternalException("Should not throw as every object have a string method");
     }
@@ -59,14 +59,17 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
     return map.containsValue(value);
   }
 
-  @Override
-  public V get(Object key) {
-    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
-    String naturalKey = normalizedToNormalKeyMap.get(normalizedKey);
+  public V get(KeyNormalizer key){
+    String naturalKey = normalizedToNormalKeyMap.get(key);
     if (naturalKey == null) {
       return null;
     }
     return map.get(naturalKey);
+  }
+
+  @Override
+  public V get(Object key) {
+    return get(KeyNormalizer.create(key));
   }
 
   @Override
