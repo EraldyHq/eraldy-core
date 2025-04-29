@@ -64,5 +64,10 @@ public enum ManifestAttribute implements Attribute {
     return String.class;
   }
 
+  @SuppressWarnings("unused")
+  public Boolean isVersion(){
+    return isVersion;
+  }
+
 
 }

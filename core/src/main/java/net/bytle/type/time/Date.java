@@ -88,7 +88,7 @@ public class Date {
     } else if (o instanceof Integer) {
       return createFromEpochDay(((Integer) o).longValue());
     } else {
-      throw new IllegalArgumentException("The object (" + o + ") has an class (" + o.getClass().getSimpleName() + ") that is not yet seen as a date.");
+      throw new CastException("The object (" + o + ") has an class (" + o.getClass().getSimpleName() + ") that is not yet seen as a date.");
     }
   }
 

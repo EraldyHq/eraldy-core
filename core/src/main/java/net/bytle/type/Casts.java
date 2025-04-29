@@ -363,6 +363,47 @@ public class Casts {
     throw new CastException("We could cast the value to an array of (" + targetClazz + ")");
   }
 
+
+  /**
+   * @param object - the object to cast
+   * @param clazzK - the key class
+   * @param clazzV - the value class
+   * @param <K>    - the type of key
+   * @param <V>    - the type of value
+   * @param strictKey - When casting to a new map, you may want a strict key and a loose value
+   * @return the map
+   */
+  public static <K, V> Map<K, V> castToNewMap(Object object, Class<K> clazzK, Class<V> clazzV, Boolean strictKey) throws CastException {
+    Map<?, ?> map;
+    if (!(object instanceof Map)) {
+      throw new ClassCastException("The object is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
+    } else {
+      map = (Map<?, ?>) object;
+    }
+
+    Map<K, V> result = new HashMap<>();
+    for (Map.Entry<?, ?> e : map.entrySet()) {
+      K key;
+      if(!strictKey) {
+        key = Casts.cast(e.getKey(), clazzK);
+      } else {
+        Object elementKey = e.getKey();
+        if(!clazzK.equals(elementKey.getClass())){
+          throw new CastException("The key (" + elementKey + ") is not a " + clazzK.getSimpleName() + ".");
+        }
+        //noinspection unchecked
+        key = (K) elementKey;
+      }
+      result.put(
+        key,
+        Casts.cast(e.getValue(), clazzV)
+      );
+    }
+
+    return result;
+
+  }
+
   /**
    * Cast a map to another one b y creating a new map
    *
@@ -375,22 +416,7 @@ public class Casts {
    */
   public static <K, V> Map<K, V> castToNewMap(Object object, Class<K> clazzK, Class<V> clazzV) throws CastException {
 
-    Map<?, ?> map;
-    if (!(object instanceof Map)) {
-      throw new ClassCastException("The object is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
-    } else {
-      map = (Map<?, ?>) object;
-    }
-
-    Map<K, V> result = new HashMap<>();
-    for (Map.Entry<?, ?> e : map.entrySet()) {
-      result.put(
-        Casts.cast(e.getKey(), clazzK),
-        Casts.cast(e.getValue(), clazzV)
-      );
-    }
-
-    return result;
+    return castToNewMap(object, clazzK, clazzV, false);
 
   }
 
