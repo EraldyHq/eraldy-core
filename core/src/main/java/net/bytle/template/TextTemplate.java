@@ -41,18 +41,17 @@ public class TextTemplate implements Template {
         Object value = variables.get(name);
         if (value != null) {
           return value.toString();
+        }
+        /*
+         * We return the original variable
+         * if it has no defined variables
+         * (In a pipeline, the target uri allows also template
+         * variable that should not be null)
+         */
+        if (matchWasWithBracket) {
+          return "${" + name + "}";
         } else {
-          /*
-           * We return the original variable
-           * if it has no defined variables
-           * (In a pipeline, the target uri allows also template
-           * variable that should not be null)
-           */
-          if (matchWasWithBracket) {
-            return "${" + name + "}";
-          } else {
-            return "$" + name;
-          }
+          return "$" + name;
         }
       });
       last = mat.end();
