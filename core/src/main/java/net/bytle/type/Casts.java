@@ -138,6 +138,16 @@ public class Casts {
       }
 
       /**
+       * Key Normalizer
+       */
+      if(targetClass == KeyNormalizer.class){
+        if(sourceObject.getClass()!=String.class){
+          throw new CastException("A string source object is mandatory to cast to KeyNormalizer. The source object is not a string but a "+sourceObject.getClass().getSimpleName());
+        }
+        return targetClass.cast(KeyNormalizer.create(sourceObject));
+      }
+
+      /**
        * Boolean
        */
       if (targetClass == Boolean.class) {

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 /**
  * A key name normalizer
  */
-public class KeyNormalizer {
+public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
 
   private final String stringOrigin;
@@ -320,6 +320,11 @@ public class KeyNormalizer {
    */
   public List<String> getParts() {
     return toParts(this.stringOrigin);
+  }
+
+  @Override
+  public int compareTo(KeyNormalizer o) {
+    return this.stringOrigin.compareTo(o.stringOrigin);
   }
 
 }
