@@ -2,7 +2,6 @@ package net.bytle.cli;
 
 import net.bytle.exception.CastException;
 import net.bytle.log.Log;
-import net.bytle.type.Attribute;
 import net.bytle.type.Casts;
 import net.bytle.type.MapKeyIndependent;
 
@@ -723,12 +722,6 @@ public class CliParser {
 
   }
 
-  public String getString(Attribute keyIndependent) {
-
-    CliWord cliWord = knownWords.get(keyIndependent.toString());
-    return getString(cliWord);
-
-  }
 
   /**
    * @param word - the word
@@ -769,12 +762,6 @@ public class CliParser {
 
   }
 
-  public List<String> getStrings(Attribute attribute) {
-
-
-    return getStrings(attribute.toString());
-
-  }
 
   /**
    * @param word - a word name or a path

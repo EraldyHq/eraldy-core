@@ -1,7 +1,5 @@
 package net.bytle.cli;
 
-import net.bytle.type.Attribute;
-import net.bytle.type.KeyNormalizer;
 import net.bytle.type.Lists;
 import net.bytle.type.Strings;
 
@@ -728,14 +726,5 @@ public class CliCommand extends CliWord {
     }
 
 
-    @SuppressWarnings("unused")
-    public CliCommand addPropertyFromAttribute(Attribute attribute) {
-        KeyNormalizer key = KeyNormalizer.create(attribute);
-        addProperty(CliParser.PREFIX_LONG_OPTION + key.toCliLongOptionName())
-                .setShortName(CliParser.PREFIX_SHORT_OPTION + key.toCliShortOptionName())
-                .setDescription(attribute.getDescription())
-                .setDefaultValue(attribute.getDefaultValue() != null ? attribute.getDefaultValue().toString() : null);
-        return this;
-    }
 
 }

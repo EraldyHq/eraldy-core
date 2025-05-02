@@ -1,11 +1,10 @@
 package net.bytle.email;
 
 import jakarta.mail.internet.InternetAddress;
-import net.bytle.type.Attribute;
 
 
 
-public enum BMailSmtpConnectionAttribute implements Attribute {
+public enum BMailSmtpConnectionAttribute {
 
 
   /**
@@ -46,17 +45,17 @@ public enum BMailSmtpConnectionAttribute implements Attribute {
   }
 
 
-  @Override
+
   public String getDescription() {
     return this.description;
   }
 
-  @Override
+
   public Class<?> getValueClazz() {
     return this.clazz;
   }
 
-  @Override
+
   public Object getDefaultValue() {
     return this.defaultValue;
   }

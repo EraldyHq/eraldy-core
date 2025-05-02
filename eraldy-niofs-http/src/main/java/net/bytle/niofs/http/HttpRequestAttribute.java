@@ -1,8 +1,7 @@
 package net.bytle.niofs.http;
 
-import net.bytle.type.Attribute;
 
-public enum HttpRequestAttribute implements Attribute {
+public enum HttpRequestAttribute {
 
   USER("Basic authentication user"),
   PASSWORD("Basic authentication password");
@@ -16,17 +15,14 @@ public enum HttpRequestAttribute implements Attribute {
   }
 
 
-  @Override
   public String getDescription() {
     return this.description;
   }
 
-  @Override
   public Class<?> getValueClazz() {
     return String.class;
   }
 
-  @Override
   public Object getDefaultValue() {
     return null;
   }
