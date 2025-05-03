@@ -137,12 +137,13 @@ public class Casts {
         return targetClass.cast(Longs.createFromObject(sourceObject).toLong());
       }
 
+
       /**
        * Key Normalizer
        */
-      if(targetClass == KeyNormalizer.class){
-        if(sourceObject.getClass()!=String.class){
-          throw new CastException("A string source object is mandatory to cast to KeyNormalizer. The source object is not a string but a "+sourceObject.getClass().getSimpleName());
+      if (targetClass == KeyNormalizer.class) {
+        if (sourceObject.getClass() != String.class) {
+          throw new CastException("A string source object is mandatory to cast to KeyNormalizer. The source object is not a string but a " + sourceObject.getClass().getSimpleName());
         }
         return targetClass.cast(KeyNormalizer.create(sourceObject));
       }
@@ -276,16 +277,16 @@ public class Casts {
          * {@link Enums#valueOf(Class, String)} is not used
          * because it needs exact match
          */
-        String normalizedLookupKey = KeyNormalizer.create(sourceObject.toString()).toString();
+        KeyNormalizer normalizedLookupKey = KeyNormalizer.create(sourceObject.toString());
         for (T constant : targetClass.getEnumConstants()) {
           if (constant == null) {
             throw new InternalError("The enum class (" + targetClass + ") does not have any constants");
           }
-          String normalizedConstantKey = KeyNormalizer.create(constant).toString();
-          if (normalizedConstantKey.equals(normalizedLookupKey)) {
+          if (KeyNormalizer.create(constant).equals(normalizedLookupKey)) {
             return constant;
           }
         }
+        throw new ClassCastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the enum class (" + targetClass.getSimpleName() + "). Possible values: "+Enums.toConstantAsStringCommaSeparated(targetClass));
       }
 
       /**
@@ -375,11 +376,11 @@ public class Casts {
 
 
   /**
-   * @param object - the object to cast
-   * @param clazzK - the key class
-   * @param clazzV - the value class
-   * @param <K>    - the type of key
-   * @param <V>    - the type of value
+   * @param object    - the object to cast
+   * @param clazzK    - the key class
+   * @param clazzV    - the value class
+   * @param <K>       - the type of key
+   * @param <V>       - the type of value
    * @param strictKey - When casting to a new map, you may want a strict key and a loose value
    * @return the map
    */
@@ -394,11 +395,11 @@ public class Casts {
     Map<K, V> result = new HashMap<>();
     for (Map.Entry<?, ?> e : map.entrySet()) {
       K key;
-      if(!strictKey) {
+      if (!strictKey) {
         key = Casts.cast(e.getKey(), clazzK);
       } else {
         Object elementKey = e.getKey();
-        if(!clazzK.equals(elementKey.getClass())){
+        if (!clazzK.equals(elementKey.getClass())) {
           throw new CastException("The key (" + elementKey + ") is not a " + clazzK.getSimpleName() + ".");
         }
         //noinspection unchecked

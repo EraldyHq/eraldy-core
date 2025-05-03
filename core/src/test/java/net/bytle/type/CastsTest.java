@@ -13,6 +13,12 @@ public class CastsTest {
 
 
   @Test
+  public void castIntegerToStringTest() throws CastException {
+    Integer source = 25;
+    Assertions.assertEquals("25", Casts.cast(source, String.class), "Same data");
+  }
+
+  @Test
   public void castStringBigintTest() throws CastException {
     String source = "0";
     BigInteger target = new BigInteger("0");

@@ -33,6 +33,9 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    *            The words can then be printed/normalized into a {@link KeyCase}
    */
   public static KeyNormalizer create(Object key) {
+    if (key instanceof KeyNormalizer) {
+      return (KeyNormalizer) key;
+    }
     return new KeyNormalizer(key.toString());
   }
 
@@ -49,9 +52,9 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
 
   /**
-   * @return the parts of a string in lowercase
    * @param s - normally the {@link #stringOrigin} but it may be first process to
    *          normalize the string to a valid name before. Example: sql
+   * @return the parts of a string in lowercase
    */
   private List<String> toParts(String s) {
 
@@ -237,11 +240,11 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
   /**
-   * @return {@link #toHyphenCase()}
+   * @return the string origin
    */
   @Override
   public String toString() {
-    return this.toHyphenCase();
+    return this.stringOrigin;
   }
 
   @Override
@@ -269,38 +272,34 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
   /**
-   *
    * @return a css compliant name in {@link #toHyphenCase()}
    */
-  public String toCssPropertyName(){
+  public String toCssPropertyName() {
     return toHyphenCase();
   }
 
   /**
-   *
    * @return a standard case for java system property in {@link #toHyphenCase()}
    * There is no default but this is the most used
    */
-  public String toJavaSystemPropertyName(){
+  public String toJavaSystemPropertyName() {
     return toHyphenCase();
   }
 
   /**
-   *
    * @return a html attribute name compliant case in {@link #toHyphenCase()}
    */
-  public String toHtmlAttributeName(){
+  public String toHtmlAttributeName() {
     return toHyphenCase();
   }
 
   /**
-   *
    * @return kebab case (ie user-count). Alias for {@link #toHyphenCase()}
    * The name comes from the similarity of the words to meat on a kebab skewer.
    * <a href="https://developer.mozilla.org/en-US/docs/Glossary/Kebab_case">...</a>
    */
-  public String toKebabCase(){
-   return toHyphenCase();
+  public String toKebabCase() {
+    return toHyphenCase();
   }
 
   /**
