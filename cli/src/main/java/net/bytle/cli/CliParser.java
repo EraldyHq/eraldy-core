@@ -3,7 +3,6 @@ package net.bytle.cli;
 import net.bytle.exception.CastException;
 import net.bytle.log.Log;
 import net.bytle.type.Casts;
-import net.bytle.type.MapKeyIndependent;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -49,7 +48,7 @@ public class CliParser {
    * * to lookup the cliWord by name in the get function
    * * to help with the parse
    */
-  private final Map<String, CliWord> knownWords = new MapKeyIndependent<>();
+  private final Map<String, CliWord> knownWords = new HashMap<>();
 
   // A logger initialized in the {@link CliCommand#getLogger} function
   private final Log logger = CliLog.LOGGER;

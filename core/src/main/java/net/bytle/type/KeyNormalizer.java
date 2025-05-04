@@ -16,11 +16,16 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   private List<String> parts = new ArrayList<>();
 
   /**
-   * @param stringOrigin - the string to normalize
+   * @param name - the string to normalize
    */
-  KeyNormalizer(String stringOrigin) {
+  KeyNormalizer(String name) {
 
-    this.stringOrigin = stringOrigin;
+    this.stringOrigin = name;
+    if (!Character.isLetterOrDigit(name.charAt(0))) {
+      // We don't allow flag or option such as --option or --flag
+      // It's just for check purpose
+      throw new RuntimeException(name + " does not start with a letter or a digit");
+    }
 
   }
 
@@ -156,7 +161,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
     char firstChar = sqlName.charAt(0);
     if (!String.valueOf(firstChar).matches("[a-zA-Z]")) {
       // throw new IllegalArgumentException("Name ("+sqlName+") is not valid for sql as it should start with a Latin letter (a-z, A-Z), not "+firstChar);
-      firstChar = 'a';
+      firstChar = 'a' ;
     }
     // Replace non-conforming characters with underscores
     StringBuilder sanitized = new StringBuilder();

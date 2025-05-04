@@ -33,7 +33,7 @@ public class OsEnvs {
       // Get the value
       Map<String, String> envField;
       try {
-        envField = Casts.castToSameMap(theEnvironmentField.get(null), String.class, String.class);
+        envField = Casts.castToNewMap(theEnvironmentField.get(null), String.class, String.class);
       } catch (CastException e) {
         throw new InternalException("Should not throw as every object as a string representation",e);
       }
@@ -101,7 +101,7 @@ public class OsEnvs {
       // Get the value
       Map<String, String> envField;
       try {
-        envField = Casts.castToSameMap(theEnvironmentField.get(null), String.class, String.class);
+        envField = Casts.castToNewMap(theEnvironmentField.get(null), String.class, String.class);
       } catch (CastException e) {
         throw new InternalException("Should not throw as every object as a string representation",e);
       }

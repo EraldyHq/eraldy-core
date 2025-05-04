@@ -455,7 +455,7 @@ public class Casts {
     for (Map.Entry<?, ?> e : map.entrySet()) {
       if (e.getKey() != null && !clazzK.equals(Object.class)) {
         if (!e.getKey().getClass().equals(clazzK)) {
-          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + ".");
+          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + " but a "+e.getKey().getClass().getName());
         }
       }
       if (e.getValue() != null && !clazzV.equals(Object.class)) {
