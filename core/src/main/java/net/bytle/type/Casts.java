@@ -277,7 +277,12 @@ public class Casts {
          * {@link Enums#valueOf(Class, String)} is not used
          * because it needs exact match
          */
-        KeyNormalizer normalizedLookupKey = KeyNormalizer.create(sourceObject.toString());
+        KeyNormalizer normalizedLookupKey;
+        if (sourceObject instanceof KeyNormalizer) {
+          normalizedLookupKey = (KeyNormalizer) sourceObject;
+        } else {
+          normalizedLookupKey = KeyNormalizer.create(sourceObject.toString());
+        }
         for (T constant : targetClass.getEnumConstants()) {
           if (constant == null) {
             throw new InternalError("The enum class (" + targetClass + ") does not have any constants");
@@ -286,7 +291,7 @@ public class Casts {
             return constant;
           }
         }
-        throw new ClassCastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the enum class (" + targetClass.getSimpleName() + "). Possible values: "+Enums.toConstantAsStringCommaSeparated(targetClass));
+        throw new ClassCastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the enum class (" + targetClass.getSimpleName() + "). Possible values: " + Enums.toConstantAsStringCommaSeparated(targetClass));
       }
 
       /**
@@ -455,7 +460,7 @@ public class Casts {
     for (Map.Entry<?, ?> e : map.entrySet()) {
       if (e.getKey() != null && !clazzK.equals(Object.class)) {
         if (!e.getKey().getClass().equals(clazzK)) {
-          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + " but a "+e.getKey().getClass().getName());
+          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + " but a " + e.getKey().getClass().getName());
         }
       }
       if (e.getValue() != null && !clazzV.equals(Object.class)) {

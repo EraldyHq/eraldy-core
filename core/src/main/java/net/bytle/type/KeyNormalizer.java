@@ -17,15 +17,14 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
   /**
    * @param name - the string to normalize
+   *             Note that
+   *             * environment variable may start with _
+   *             * cli option and flag may start with -
+   *             therefore they will be
    */
   KeyNormalizer(String name) {
 
     this.stringOrigin = name;
-    if (!Character.isLetterOrDigit(name.charAt(0))) {
-      // We don't allow flag or option such as --option or --flag
-      // It's just for check purpose
-      throw new RuntimeException(name + " does not start with a letter or a digit");
-    }
 
   }
 
@@ -104,6 +103,9 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
     if (currentWord.length() > 0) {
       parts.add(currentWord.toString().toLowerCase());
+    }
+    if (parts.isEmpty()) {
+      throw new IllegalArgumentException("The key value (" + stringOrigin + ") after normalization is empty, It does not have any letter or digits.");
     }
     return parts;
   }
