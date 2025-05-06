@@ -1,106 +1,94 @@
 package net.bytle.java;
 
-import net.bytle.type.env.OsEnvs;
+import net.bytle.fs.Fs;
 
+import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 
+@SuppressWarnings("unused")
 public class JavaEnvs {
 
 
-    static String SYSTEM_PROPERTY_NAME = "web.environment";
-    static String ENV_VARIABLE_NAME = "WEB_ENVIRONMENT";
+  private static final boolean IS_IDE_DEBUGGING;
+  private static Boolean IS_DEV;
+  private static Boolean IS_TEST;
 
-    public static final Path HOME_PATH;
-    public static final boolean IS_IDE_DEBUGGING;
-    private static Boolean IS_DEV;
-    private static Boolean IS_TEST;
+  static {
 
-    static {
-
-        /*
-         * Home path and is Dev mode
-         */
-        Path sourceCodePath = Javas.getSourceCodePath(JavaEnvs.class);
-        Path homePath = sourceCodePath.getParent().getParent();
-
-
-        /*
-         * If the mode is debugging, this value is true
-         * (Works in eclipse, idea)
-         * It's used mostly to disable the timeout that will otherwise
-         * kick you out of a debug session.
-         * https://stackoverflow.com/questions/1109019/determine-if-a-java-application-is-in-debug-mode-in-eclipse
-         */
-        String inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments().toString();
-        IS_IDE_DEBUGGING = inputArguments.contains("-agentlib:jdwp");
+    /*
+     * If the mode is debugging, this value is true
+     * (Works in eclipse, idea)
+     * It's used mostly to disable the timeout that will otherwise
+     * kick you out of a debug session.
+     * https://stackoverflow.com/questions/1109019/determine-if-a-java-application-is-in-debug-mode-in-eclipse
+     */
+    String inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments().toString();
+    IS_IDE_DEBUGGING = inputArguments.contains("-agentlib:jdwp");
 
 
-        HOME_PATH = homePath;
+  }
 
+  /**
+   * @return true if a dev environment is found via the properties or env name
+   *         or if a `.git` directory is found in the ancestors of the current directory
+   * Example of value:
+   * * "web.environment", "WEB_ENVIRONMENT"
+   * * "vertxweb.environment", "VERTXWEB_ENVIRONMENT"
+   * ie <a href="https://github.com/vert-x3/vertx-web/blob/master/vertx-web-common/src/main/java/io/vertx/ext/web/common/WebEnvironment.java">...</a>
+   */
+  public static boolean isDev(String javaSysProp, String osEnvName) {
 
+    if (IS_DEV != null) {
+      return IS_DEV;
+    }
+
+    /*
+     *  On an idea of
+     *  https://github.com/vert-x3/vertx-web/blob/master/vertx-web-common/src/main/java/io/vertx/ext/web/common/WebEnvironment.java
+     */
+    String env = System.getProperty(javaSysProp, System.getenv(osEnvName));
+    if ("dev".equalsIgnoreCase(env) || "Development".equalsIgnoreCase(env)) {
+      IS_DEV = true;
+      return true;
     }
 
     /**
-     * @param clazz - the class to get the location (ie to see if the class is in a build directory)
-     * @return true
+     * Search for a file that would indicate that
+     * it's a dev environment. Git is the best.
      */
-    public static boolean isDev(Class<?> clazz) {
-
-        if (IS_DEV != null) {
-            return IS_DEV;
-        }
-
-        /*
-         *  On an idea of
-         *  https://github.com/vert-x3/vertx-web/blob/master/vertx-web-common/src/main/java/io/vertx/ext/web/common/WebEnvironment.java
-         */
-        String env = System.getProperty(SYSTEM_PROPERTY_NAME, System.getenv(ENV_VARIABLE_NAME));
-        if ("dev".equalsIgnoreCase(env) || "Development".equalsIgnoreCase(env)) {
-            IS_DEV = true;
-            return true;
-        }
-        /*
-         * For vertx, the Dev mode is :
-         * * with the VERTXWEB_ENVIRONMENT environment variable
-         * * or `vertxweb.environment` system property
-         * set to dev.
-         *
-         */
-        env = OsEnvs.getEnvOrDefault("VERTXWEB_ENVIRONMENT", "prod");
-        if ("dev".equalsIgnoreCase(env) || "Development".equalsIgnoreCase(env)) {
-            IS_DEV = true;
-            return true;
-        }
-
-        try {
-            Javas.getBuildDirectory(clazz);
-            IS_DEV = true;
-            return true;
-        } catch (NotDirectoryException e) {
-            // ok
-        }
-
-        IS_DEV = false;
-        return false;
-
+    try {
+      Fs.closest(Paths.get("."), ".git");
+      IS_DEV = true;
+      return true;
+    } catch (FileNotFoundException e) {
+      // ok
     }
 
-    @SuppressWarnings("ConstantValue")
-    public static boolean isJUnitTest() {
-        if (IS_TEST != null) {
-            return IS_TEST;
-        }
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            if (element.getClassName().startsWith("org.junit.")) {
-                IS_TEST = true;
-                return IS_TEST;
-            }
-        }
-        IS_TEST = false;
+    IS_DEV = false;
+    return false;
+
+  }
+
+  public static boolean isJUnitTest() {
+    if (IS_TEST != null) {
+      return IS_TEST;
+    }
+    for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+      if (element.getClassName().startsWith("org.junit.")) {
+        IS_TEST = true;
         return IS_TEST;
+      }
     }
+    IS_TEST = false;
+    return IS_TEST;
+  }
+
+  public static boolean isIsIdeDebugging() {
+
+    return IS_IDE_DEBUGGING;
+
+  }
 
 
 }
