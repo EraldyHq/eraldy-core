@@ -119,6 +119,7 @@ public class DocExecutorUnit {
               }
               output.append(
                 processExecutor
+                  .exitValue(0)
                   .execute()
                   .outputUTF8()
               );
