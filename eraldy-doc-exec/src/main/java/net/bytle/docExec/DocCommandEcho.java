@@ -13,7 +13,7 @@ package net.bytle.docExec;
 public class DocCommandEcho {
 
     public static void main(String[] args) {
-        System.out.println(String.join("", args));
+        System.out.println(String.join(" ", args));
     }
 
 }

@@ -65,11 +65,11 @@ public class DocTest {
         testName = "fourth test";
 
         Assertions.assertEquals("echo Hello Foo", fourthDocUnit.getCode().trim(), testName + ": Code was found");
-        Assertions.assertEquals("HelloFoo", fourthDocUnit.getConsole().trim(), testName + ": Expectation is the same");
+        Assertions.assertEquals("Hello Foo", fourthDocUnit.getConsole().trim(), testName + ": Expectation is the same");
         Assertions.assertEquals("dos", fourthDocUnit.getLanguage(), testName + ": Language is dos");
         Assertions.assertEquals( fourthDocUnit.getConsole().trim(), docExecutorUnit.run(fourthDocUnit),testName + ": Expectation and result are the same");
         Assertions.assertEquals(Integer.valueOf(549), fourthDocUnit.getConsoleLocation().getStart(), testName + " : The first index of the expectation is correct");
-        Assertions.assertEquals(Integer.valueOf(571), fourthDocUnit.getConsoleLocation().getEnd(), testName + " : The second index of the expectation is correct");
+        Assertions.assertEquals(Integer.valueOf(572), fourthDocUnit.getConsoleLocation().getEnd(), testName + " : The second index of the expectation is correct");
 
     }
 

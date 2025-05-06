@@ -33,6 +33,6 @@
         echo Hello Foo
     </code>
     <console>
-        HelloFoo
+        Hello Foo
     </console>
 </unit>

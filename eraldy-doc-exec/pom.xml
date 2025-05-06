@@ -25,6 +25,11 @@
       <groupId>${project.parent.groupId}</groupId>
       <artifactId>eraldy-core</artifactId>
     </dependency>
+    <!-- Exec -->
+    <dependency>
+      <groupId>org.zeroturnaround</groupId>
+      <artifactId>zt-exec</artifactId>
+    </dependency>
 
 
     <!-- Testing -->

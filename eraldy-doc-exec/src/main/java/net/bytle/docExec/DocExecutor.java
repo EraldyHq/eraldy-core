@@ -24,18 +24,26 @@ public class DocExecutor {
   private final String name;
 
   private final String eol = Strings.EOL;
+  public boolean captureStdErr = true;
 
   DocCache docCache;
   Map<String, Class<?>> commands = new HashMap<>();
 
   /**
-   *
-   *
    * @param overwrite If set to true, the console and the file node will be overwritten
    * @return the object for chaining
    */
   public DocExecutor setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
+    return this;
+  }
+
+  /**
+   * @param captureStdErr If set to true, the std err is added to the output
+   * @return the object for chaining
+   */
+  public DocExecutor setCaptureStdErr(boolean captureStdErr) {
+    this.captureStdErr = captureStdErr;
     return this;
   }
 

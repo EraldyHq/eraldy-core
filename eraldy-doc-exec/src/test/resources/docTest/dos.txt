@@ -1,10 +1,10 @@
 
-  * Hello Nico must be seen as atomic
+  * Hello foo must be seen as atomic, so the space should stay
 <unit>
 <code dos>
-echo "Hello Nico" la
+echo "Hello  foo " bar
 </code>
 <console>
-Hello Nicola
+Hello  foo  bar
 </console>
 </unit>

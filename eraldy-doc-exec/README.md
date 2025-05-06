@@ -2,7 +2,15 @@
 
 
 ## About
-A doc executor that takes its code from from the documentation.
+A doc executor that:
+* executes code from the documentation.
+* and optionally set the output back in the documentation
+
+It will:
+* scan for unit code block
+* capture the code from the child code block
+* execute it
+* replace the console block with the output
 
 See the main class [DocExecutor](./src/main/java/net/bytle/docExec/DocExecutor.java)
 
