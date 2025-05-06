@@ -29,9 +29,13 @@ public class JavaEnvs {
 
   }
 
+  public static boolean isDev() {
+    return isDev("", "");
+  }
+
   /**
    * @return true if a dev environment is found via the properties or env name
-   *         or if a `.git` directory is found in the ancestors of the current directory
+   * or if a `.git` directory is found in the ancestors of the current directory
    * Example of value:
    * * "web.environment", "WEB_ENVIRONMENT"
    * * "vertxweb.environment", "VERTXWEB_ENVIRONMENT"

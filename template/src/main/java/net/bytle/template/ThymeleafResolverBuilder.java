@@ -48,7 +48,7 @@ public class ThymeleafResolverBuilder {
 
     AbstractConfigurableTemplateResolver templateResolver;
 
-    if (JavaEnvs.isDev(ThymeleafResolverBuilder.class)) {
+    if (JavaEnvs.isDev()) {
 
       /**
        * in dev,

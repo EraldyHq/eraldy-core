@@ -1,8 +1,8 @@
 package net.bytle.type;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import net.bytle.exception.CastException;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -14,7 +14,12 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
   private final String stringOrigin;
 
-  private List<String> parts = new ArrayList<>();
+  /**
+   * A map of the string parsed and the parts in a list
+   * We may parse for different string.
+   * For instance, when we normalize for {@link #toSqlCase()}
+   */
+  private final Map<String, List<String>> partsByString = new HashMap<>();
 
   /**
    * @param name - the string to normalize
@@ -22,10 +27,12 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    *             * environment variable may start with _
    *             * cli option and flag may start with -
    *             therefore they will be
+   * @throws CastException if the name does have any letter or digit
    */
-  KeyNormalizer(String name) {
+  KeyNormalizer(String name) throws CastException {
 
     this.stringOrigin = name;
+    toParts(this.stringOrigin);
 
   }
 
@@ -36,8 +43,12 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    *            by separators characters (not letter or digit)
    *            by uppercase letter (if not preceded by another uppercase character to handle UPPER_SNAKE_CASE)
    *            The words can then be printed/normalized into a {@link KeyCase}
+   * @throws CastException when the key is null, does not have any letter or digit
    */
-  public static KeyNormalizer create(Object key) {
+  public static KeyNormalizer create(Object key) throws CastException {
+    if (key == null) {
+      throw new CastException("The key should not be null");
+    }
     if (key instanceof KeyNormalizer) {
       return (KeyNormalizer) key;
     }
@@ -45,27 +56,54 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
   /**
+   * Same as {@link #create(Object)} but with a runtime exception
+   * To use when the key is known in advance to have letters and digits
+   */
+  public static KeyNormalizer createSafe(Object key) {
+    try {
+      return create(key);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
    * @return the words in a camel case (ie UserCount)
    */
   public String toCamelCase() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
       .collect(Collectors.joining());
   }
 
+  /**
+   * A utility class that does not throw
+   *
+   * @return the parts of the original string
+   */
+  private List<String> toPartsFromOriginalString() {
+    try {
+      return toParts(this.stringOrigin);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 
   /**
    * @param s - normally the {@link #stringOrigin} but it may be first process to
-   *          normalize the string to a valid name before. Example: sql
+   *          normalize the string to a valid name before. Example: {@link #toSqlCase()}
    * @return the parts of a string in lowercase
    */
-  private List<String> toParts(String s) {
+  private List<String> toParts(String s) throws CastException {
 
-    if (!parts.isEmpty()) {
+    List<String> parts = partsByString.get(s);
+    if (parts != null) {
       return parts;
     }
+    parts = new ArrayList<>();
+    partsByString.put(s, parts);
 
     StringBuilder currentWord = new StringBuilder();
     /*
@@ -106,7 +144,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
       parts.add(currentWord.toString().toLowerCase());
     }
     if (parts.isEmpty()) {
-      throw new IllegalArgumentException("The key value (" + stringOrigin + ") after normalization is empty, It does not have any letter or digits.");
+      throw new CastException("The key value (" + stringOrigin + ") after normalization is empty, It does not have any letter or digits.");
     }
     return parts;
   }
@@ -116,7 +154,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    */
   public String toHandleCase() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase())
       .collect(Collectors.joining(" "));
@@ -126,7 +164,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    * @return the words in a Snake Case (ie user_count)
    */
   public String toSnakeCase() {
-    return toSnakeCase(this.toParts(this.stringOrigin));
+    return toSnakeCase(this.toPartsFromOriginalString());
   }
 
   private String toSnakeCase(List<String> parts) {
@@ -147,7 +185,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    * @return the words in a Upper Snake Case (ie USER_COUNT)
    */
   public String toUpperSnakeCase() {
-    return toUpperSnakeCase(this.toParts(this.stringOrigin));
+    return toUpperSnakeCase(this.toPartsFromOriginalString());
   }
 
   /**
@@ -156,7 +194,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    * Non-conforming letters are transformed into an underscore
    * The first character is transformed to `a` if it's not a latin letter
    */
-  public String toSqlCase() {
+  public String toSqlCase() throws CastException {
     return toSnakeCase(this.toParts(this.toSqlName()));
   }
 
@@ -164,7 +202,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
     char firstChar = sqlName.charAt(0);
     if (!String.valueOf(firstChar).matches("[a-zA-Z]")) {
       // throw new IllegalArgumentException("Name ("+sqlName+") is not valid for sql as it should start with a Latin letter (a-z, A-Z), not "+firstChar);
-      firstChar = 'a' ;
+      firstChar = 'a';
     }
     // Replace non-conforming characters with underscores
     StringBuilder sanitized = new StringBuilder();
@@ -195,13 +233,13 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    * Old case that conflicts with shouting.
    */
   @SuppressWarnings("unused")
-  public String toUpperSqlCase() {
+  public String toUpperSqlCase() throws CastException {
     return this.toSqlCase().toUpperCase();
   }
 
 
   @SuppressWarnings("unused")
-  public String toCase(KeyCase keyCase) {
+  public String toCase(KeyCase keyCase) throws CastException {
     switch (keyCase) {
       case HANDLE:
         return toHandleCase();
@@ -227,7 +265,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    */
   public String toHyphenCase() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(String::toLowerCase)
       .collect(Collectors.joining("-"));
@@ -259,12 +297,12 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
     KeyNormalizer that = (KeyNormalizer) o;
-    return Objects.equals(this.toParts(this.stringOrigin), that.toParts(that.stringOrigin));
+    return Objects.equals(this.toPartsFromOriginalString(), that.toPartsFromOriginalString());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(this.toParts(this.stringOrigin));
+    return Objects.hashCode(this.toPartsFromOriginalString());
   }
 
   /**
@@ -273,7 +311,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    */
   public String toCliShortOptionName() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(s -> String.valueOf(s.charAt(0)).toLowerCase())
       .collect(Collectors.joining());
@@ -293,7 +331,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    */
   public String toJavaSystemPropertyName() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(String::toLowerCase)
       .collect(Collectors.joining("."));
@@ -321,7 +359,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   @SuppressWarnings("unused")
   public String toEnvName() {
     return this
-      .toParts(this.stringOrigin)
+      .toPartsFromOriginalString()
       .stream()
       .map(String::toUpperCase)
       .collect(Collectors.joining("_"));
@@ -331,7 +369,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
    * @return the words, parts of the name in lowercase to implement your own case
    */
   public List<String> getParts() {
-    return toParts(this.stringOrigin);
+    return toPartsFromOriginalString();
   }
 
   @Override
