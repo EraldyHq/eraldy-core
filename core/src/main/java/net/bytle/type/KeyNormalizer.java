@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 /**
  * A key name normalizer
  */
+@SuppressWarnings("unused")
 public class KeyNormalizer implements Comparable<KeyNormalizer> {
 
 
@@ -286,11 +287,16 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
   /**
-   * @return a standard case for java system property in {@link #toHyphenCase()}
+   * @return a standard case for java system property ie `user.count`
    * There is no default but this is the most used
+   * Example: "web.environment", "vertx.web.environment"
    */
   public String toJavaSystemPropertyName() {
-    return toHyphenCase();
+    return this
+      .toParts(this.stringOrigin)
+      .stream()
+      .map(String::toLowerCase)
+      .collect(Collectors.joining("."));
   }
 
   /**
