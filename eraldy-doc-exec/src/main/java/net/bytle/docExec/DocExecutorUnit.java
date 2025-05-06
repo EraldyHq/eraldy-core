@@ -265,7 +265,7 @@ public class DocExecutorUnit {
           // Error
           System.out.flush(); // Into the byteArray
           System.err.flush(); // Into the byteArray
-          throw new RuntimeException("Error has been seen. Console Output was: \n" + byteArrayOutputStream.toString(), e);
+          throw new RuntimeException("Error has been seen. Console Output was: \n" + byteArrayOutputStream, e);
         }
         DocLog.LOGGER.info("Code execution with System exit with 0 has been prevented");
 
