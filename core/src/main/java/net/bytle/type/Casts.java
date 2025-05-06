@@ -437,6 +437,18 @@ public class Casts {
   }
 
   /**
+   * Same function as {@link #castToSameMap(Object, Class, Class)}
+   * but without exception. To use when you know the data in advance.
+   */
+  public static <K, V> Map<K, V> castToSameMapSafe(Object object, Class<K> clazzK, Class<V> clazzV) {
+    try {
+      return castToSameMap(object, clazzK, clazzV);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
    * This function cast the object to a map and don't create new one (meaning that the object
    * are not cast)
    *
@@ -524,6 +536,7 @@ public class Casts {
     throw new IllegalArgumentException("The object is not a collection (list, set) nor an array but a " + o.getClass().getSimpleName() + " and can't therefore be cast to a list");
 
   }
+
 
   @SuppressWarnings("unused")
   public static <T> Set<T> toSameSet(Object object, Class<T> clazzV) {
