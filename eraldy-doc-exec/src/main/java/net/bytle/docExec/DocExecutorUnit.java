@@ -28,9 +28,14 @@ public class DocExecutorUnit {
   private final DocExecutor docExecutor;
 
   /**
-   * A map to hold the main class of a appHome. See {@link #addMainClass(String, Class)}
+   * A map to hold the main class of a appHome. See {@link #addCliMainClass(String, Class)}
    */
   private final HashMap<String, Class<?>> cliClass = new HashMap<>();
+
+  /**
+   * A map to hold the qualified path of a cli. See {@link #addCliMainClass(String, Class)}
+   */
+  private final HashMap<String, String> cliPath = new HashMap<>();
 
   /**
    * The directory where the compile class are saved
@@ -103,15 +108,19 @@ public class DocExecutorUnit {
               .append("\"});\n");
             output.append(executeJavaCode(javaCode.toString()));
           } else {
-            // note: We could create java code in one class
+            // note: We could create the code in one java class
             // but maven make it impossible to load the org.zeroturnaround.exec package
             // ie for instance:
             // mvn test-compile exec:java -Dexec.mainClass="com.tabulify.doc.DocExec" -Dexec.classpathScope="test" -Dexec.args="howto/file/excel"
             // results in
             // Error: package org.zeroturnaround.exec does not exist
+            String qualifiedPath = this.toQualifiedPathIfKnown(exec);
+            List<String> argsWithQualifiedPath = new ArrayList<>();
+            argsWithQualifiedPath.add(qualifiedPath);
+            argsWithQualifiedPath.addAll(Arrays.asList(Arrays.copyOfRange(args, 1, args.length)));
             try {
               ProcessExecutor processExecutor = new ProcessExecutor()
-                .command(args)
+                .command(argsWithQualifiedPath)
                 .environment(docUnit.getEnv())
                 .readOutput(true);
               if (this.docExecutor.captureStdErr) {
@@ -136,6 +145,19 @@ public class DocExecutorUnit {
     }
 
 
+  }
+
+  /**
+   *
+   * @param cliName - the cli name
+   * @return the qualified path or the cli name if unknown
+   */
+  private String toQualifiedPathIfKnown(String cliName) {
+    String s = this.cliPath.get(cliName);
+    if (s == null) {
+      return cliName;
+    }
+    return s;
   }
 
 
@@ -313,16 +335,27 @@ public class DocExecutorUnit {
 
   /**
    * If the {@link DocUnit#getLanguage() language} is dos or bash,
-   * * the first name that we called here appHome is replaced by the mainClass
+   * * the first name that we called cli is replaced by the mainClass
    * * the others args forms the args that are passed to the main method of the mainClass
    *
-   * @param cli       - the appHome (ie the first word in a shell command)
+   * @param cli       - the cli name (ie the first word in a shell command)
    * @param mainClass - the main class that implements this appHome
    * @return - a docTestRunner for chaining construction
    */
-  public DocExecutorUnit addMainClass(String cli, Class mainClass) {
+  public DocExecutorUnit addCliMainClass(String cli, Class<?> mainClass) {
 
     this.cliClass.put(cli, mainClass);
+    return this;
+  }
+
+  /**
+   * @param cli  - the cli name (ie the first word in a shell command)
+   * @param path - the fully qualified cli path
+   * @return - a docTestRunner for chaining construction
+   */
+  public DocExecutorUnit addCliPath(String cli, String path) {
+
+    this.cliPath.put(cli, path);
     return this;
   }
 

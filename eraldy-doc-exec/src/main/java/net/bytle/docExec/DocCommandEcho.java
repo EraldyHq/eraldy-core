@@ -1,7 +1,7 @@
 package net.bytle.docExec;
 
 /**
- * An example of a {@link DocExecutorUnit#addMainClass(String, Class)} MainClass}
+ * An example of a {@link DocExecutorUnit#addCliMainClass(String, Class)} MainClass}
  * implementing a basic echo appHome
  * <p>
  * This class is used for testing purpose

@@ -9,8 +9,9 @@ public class Maps {
    * @return an object or null if not found
    */
   public static Object getPropertyCaseIndependent(Map<String, Object> properties, String key) {
+    KeyNormalizer keyNormalizer = KeyNormalizer.createSafe(key);
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
-      if (KeyNormalizer.create(key).equals(KeyNormalizer.create(entry.getKey()))) {
+      if (keyNormalizer.equals(KeyNormalizer.createSafe(entry.getKey()))) {
         return entry.getValue();
       }
     }
@@ -18,9 +19,6 @@ public class Maps {
   }
 
   /**
-   * @param map
-   * @param <K>
-   * @param <V>
    * @return a list of the entry sorted in natural order
    */
   public static <K, V extends Comparable<? super V>> List<Map.Entry<K, V>> getMapAsListEntrySortedByValue(Map<K, V> map) {

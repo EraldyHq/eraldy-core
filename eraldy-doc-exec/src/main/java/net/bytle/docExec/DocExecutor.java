@@ -27,7 +27,10 @@ public class DocExecutor {
   public boolean captureStdErr = true;
 
   DocCache docCache;
-  Map<String, Class<?>> commands = new HashMap<>();
+  Map<String, Class<?>> cliMainClass = new HashMap<>();
+  // The fully qualified path of the command
+  // to be sure that we don't hit another command
+  private Map<String,String> cliQualifiedPath = new HashMap<>();
 
   /**
    * @param overwrite If set to true, the console and the file node will be overwritten
@@ -182,8 +185,14 @@ public class DocExecutor {
 
     // A code executor
     DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(this);
-    for (String commandName : commands.keySet()) {
-      docExecutorUnit.addMainClass(commandName, commands.get(commandName));
+
+    // Add main class path if any
+    for (String commandName : cliMainClass.keySet()) {
+      docExecutorUnit.addCliMainClass(commandName, cliMainClass.get(commandName));
+    }
+    // Add qualified path if any
+    for (String commandName : cliQualifiedPath.keySet()) {
+      docExecutorUnit.addCliPath(commandName, cliQualifiedPath.get(commandName));
     }
 
     List<DocUnit> cachedDocUnits = new ArrayList<>();
@@ -329,7 +338,12 @@ public class DocExecutor {
 
 
   public DocExecutor addCommand(String command, Class<?> mainClazz) {
-    commands.put(command, mainClazz);
+    cliMainClass.put(command, mainClazz);
+    return this;
+  }
+
+  public DocExecutor addCommandQualifiedPath(String command, String qualifiedPath) {
+    cliQualifiedPath.put(command, qualifiedPath);
     return this;
   }
 

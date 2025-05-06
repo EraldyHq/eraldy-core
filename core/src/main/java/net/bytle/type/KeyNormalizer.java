@@ -63,7 +63,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
     try {
       return create(key);
     } catch (CastException e) {
-      throw new RuntimeException(e.getMessage(), e);
+      throw new IllegalArgumentException(e.getMessage(), e);
     }
   }
 
@@ -189,20 +189,37 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
   /**
+   * Same as {@link #toSqlCase()} but without compile exception
+   * Use it when you are sure that the name starts with a letter
+   */
+  public String toSqlCaseSafe() {
+
+    try {
+      return toSqlCase();
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+
+  }
+
+  /**
    * @return the words in a Snake Case (ie user_count)
    * conforming to chapter 5.4 of ANSI 1992
    * Non-conforming letters are transformed into an underscore
    * The first character is transformed to `a` if it's not a latin letter
+   * @throws CastException if the name does not start with a letter
    */
   public String toSqlCase() throws CastException {
+
     return toSnakeCase(this.toParts(this.toSqlName()));
+
   }
 
-  private String toSqlName(String sqlName) {
+  private String toSqlName(String sqlName) throws CastException {
     char firstChar = sqlName.charAt(0);
     if (!String.valueOf(firstChar).matches("[a-zA-Z]")) {
-      // throw new IllegalArgumentException("Name ("+sqlName+") is not valid for sql as it should start with a Latin letter (a-z, A-Z), not "+firstChar);
-      firstChar = 'a';
+      throw new CastException("Name (" + sqlName + ") is not valid for sql as it should start with a Latin letter (a-z, A-Z), not " + firstChar);
+
     }
     // Replace non-conforming characters with underscores
     StringBuilder sanitized = new StringBuilder();
@@ -224,7 +241,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   /**
    * @return normalize a string to a valid SQL Name
    */
-  public String toSqlName() {
+  public String toSqlName() throws CastException {
     return toSqlName(this.stringOrigin);
   }
 
@@ -238,7 +255,17 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   }
 
 
-  @SuppressWarnings("unused")
+  public String toCaseSafe(KeyCase keyCase) {
+    try {
+      return toCase(keyCase);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * @throws CastException if the name does not correspond to the case (ie only use for sql where the name should start with a letter)
+   */
   public String toCase(KeyCase keyCase) throws CastException {
     switch (keyCase) {
       case HANDLE:

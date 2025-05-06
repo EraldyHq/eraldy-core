@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * A map that normalize the key when looking up
- * with the {@link Key#toNormalizedKey(String)}
+ * with the {@link KeyNormalizer}
  * <p>
  * ie:
  * - case independent
@@ -59,7 +59,7 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
     return map.containsValue(value);
   }
 
-  public V get(KeyNormalizer key){
+  public V get(KeyNormalizer key) {
     String naturalKey = normalizedToNormalKeyMap.get(key);
     if (naturalKey == null) {
       return null;
@@ -67,14 +67,26 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
     return map.get(naturalKey);
   }
 
+
+  /**
+   * @param key the key whose associated value is to be returned
+   * @throws IllegalArgumentException if the key does not have any letter or digit
+   */
   @Override
   public V get(Object key) {
-    return get(KeyNormalizer.create(key));
+    KeyNormalizer key1 = KeyNormalizer.createSafe(key);
+    return get(key1);
   }
 
+  /**
+   * @param key   key with which the specified value is to be associated
+   * @param value value to be associated with the specified key
+   * @throws IllegalArgumentException if the key does not have any letter or digit
+   */
   @Override
   public V put(String key, V value) {
-    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
+
+    KeyNormalizer normalizedKey = KeyNormalizer.createSafe(key);
     String naturalKey = normalizedToNormalKeyMap.get(normalizedKey);
     V oldValue = null;
     if (naturalKey != null) {
@@ -87,9 +99,14 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
 
   }
 
+  /**
+   * @param key key whose mapping is to be removed from the map
+   * @throws IllegalArgumentException if the key does not have any letter or digit
+   */
   @Override
   public V remove(Object key) {
-    KeyNormalizer normalizedKey = KeyNormalizer.create(key);
+
+    KeyNormalizer normalizedKey = KeyNormalizer.createSafe(key);
     String naturalKey = normalizedToNormalKeyMap.remove(normalizedKey);
     return map.remove(naturalKey);
 
@@ -125,13 +142,16 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
     return map.entrySet();
   }
 
-
+  /**
+   *
+   * @throws CastException - if the retrieved value could be casted
+   * @throws IllegalArgumentException if the key does not have any letter or digit
+   */
   public <T> T get(Object key, Class<T> clazz) throws CastException {
     V v = get(key);
     if (v == null) {
       return null;
-    } else {
-      return Casts.cast(v, clazz);
     }
+    return Casts.cast(v, clazz);
   }
 }

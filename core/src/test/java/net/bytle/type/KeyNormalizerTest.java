@@ -1,13 +1,14 @@
 package net.bytle.type;
 
 
+import net.bytle.exception.CastException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class KeyNormalizerTest {
 
   @Test
-  public void testEquals() {
+  public void testEquals() throws CastException {
 
     boolean equals = KeyNormalizer.create("hallo foo bar").equals(KeyNormalizer.create("HalloFooBar"));
     Assertions.assertTrue(equals);
@@ -21,7 +22,7 @@ public class KeyNormalizerTest {
   }
 
   @Test
-  void testCamelCase() {
+  void testCamelCase() throws CastException {
 
     Assertions.assertEquals(
       "UpperSnakeCase",
@@ -31,7 +32,7 @@ public class KeyNormalizerTest {
   }
 
   @Test
-  public void testSqlName() {
+  public void testSqlName() throws CastException {
 
     boolean equals = KeyNormalizer.create("hallo-foo _bar").toSqlName().equals("hallo_foo__bar");
     Assertions.assertTrue(equals, "bad character as underscore");

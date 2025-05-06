@@ -25,7 +25,7 @@ public class DocTest {
         DocExecutor docExecutor = DocExecutor.create("test");
         // A runnner
         DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addMainClass("echo", DocCommandEcho.class);
+                .addCliMainClass("echo", DocCommandEcho.class);
 
         // First test
         final DocUnit firstDocUnit = docUnits.get(0);
@@ -116,7 +116,7 @@ public class DocTest {
         DocUnit docUnit = DocParser.getDocTests(path).get(0);
         DocExecutor docExecutor = DocExecutor.create("test");
         DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addMainClass("echo", DocCommandEcho.class);
+                .addCliMainClass("echo", DocCommandEcho.class);
 
         Assertions.assertEquals(docUnit.getConsole().trim(), docExecutorUnit.run(docUnit), "The run and the expectations are the same ");
 

@@ -27,7 +27,7 @@ public class DocFileBlockTest {
 
     DocExecutor docExecutor = DocExecutor.create("test");
     String result = DocExecutorUnit.create(docExecutor)
-      .addMainClass("cat", DocCommandCat.class)
+      .addCliMainClass("cat", DocCommandCat.class)
       .run(docUnit);
     Assertions.assertNotEquals( docUnit.getConsole(), result,"The run and the expectations are not the same");
 
