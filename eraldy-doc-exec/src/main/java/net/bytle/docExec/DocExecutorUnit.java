@@ -301,9 +301,6 @@ public class DocExecutorUnit {
         System.setOut(backupSystemOut);
         System.setErr(backupSystemErr);
 
-        // Set it back to null
-        System.setSecurityManager(null);
-
       }
 
       return byteArrayOutputStream.toString();

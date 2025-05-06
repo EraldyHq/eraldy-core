@@ -30,7 +30,7 @@ public class DocExecutor {
   Map<String, Class<?>> cliMainClass = new HashMap<>();
   // The fully qualified path of the command
   // to be sure that we don't hit another command
-  private Map<String,String> cliQualifiedPath = new HashMap<>();
+  private final Map<String, String> cliQualifiedPath = new HashMap<>();
 
   /**
    * @param overwrite If set to true, the console and the file node will be overwritten
@@ -54,14 +54,10 @@ public class DocExecutor {
 
 
   /**
-   *
-   *
    * @param name The execution name
    */
   private DocExecutor(String name) {
     this.name = name;
-    // Managing System.exit with the security manager
-    System.setSecurityManager(DocSecurityManager.create());
   }
 
   public static List<DocExecutorResult> Run(Path path, String command, Class<?> commandClass) {
@@ -167,12 +163,14 @@ public class DocExecutor {
 
 
   /**
-   *
-   *
    * @param path the doc to execute
    * @return the new page
    */
   private DocExecutorResult execute(Path path) throws NoSuchFileException {
+
+    // Managing System.exit in code execution with the security manager
+    DocSecurityManager securityManager = DocSecurityManager.create();
+    System.setSecurityManager(securityManager);
 
     DocExecutorResult docExecutorResult = DocExecutorResult
       .get(path)
@@ -284,6 +282,7 @@ public class DocExecutor {
           try {
             DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
             docExecutorResult.incrementCodeExecutionCounter();
+            securityManager.setCodeIsRunning(true);
             result = docExecutorUnit.eval(docUnit).trim();
             DocLog.LOGGER.fine(this.name, "Code executed, no error");
             oneCodeBlockHasAlreadyRun = true;
@@ -299,6 +298,8 @@ public class DocExecutor {
               DocLog.LOGGER.fine(this.name, "Stop at first run. Throwing the error");
               throw new RuntimeException(e);
             }
+          } finally {
+            securityManager.setCodeIsRunning(false);
           }
         } else {
           DocLog.LOGGER.info(this.name, "The run of the code (" + Log.onOneLine(code) + ") was skipped due to caching from the file (" + docUnit.getPath() + ")");
@@ -334,6 +335,7 @@ public class DocExecutor {
     targetDoc.append(originalDoc, previousEnd, originalDoc.length());
     docExecutorResult.setNewDoc(targetDoc.toString());
     return docExecutorResult;
+
   }
 
 
@@ -348,8 +350,6 @@ public class DocExecutor {
   }
 
   /**
-   *
-   *
    * @param path the base path (Where do we will find the files defined in the file node)
    * @return the runner for chaining instantiation
    */
@@ -365,7 +365,7 @@ public class DocExecutor {
   /**
    * Add java system property
    *
-   * @param key the key
+   * @param key   the key
    * @param value the value
    * @return the object for chaining
    */
