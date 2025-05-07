@@ -296,7 +296,7 @@ public class DocExecutor {
             DocLog.LOGGER.severe(this.name, "Error during execute: " + result);
             if (stopRunAtFirstError) {
               DocLog.LOGGER.fine(this.name, "Stop at first run. Throwing the error");
-              throw new RuntimeException(e);
+              throw new RuntimeException(e.getMessage(), e);
             }
           } finally {
             securityManager.setCodeIsRunning(false);

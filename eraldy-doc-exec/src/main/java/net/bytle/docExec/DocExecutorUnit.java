@@ -148,7 +148,6 @@ public class DocExecutorUnit {
   }
 
   /**
-   *
    * @param cliName - the cli name
    * @return the qualified path or the cli name if unknown
    */
@@ -215,7 +214,6 @@ public class DocExecutorUnit {
       // Add class path to get org.zeroturnaround.exec
       String currentClassPath = System.getProperty("java.class.path");
       LOGGER.fine("Using classpath: " + currentClassPath);
-      System.out.println("Using classpath: " + currentClassPath);
       if (currentClassPath != null && !currentClassPath.isEmpty()) {
         options.add("-classpath");
         options.add(currentClassPath);
@@ -287,7 +285,13 @@ public class DocExecutorUnit {
           // Error
           System.out.flush(); // Into the byteArray
           System.err.flush(); // Into the byteArray
-          throw new RuntimeException("Error has been seen. Console Output was: \n" + byteArrayOutputStream, e);
+          String consoleOutput;
+          if(byteArrayOutputStream.size()==0){
+            consoleOutput="No output was received";
+          } else {
+            consoleOutput = byteArrayOutputStream.toString();
+          }
+          throw new RuntimeException("Error has been seen.\nCode:\n" + javaCode + "Console Output: \n" + consoleOutput, e);
         }
         DocLog.LOGGER.info("Code execution with System exit with 0 has been prevented");
 
