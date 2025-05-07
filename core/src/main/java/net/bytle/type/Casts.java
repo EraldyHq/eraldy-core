@@ -149,6 +149,26 @@ public class Casts {
       }
 
       /**
+       * Uri Enhanced
+       */
+      if (targetClass == UriEnhanced.class) {
+        String uri = sourceObject.toString();
+        try {
+
+          return targetClass.cast(UriEnhanced.createFromString(uri));
+
+        } catch (Exception e) {
+          String message = "The string `" + uri + "` is not a valid uri.";
+          if (uri.startsWith("\"") || uri.startsWith("'")) {
+            message += " You should delete the character quote.";
+          }
+          message += " Error: " + e.getMessage();
+          throw new CastException(message, e);
+        }
+
+      }
+
+      /**
        * Boolean
        */
       if (targetClass == Boolean.class) {

@@ -4,7 +4,6 @@ import net.bytle.exception.CastException;
 import net.bytle.exception.IllegalStructure;
 import net.bytle.exception.NotFoundException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -14,6 +13,7 @@ import java.util.Map;
  * <p>
  * that java does not provide such as key case and separation key independence
  */
+@SuppressWarnings("unused")
 public class UriEnhanced {
 
 
@@ -44,6 +44,9 @@ public class UriEnhanced {
       uri = URI.create(s);
     } catch (Exception e) {
       try {
+        /**
+         * Maybe a bad formatted URL
+         */
         URL url = new URL(s);
         StringBuilder encodedUrl = new StringBuilder()
           .append(url.getProtocol())
@@ -55,10 +58,10 @@ public class UriEnhanced {
         if (!url.getQuery().isEmpty()) {
           encodedUrl
             .append("?")
-            .append(URLEncoder.encode(url.getQuery(), "UTF-8"));
+            .append(URLEncoder.encode(url.getQuery(), StandardCharsets.UTF_8));
         }
         uri = URI.create(encodedUrl.toString());
-      } catch (MalformedURLException | UnsupportedEncodingException ex) {
+      } catch (MalformedURLException ex) {
         throw new IllegalStructure("Illegal URI, URL or encoding: " + e.getMessage(), e);
       }
     }
@@ -315,6 +318,10 @@ public class UriEnhanced {
 
   public String getPath() {
     return this.path;
+  }
+
+  public String getSchemeSpecificPart(){
+    return this.schemeSpecificPart;
   }
 
   /**
