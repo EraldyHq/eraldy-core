@@ -40,9 +40,17 @@ public class Glob {
   }
 
   public static boolean matchOneOfGlobs(String key, List<Glob> globs) {
+    return matchOneOfGlobs(key, globs, 0);
+  }
+
+  /**
+   *
+   * @param flags - flags of {@link Pattern#compile(String, int)} or 0
+   */
+  public static boolean matchOneOfGlobs(String key, List<Glob> globs, int flags) {
     boolean match = false;
     for (Glob glob : globs) {
-      if (glob.matches(key)) {
+      if (glob.matches(key, flags)) {
         match = true;
         break;
       }
@@ -212,8 +220,20 @@ public class Glob {
   }
 
   public Boolean matches(String s) {
+    return matches(s, 0);
+  }
+
+  public Boolean matchesIgnoreCase(String s) {
+    return matches(s, Pattern.CASE_INSENSITIVE);
+  }
+
+  /**
+   * @param flags - {@link Pattern#compile(String, int)} flags
+   */
+  public Boolean matches(String s, int flags) {
     String regexpPattern = toRegexPattern();
-    return s.matches(regexpPattern);
+    Pattern mypattern = Pattern.compile(regexpPattern, flags);
+    return mypattern.matcher(s).matches();
   }
 
   @Override
