@@ -168,6 +168,13 @@ public class Casts {
 
       }
 
+      if (targetClass == DnsName.class) {
+
+        String dnsNameAsString = sourceObject.toString();
+        return targetClass.cast(DnsName.create(dnsNameAsString));
+
+      }
+
       /**
        * Boolean
        */
