@@ -7,11 +7,14 @@ import net.bytle.exception.NotFoundException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A URI wrapper to be able to build and get URI data
  * <p>
- * that java does not provide such as key case and separation key independence
+ * Feature:
+ * * key case and separation key independence
+ * * URI from URL
  */
 @SuppressWarnings("unused")
 public class UriEnhanced {
@@ -362,4 +365,17 @@ public class UriEnhanced {
     return this;
 
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    UriEnhanced that = (UriEnhanced) o;
+    return Objects.equals(toUri(), that.toUri());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(toUri());
+  }
+
 }
