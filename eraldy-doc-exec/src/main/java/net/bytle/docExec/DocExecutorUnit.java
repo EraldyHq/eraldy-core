@@ -141,7 +141,7 @@ public class DocExecutorUnit {
         }
         return output.toString();
       default:
-        throw new RuntimeException("Language (" + docUnit.getLanguage() + " not yet implemented");
+        throw new RuntimeException("Language (" + docUnit.getLanguage() + ") not yet implemented (Found in " + docUnit.getPath() + ")");
     }
 
 
@@ -286,8 +286,8 @@ public class DocExecutorUnit {
           System.out.flush(); // Into the byteArray
           System.err.flush(); // Into the byteArray
           String consoleOutput;
-          if(byteArrayOutputStream.size()==0){
-            consoleOutput="No output was received";
+          if (byteArrayOutputStream.size() == 0) {
+            consoleOutput = "No output was received";
           } else {
             consoleOutput = byteArrayOutputStream.toString();
           }
