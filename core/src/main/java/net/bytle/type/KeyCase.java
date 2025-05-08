@@ -12,6 +12,10 @@ public enum KeyCase {
    */
   HYPHEN,
   /**
+   * In kebab-case
+   */
+  KEBAB,
+  /**
    * In snake_case
    */
   SNAKE,
@@ -26,5 +30,9 @@ public enum KeyCase {
   /**
    * For a file name
    */
-  FILE
+  FILE,
+  /**
+   * For an os env
+   */
+  SNAKE_UPPER
 }

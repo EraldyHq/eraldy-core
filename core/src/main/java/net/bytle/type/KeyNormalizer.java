@@ -177,7 +177,7 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
   private String toUpperSnakeCase(List<String> parts) {
     return parts
       .stream()
-      .map(String::toLowerCase)
+      .map(String::toUpperCase)
       .collect(Collectors.joining("_"));
   }
 
@@ -273,11 +273,14 @@ public class KeyNormalizer implements Comparable<KeyNormalizer> {
       case CAMEL:
         return toCamelCase();
       case HYPHEN:
+      case KEBAB:
         return toHyphenCase();
       case FILE:
         return toFileCase();
       case SNAKE:
         return toSnakeCase();
+      case SNAKE_UPPER:
+        return toUpperSnakeCase();
       case SQL:
         return toSqlCase();
       default:
