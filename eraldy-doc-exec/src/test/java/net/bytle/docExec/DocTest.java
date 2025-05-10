@@ -22,10 +22,10 @@ public class DocTest {
         final int expected = 4;
         Assertions.assertEquals(expected, docUnits.size(), expected + " tests were found");
 
-        DocExecutor docExecutor = DocExecutor.create("test");
+        DocExecutor docExecutor = DocExecutor.create("test")
+          .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class);
         // A runnner
-        DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addCliMainClass("echo", DocCommandEcho.class);
+        DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor);
 
         // First test
         final DocUnit firstDocUnit = docUnits.get(0);
@@ -114,9 +114,10 @@ public class DocTest {
 
         final Path path = Paths.get("./src/test/resources/docTest/withEnv.txt");
         DocUnit docUnit = DocParser.getDocTests(path).get(0);
-        DocExecutor docExecutor = DocExecutor.create("test");
-        DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor)
-                .addCliMainClass("echo", DocCommandEcho.class);
+        DocExecutor docExecutor = DocExecutor.create("test")
+          .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class);
+        DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(docExecutor);
+
 
         Assertions.assertEquals(docUnit.getConsole().trim(), docExecutorUnit.run(docUnit), "The run and the expectations are the same ");
 
@@ -130,7 +131,7 @@ public class DocTest {
 
         List<DocExecutorResult> doc =
                 DocExecutor.create("whatever")
-                        .addCommand("echo", DocCommandEcho.class)
+                        .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class)
                         .run(Paths.get("./src/test/resources/docTest/withoutExpectation.txt"));
 
         Assertions.assertEquals(1, doc.size());
@@ -142,7 +143,7 @@ public class DocTest {
         final Path rootFile = Paths.get("./src/test/resources");
         Path docToRun = Paths.get("./src/test/resources/docTest/fileTest.txt");
         DocExecutorResult docTestRun = DocExecutor.create("defaultRun")
-                .addCommand("cat", DocCommandCat.class)
+                .setShellCommandExecuteViaMainClass("cat", DocCommandCat.class)
                 .setBaseFileDirectory(rootFile)
                 .run(docToRun)
                 .get(0);
@@ -199,7 +200,7 @@ public class DocTest {
         Path docToRun = Paths.get("./src/test/resources/docTest/overwriteSecond.txt");
         String before = Strings.createFromPath(docToRun).toString();
         DocExecutorResult docTestRun = DocExecutor.create("defaultRun")
-                .addCommand("echo", DocCommandEcho.class)
+                .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class)
                 .setBaseFileDirectory(rootFile)
                 .run(docToRun)
                 .get(0);

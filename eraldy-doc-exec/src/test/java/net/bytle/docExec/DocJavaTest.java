@@ -7,10 +7,10 @@ public class DocJavaTest {
 
 
     /**
-     * An normal system exit (ie 0 status) should not:
+     * A normal system exit (ie 0 status) should not:
      * * thrown an error
      * * and exit the process
-     * This exist is used when the help is asked to terminate the process in a normal wa
+     * This exist is used when the help is asked to terminate the process in a normal way
      */
     @Test
     public void noExitTest() {
@@ -37,7 +37,7 @@ public class DocJavaTest {
     }
 
     /**
-     * An normal system exit (ie 0 status) should not:
+     * A normal system exit (ie 0 status) should not:
      * * thrown an error
      * * and exit the process
      * This exist is used when the help is asked to terminate the process in a normal wa

@@ -51,7 +51,7 @@ public class DocCacheExecutionTest {
         DocCache docCache = DocCache.get(runName);
         final DocExecutor docExecutor = DocExecutor.create(runName)
                 .setCache(docCache)
-                .addCommand("echo", DocCommandEcho.class);
+                .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class);
 
         /**
          * The first run has no cache
@@ -128,7 +128,7 @@ public class DocCacheExecutionTest {
         DocCache docCache = DocCache.get(runName);
         final DocExecutor docExecutor = DocExecutor.create(runName)
                 .setCache(docCache)
-                .addCommand("echo", DocCommandEcho.class);
+                .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class);
 
         DocExecutorResult result = docExecutor
                 .run(docPath)

@@ -14,7 +14,10 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -27,15 +30,6 @@ public class DocExecutorUnit {
   public static final Log LOGGER = DocLog.LOGGER;
   private final DocExecutor docExecutor;
 
-  /**
-   * A map to hold the main class of a appHome. See {@link #addCliMainClass(String, Class)}
-   */
-  private final HashMap<String, Class<?>> cliClass = new HashMap<>();
-
-  /**
-   * A map to hold the qualified path of a cli. See {@link #addCliMainClass(String, Class)}
-   */
-  private final HashMap<String, String> cliPath = new HashMap<>();
 
   /**
    * The directory where the compile class are saved
@@ -59,10 +53,10 @@ public class DocExecutorUnit {
   }
 
   /**
-   * @param docExecutor
+   * @param docExecutor - the context object
    * @return - a docTestRunner that contains the environment variable and function to run a test
    */
-  public static DocExecutorUnit create(DocExecutor docExecutor) {
+  protected static DocExecutorUnit create(DocExecutor docExecutor) {
     return new DocExecutorUnit(docExecutor);
   }
 
@@ -78,9 +72,9 @@ public class DocExecutorUnit {
    * @param docUnit - The docTestUnit to evaluate
    * @return the stdout and stderr in a string
    * @throws RuntimeException - if something is going wrong
-   *                          The method {@Link #run} is exception safe and return the error message back
+   *                          The method {@link #run} is exception safe and return the error message back
    */
-  String eval(DocUnit docUnit) {
+  private String eval(DocUnit docUnit) {
 
 
     switch (docUnit.getLanguage()) {
@@ -95,11 +89,17 @@ public class DocExecutorUnit {
         for (String[] command : commands) {
           String[] args = command;
           // the executable of the command
-          final String exec = args[0];
-          Class<?> importClass = this.getMainClass(exec);
+          final String binaryCliName = args[0];
+          Class<?> importClass = this.docExecutor.getShellCommandMainClass(binaryCliName);
 
+          /**
+           * Use Java to execute the shell command
+           */
           StringBuilder javaCode = new StringBuilder();
           if (importClass != null) {
+            if (docExecutor.isExecuteShellCommandViaShellBinary(binaryCliName)) {
+              throw new RuntimeException("Conflict: The cli " + binaryCliName + " was set to use the main class " + importClass + " and to be execute via the shell binary (bash -c)");
+            }
             args = Arrays.copyOfRange(args, 1, args.length);
             javaCode
               .append(importClass.getName())
@@ -108,19 +108,32 @@ public class DocExecutorUnit {
               .append("\"});\n");
             output.append(executeJavaCode(javaCode.toString()));
           } else {
-            // note: We could create the code in one java class
-            // but maven make it impossible to load the org.zeroturnaround.exec package
-            // ie for instance:
-            // mvn test-compile exec:java -Dexec.mainClass="com.tabulify.doc.DocExec" -Dexec.classpathScope="test" -Dexec.args="howto/file/excel"
-            // results in
-            // Error: package org.zeroturnaround.exec does not exist
-            String qualifiedPath = this.toQualifiedPathIfKnown(exec);
-            List<String> argsWithQualifiedPath = new ArrayList<>();
-            argsWithQualifiedPath.add(qualifiedPath);
-            argsWithQualifiedPath.addAll(Arrays.asList(Arrays.copyOfRange(args, 1, args.length)));
+
+            List<String> cliCommand;
+            if (docExecutor.isExecuteShellCommandViaShellBinary(binaryCliName)) {
+
+              cliCommand = Arrays.asList("bash", "-c", docUnit.getCode());
+
+            } else {
+
+              // note: We could create the code in one java class
+              // but maven make it impossible to load the org.zeroturnaround.exec package
+              // ie for instance:
+              // mvn test-compile exec:java -Dexec.mainClass="com.tabulify.doc.DocExec" -Dexec.classpathScope="test" -Dexec.args="howto/file/excel"
+              // results in
+              // Error: package org.zeroturnaround.exec does not exist
+              // We were parsing, but we can just call bash for code execution
+
+              String qualifiedPath = this.toQualifiedPathIfKnown(binaryCliName);
+              cliCommand = new ArrayList<>();
+              cliCommand.add(qualifiedPath);
+              cliCommand.addAll(Arrays.asList(Arrays.copyOfRange(args, 1, args.length)));
+
+            }
+
             try {
               ProcessExecutor processExecutor = new ProcessExecutor()
-                .command(argsWithQualifiedPath)
+                .command(cliCommand)
                 .environment(docUnit.getEnv())
                 .readOutput(true);
               if (this.docExecutor.captureStdErr) {
@@ -152,11 +165,11 @@ public class DocExecutorUnit {
    * @return the qualified path or the cli name if unknown
    */
   private String toQualifiedPathIfKnown(String cliName) {
-    String s = this.cliPath.get(cliName);
+    Path s = this.docExecutor.getShellCommandPath(cliName);
     if (s == null) {
       return cliName;
     }
-    return s;
+    return s.toAbsolutePath().toString();
   }
 
 
@@ -328,46 +341,16 @@ public class DocExecutorUnit {
    */
   public String run(DocUnit docUnit) {
 
-
-    return eval(docUnit).trim();
+    DocSecurityManager securityManager = docExecutor.getSecurityManager();
+    try {
+      securityManager.setCodeIsRunning(true);
+      return eval(docUnit).trim();
+    } finally {
+      securityManager.setCodeIsRunning(false);
+    }
 
 
   }
 
-  /**
-   * If the {@link DocUnit#getLanguage() language} is dos or bash,
-   * * the first name that we called cli is replaced by the mainClass
-   * * the others args forms the args that are passed to the main method of the mainClass
-   *
-   * @param cli       - the cli name (ie the first word in a shell command)
-   * @param mainClass - the main class that implements this appHome
-   * @return - a docTestRunner for chaining construction
-   */
-  public DocExecutorUnit addCliMainClass(String cli, Class<?> mainClass) {
-
-    this.cliClass.put(cli, mainClass);
-    return this;
-  }
-
-  /**
-   * @param cli  - the cli name (ie the first word in a shell command)
-   * @param path - the fully qualified cli path
-   * @return - a docTestRunner for chaining construction
-   */
-  public DocExecutorUnit addCliPath(String cli, String path) {
-
-    this.cliPath.put(cli, path);
-    return this;
-  }
-
-  /**
-   * @param cli - the cli/exec
-   * @return the main class that implements a cli/exec
-   * <p>
-   * This is used to generate Java code when the documentation is a shell documentation
-   */
-  public Class<?> getMainClass(String cli) {
-    return this.cliClass.get(cli);
-  }
 
 }

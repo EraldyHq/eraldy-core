@@ -39,9 +39,9 @@ public class DocShellTest {
     final Path path = Paths.get("./src/test/resources/docTest/dos.txt");
     List<DocUnit> docUnits = DocParser.getDocTests(path);
     DocUnit docUnit = docUnits.get(0);
-    DocExecutor docExecutor = DocExecutor.create("test");
+    DocExecutor docExecutor = DocExecutor.create("test")
+      .setShellCommandExecuteViaMainClass("echo", DocCommandEcho.class);
     String result = DocExecutorUnit.create(docExecutor)
-      .addCliMainClass("echo", DocCommandEcho.class)
       .run(docUnit);
     Assertions.assertEquals(docUnit.getConsole().trim(), result, "The run and the expectations are the same");
   }
@@ -69,6 +69,7 @@ public class DocShellTest {
     String[] command1 = {"echo", "Foo"};
     Assertions.assertEquals(String.join(",", command1), String.join(",", commands.get(0)), "The first command");
   }
+
 
   @Test
   public void envWindowsTest() {
