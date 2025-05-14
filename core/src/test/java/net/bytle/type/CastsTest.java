@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.util.*;
 
 public class CastsTest {
@@ -23,6 +24,15 @@ public class CastsTest {
     String source = "0";
     BigInteger target = new BigInteger("0");
     Assertions.assertEquals(target, Casts.cast(source, BigInteger.class), "Same data");
+  }
+
+  @Test
+  public void castSqlTimeTest() throws CastException {
+
+    Time expected = Time.valueOf("08:00:00");
+    Assertions.assertEquals(expected, Casts.cast("08:00", java.sql.Time.class), "Same data");
+    Assertions.assertEquals(expected, Casts.cast("08:00:00.000", java.sql.Time.class), "Same data");
+
   }
 
   @SuppressWarnings("unchecked")

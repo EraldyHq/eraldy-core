@@ -315,6 +315,14 @@ public class UriEnhanced {
     return getQueryProperty(enumValue.toString());
   }
 
+  /**
+   *
+   * @return a scheme or null
+   * A URI string with as single word such as "scheme" is a valid URI
+   * but will return null as the scheme is not mandatory and should be delimited by `:`
+   * A valid minimal URI with only a scheme is "scheme:/" that will set the scheme
+   * to "scheme" and the path to `/`
+   */
   public String getScheme() {
     return this.scheme;
   }
