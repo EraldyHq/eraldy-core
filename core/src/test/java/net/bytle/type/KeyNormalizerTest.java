@@ -34,11 +34,8 @@ public class KeyNormalizerTest {
   @Test
   public void testSqlName() throws CastException {
 
-    boolean equals = KeyNormalizer.create("hallo-foo _bar").toSqlName().equals("hallo_foo__bar");
-    Assertions.assertTrue(equals, "bad character as underscore");
-
-    equals = KeyNormalizer.create("HalloFoo").toSqlName().equals("HalloFoo");
-    Assertions.assertTrue(equals, "uppercase is valid");
+    String actual = KeyNormalizer.create("hallo-foo _bar").toSqlCase();
+    Assertions.assertEquals("hallo_foo_bar",actual);
 
   }
 

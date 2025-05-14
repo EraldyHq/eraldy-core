@@ -50,8 +50,11 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
 
   @Override
   public boolean containsKey(Object key) {
-    String normalizedKey = Key.toNormalizedKey(key.toString());
-    return normalizedToNormalKeyMap.containsKey(normalizedKey);
+    return containsKey(KeyNormalizer.createSafe(key.toString()));
+  }
+
+  public boolean containsKey(KeyNormalizer key) {
+    return normalizedToNormalKeyMap.containsKey(key);
   }
 
   @Override
@@ -143,8 +146,7 @@ public class MapKeyIndependent<V> extends AbstractMap<String, V> implements Map<
   }
 
   /**
-   *
-   * @throws CastException - if the retrieved value could be casted
+   * @throws CastException            - if the retrieved value could be casted
    * @throws IllegalArgumentException if the key does not have any letter or digit
    */
   public <T> T get(Object key, Class<T> clazz) throws CastException {
