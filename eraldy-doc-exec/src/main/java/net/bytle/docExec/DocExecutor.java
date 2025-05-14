@@ -3,6 +3,8 @@ package net.bytle.docExec;
 
 import net.bytle.fs.Fs;
 import net.bytle.log.Log;
+import net.bytle.log.LogLevel;
+import net.bytle.log.Logs;
 import net.bytle.type.Strings;
 
 import java.nio.file.Files;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 
 @SuppressWarnings("unused")
@@ -32,6 +35,7 @@ public class DocExecutor {
   // to be sure that we don't hit another command
   private final Map<String, Path> shellCommandAbsolutePathMap = new HashMap<>();
   private final Map<String, Boolean> shellCommandUseShellBinaryMap = new HashMap<>();
+  private Level logLevel = LogLevel.INFO;
 
   /**
    * @param overwrite If set to true, the console and the file node will be overwritten
@@ -97,6 +101,7 @@ public class DocExecutor {
    */
   public List<DocExecutorResult> run(Path... paths) {
 
+    Logs.setLevel(this.logLevel);
 
     List<DocExecutorResult> results = new ArrayList<>();
     for (Path path : paths) {
@@ -270,8 +275,8 @@ public class DocExecutor {
             || (!cacheIsOn())
             || oneCodeBlockHasAlreadyRun
         ) {
+          DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
           try {
-            DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
             docExecutorResult.incrementCodeExecutionCounter();
             result = docExecutorUnit.run(docUnit).trim();
             DocLog.LOGGER.fine(this.name, "Code executed, no error");
@@ -374,6 +379,11 @@ public class DocExecutor {
     return this;
   }
 
+  public DocExecutor setLogLevel(Level level) {
+    this.logLevel = level;
+    return this;
+  }
+
   /**
    * @return if the cache is on
    */
@@ -448,5 +458,7 @@ public class DocExecutor {
   protected DocSecurityManager getSecurityManager() {
     return this.securityManager;
   }
+
+
 
 }
