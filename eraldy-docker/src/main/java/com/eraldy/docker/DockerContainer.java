@@ -272,6 +272,7 @@ public class DockerContainer {
   }
 
 
+  @SuppressWarnings("unused")
   public static class Conf {
 
     private String containerName = "test-container";
@@ -284,16 +285,17 @@ public class DockerContainer {
       this.image = image;
     }
 
-    public void setContainerName(String containerName) {
+    public Conf setContainerName(String containerName) {
       this.containerName = containerName;
+      return this;
     }
 
-    public Conf setPortBonding(Integer hostPort, Integer containerPort) {
+    public Conf setPortBinding(Integer hostPort, Integer containerPort) {
       this.portMap.put(hostPort, containerPort);
       return this;
     }
 
-    public Conf setVolumeBonding(Path hostPath, Path containerPath) {
+    public Conf setVolumeBinding(Path hostPath, Path containerPath) {
       this.volumeMap.put(hostPath, containerPath);
       return this;
     }

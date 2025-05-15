@@ -27,7 +27,7 @@ class DockerContainerTest {
     DockerContainer.Conf conf = DockerContainer.createConf(IMAGE_NAME);
     conf.setContainerName(CONTAINER_NAME);
     Integer port = Oss.getRandomAvailablePort();
-    conf.setPortBonding(port, 80);
+    conf.setPortBinding(port, 80);
 
     dockerContainer = conf.build();
     if(dockerContainer.exists()){

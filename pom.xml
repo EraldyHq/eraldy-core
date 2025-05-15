@@ -103,6 +103,11 @@
       </dependency>
       <dependency>
         <groupId>com.eraldy</groupId>
+        <artifactId>eraldy-docker</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.eraldy</groupId>
         <artifactId>eraldy-niofs-http</artifactId>
         <version>${project.version}</version>
       </dependency>
