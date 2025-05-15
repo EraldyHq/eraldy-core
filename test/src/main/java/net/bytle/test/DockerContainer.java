@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A Docker container to start, stop, run Docker container
+ * A Docker container class to start, stop, and run Docker containers
  */
 public class DockerContainer {
 
@@ -19,6 +19,9 @@ public class DockerContainer {
     this.conf = conf;
   }
 
+  /**
+   * @return the shell command to run in dos and bash format
+   */
   public String createDockerCommand() {
     String windowsLineSeparator = "^" + Strings.EOL;
     String bashLineSeparator = "\\" + Strings.EOL;
@@ -78,7 +81,7 @@ public class DockerContainer {
       this.image = image;
     }
 
-    public void setContainerName(String containerName) {
+    public void setContainerName() {
       this.containerName = containerName;
     }
 

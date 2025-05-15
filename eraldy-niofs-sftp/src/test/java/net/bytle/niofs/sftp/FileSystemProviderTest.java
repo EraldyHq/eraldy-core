@@ -8,8 +8,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.spi.FileSystemProvider;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Created by gerard on 16-06-2016.
  */

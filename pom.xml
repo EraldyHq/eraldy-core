@@ -23,6 +23,8 @@
     <module>html</module>
     <module>eraldy-smtp-client</module>
     <module>eraldy-niofs-http</module>
+    <module>eraldy-niofs-sftp</module>
+    <module>eraldy-docker</module>
     <module>dns</module>
     <module>cli</module>
     <module>test</module>
@@ -154,6 +156,12 @@
         <artifactId>gson</artifactId>
         <version>2.12.1</version>
       </dependency>
+      <!-- Ssh, sftp -->
+      <dependency>
+        <groupId>com.jcraft</groupId>
+        <artifactId>jsch</artifactId>
+        <version>0.1.51</version>
+      </dependency>
       <!-- https://mvnrepository.com/artifact/org.json/json -->
       <dependency>
         <groupId>org.json</groupId>
@@ -224,6 +232,18 @@
         <groupId>com.google.oauth-client</groupId>
         <artifactId>google-oauth-client-jetty</artifactId>
         <version>${google-oauth-client.version}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java-core -->
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-core</artifactId>
+        <version>3.5.0</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java-transport-httpclient5 -->
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-transport-httpclient5</artifactId>
+        <version>3.5.0</version>
       </dependency>
       <!-- WebDriver-->
       <!-- https://www.selenium.dev/documentation/en/selenium_installation/installing_selenium_libraries/-->
