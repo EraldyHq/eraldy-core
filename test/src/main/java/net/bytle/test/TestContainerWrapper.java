@@ -1,21 +1,18 @@
 package net.bytle.test;
 
-import com.github.dockerjava.api.model.Bind;
 import net.bytle.os.Oss;
-import net.bytle.type.Strings;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import static net.bytle.os.Oss.MAX_PORT_NUMBER;
 import static net.bytle.os.Oss.MIN_PORT_NUMBER;
 
 /**
- * A wrapper around test container
+ * A wrapper around test-container
  * * to implement the singleton container <a href="https://www.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers">documentation</a>
  * * to print the command so that the container is long-lived
  * <p>
@@ -31,6 +28,7 @@ public class TestContainerWrapper {
 
   private final GenericContainer<?> container;
   private final String image;
+  private final DockerContainer.Conf dockerContainerCommand;
   private String hostName = "localhost";
   private Integer hostPort;
   private Integer containerPort;
@@ -40,6 +38,7 @@ public class TestContainerWrapper {
     this.name = name;
     this.image = dockerImageName;
     this.container = new GenericContainer<>(dockerImageName);
+    this.dockerContainerCommand = DockerContainer.createConf(image);
   }
 
   /**
@@ -52,6 +51,7 @@ public class TestContainerWrapper {
     this.container = container;
     this.name = name;
     this.image = container.getDockerImageName();
+    this.dockerContainerCommand = DockerContainer.createConf(image);
   }
 
   /**
@@ -102,7 +102,7 @@ public class TestContainerWrapper {
       } else {
         System.out.println("You can start it with the following command on Windows:");
         System.out.println();
-        System.out.println(this.createDockerCommand());
+        System.out.println(this. dockerContainerCommand.build().createDockerCommand());
       }
       System.out.println();
 
@@ -123,43 +123,10 @@ public class TestContainerWrapper {
     return this;
   }
 
-  public String createDockerCommand() {
-    String windowsLineSeparator = "^" + Strings.EOL;
-    String bashLineSeparator = "\\" + Strings.EOL;
-    List<String> separators = Arrays.asList(windowsLineSeparator, bashLineSeparator);
-    String spaces = "    ";
-
-    StringBuilder stringBuilder = new StringBuilder();
-    for (String separator : separators) {
-      stringBuilder.append(Strings.EOL);
-      if (separator.equals(windowsLineSeparator)) {
-        stringBuilder.append("Cmd:").append(Strings.EOL);
-      } else {
-        stringBuilder.append("Bash:").append(Strings.EOL);
-      }
-      stringBuilder.append("docker run ").append(separator);
-      for (Object env : container.getEnv()) {
-        stringBuilder.append(spaces).append("-e ").append(env).append(" ").append(separator);
-      }
-      for (Bind bind : container.getBinds()) {
-        // https://docs.docker.com/engine/storage/bind-mounts/#syntax
-        String hostPath = bind.getPath();
-        String containerPath = bind.getVolume().getPath();
-        stringBuilder.append(spaces).append("--volume ").append(hostPath).append(":").append(containerPath).append(" ").append(separator);
-      }
-      stringBuilder
-        .append(spaces).append("-p ").append(hostPort).append(":").append(containerPort).append(" ").append(separator)
-        .append(spaces).append("-d ").append(separator)
-        .append(spaces).append("--name ").append(this.name).append(" ").append(separator)
-        .append(spaces).append(this.image).append(Strings.EOL);
-    }
-
-
-    return stringBuilder.toString();
-  }
 
   public TestContainerWrapper withEnv(String key, String value) {
     this.container.withEnv(key, value);
+    this.dockerContainerCommand.setEnv(key, value);
     return this;
   }
 
@@ -170,7 +137,7 @@ public class TestContainerWrapper {
   public TestContainerWrapper withPort(Integer containerPort) {
     this.containerPort = containerPort;
     this.container.addExposedPort(containerPort);
-
+    this.dockerContainerCommand.setPortBonding(containerPort, containerPort);
     return this;
   }
 
@@ -179,6 +146,7 @@ public class TestContainerWrapper {
     this.containerPort = containerPort;
     container.setPortBindings(List.of(hostPort + ":" + containerPort));
     container.withExposedPorts(containerPort);
+    this.dockerContainerCommand.setPortBonding(hostPort, containerPort);
     return this;
   }
 
@@ -216,6 +184,7 @@ public class TestContainerWrapper {
       throw new RuntimeException("The host path (" + hostPath + ") does not exists");
     }
     this.container.withFileSystemBind(hostPath.toAbsolutePath().toString(), containerPath, BindMode.READ_WRITE);
+    this.dockerContainerCommand.setVolumeBonding(hostPath, Path.of(containerPath));
     return this;
   }
 
@@ -223,4 +192,8 @@ public class TestContainerWrapper {
     return this.container;
   }
 
+
+  public String createDockerCommand() {
+    return this.dockerContainerCommand.build().createDockerCommand();
+  }
 }
