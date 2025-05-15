@@ -13,7 +13,8 @@ public class DocErrorExecutionTest {
     @Test()
     public void docTestError() {
 
-        Assertions.assertThrows(RuntimeException.class, ()-> DocExecutor.Run(Paths.get("./src/test/resources/docTest/Error.txt"),"cat", DocCommandCat.class));
+      RuntimeException error = Assertions.assertThrows(RuntimeException.class, () -> DocExecutor.Run(Paths.get("./src/test/resources/docTest/Error.txt"), "cat", DocCommandCat.class));
+      Assertions.assertTrue(error.getMessage().contains("Error: The File (doesnotexist.txt) was not found"));
 
     }
 }

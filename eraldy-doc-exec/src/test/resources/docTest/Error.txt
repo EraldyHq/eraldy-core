@@ -1,5 +1,5 @@
 
-This unit should send an exception and stop the run.
+This unit should send an exception and stops the run.
 <unit>
 
 <code dos>
