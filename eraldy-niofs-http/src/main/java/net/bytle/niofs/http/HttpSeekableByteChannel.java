@@ -119,7 +119,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
   }
 
   @Override
-  public SeekableByteChannel truncate(long size) throws IOException {
+  public SeekableByteChannel truncate(long size) {
     throw new NonWritableChannelException();
   }
 
