@@ -1,12 +1,20 @@
 package com.eraldy.docker;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 import net.bytle.type.Strings;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A Docker container class to start, stop, and run Docker containers
@@ -14,9 +22,169 @@ import java.util.Map;
 public class DockerContainer {
 
   private final Conf conf;
+  private final DockerClient dockerClient;
 
   public DockerContainer(Conf conf) {
     this.conf = conf;
+    // Configure and build Docker client for version 3.5.0
+    DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+      .dockerHost(config.getDockerHost())
+      .sslConfig(config.getSSLConfig())
+      .build();
+    this.dockerClient = DockerClientImpl.getInstance(config, httpClient);
+  }
+
+  /**
+   * Check if a container exists
+   *
+   * @return true if the container exists, false otherwise
+   */
+  public boolean exists() {
+    String containerName = getName();
+    try {
+      dockerClient.inspectContainerCmd(containerName).exec();
+      return true;
+    } catch (NotFoundException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if a container is running
+   *
+   * @return true if the container is running, false otherwise
+   */
+  public boolean isRunning() {
+    String containerName = getName();
+    try {
+      InspectContainerResponse containerInfo = dockerClient.inspectContainerCmd(containerName).exec();
+      return Boolean.TRUE.equals(containerInfo.getState().getRunning());
+    } catch (NotFoundException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Run the container
+   * - If container exists, start it
+   * - If container doesn't exist, create and run it
+   */
+  public void run() {
+    String containerName = getName();
+
+    if (isRunning()) {
+      return;
+    }
+
+    if (exists()) {
+      // Container exists, start it if not running
+      try {
+        dockerClient.startContainerCmd(containerName).exec();
+        System.err.println("Container " + containerName + " started");
+      } catch (Exception e) {
+        System.err.println("Failed to start container: " + e.getMessage());
+      }
+      return;
+    }
+
+    // Container doesn't exist, create and run it
+    createAndRunContainer();
+
+  }
+
+  /**
+   * Create and run a new container based on DockerContainer configuration
+   */
+  private void createAndRunContainer() {
+    String containerName = getName();
+    String image = getImage();
+    Map<Integer, Integer> portMap = getPortBinding();
+    Map<Path, Path> volumeMap = getVolumeBinding();
+
+    try {
+      // Prepare port bindings
+      List<PortBinding> portBindings = new ArrayList<>();
+      List<ExposedPort> exposedPorts = new ArrayList<>();
+
+      for (Map.Entry<Integer, Integer> entry : portMap.entrySet()) {
+        Integer hostPort = entry.getKey();
+        Integer containerPort = entry.getValue();
+
+        ExposedPort exposedPort = ExposedPort.tcp(containerPort);
+        exposedPorts.add(exposedPort);
+        portBindings.add(new PortBinding(Ports.Binding.bindPort(hostPort), exposedPort));
+      }
+
+      // Prepare volume bindings
+      List<Bind> binds = new ArrayList<>();
+      for (Map.Entry<Path, Path> entry : volumeMap.entrySet()) {
+        Path hostPath = entry.getKey();
+        Path containerPath = entry.getValue();
+
+        Volume volume = new Volume(containerPath.toString());
+        binds.add(new Bind(hostPath.toString(), volume));
+      }
+
+      // Create host config with port and volume bindings
+      HostConfig hostConfig = new HostConfig()
+        .withPortBindings(portBindings)
+        .withBinds(binds);
+
+      // Create container
+      CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(image)
+        .withName(containerName)
+        .withHostConfig(hostConfig)
+        .withExposedPorts(exposedPorts);
+
+      CreateContainerResponse container = createContainerCmd.exec();
+
+      // Start container
+      dockerClient.startContainerCmd(container.getId()).exec();
+      System.out.println("Container " + containerName + " created and started");
+
+    } catch (Exception e) {
+      System.err.println("Failed to create and run container: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Remove the container if it exists
+   */
+  public void rm() {
+    String containerName = getName();
+
+    if (exists()) {
+      // Container exists, remove it
+      try {
+        dockerClient.removeContainerCmd(containerName).exec();
+        System.out.println("Container " + containerName + " removed");
+      } catch (Exception e) {
+        System.err.println("Failed to remove container: " + e.getMessage());
+      }
+    } else {
+      System.out.println("Container " + containerName + " does not exist");
+    }
+  }
+
+
+  /**
+   * Stop the container if it exists
+   */
+  public void stop() {
+    String containerName = getName();
+
+    if (exists()) {
+      // Container exists, stop it
+      try {
+        dockerClient.stopContainerCmd(containerName).exec();
+        System.out.println("Container " + containerName + " stopped");
+      } catch (Exception e) {
+        System.err.println("Failed to stop container: " + e.getMessage());
+      }
+    } else {
+      System.out.println("Container " + containerName + " does not exist");
+    }
   }
 
   /**
@@ -69,7 +237,7 @@ public class DockerContainer {
    * when the container is started, the container port is the public port and the host port is the private port
    * In a Docker command, it will become `-p hostPort:containerPort`
    */
-  public Map<Integer, Integer> getPortBinding(){
+  public Map<Integer, Integer> getPortBinding() {
     return conf.portMap;
   }
 
@@ -77,7 +245,7 @@ public class DockerContainer {
    * @return a volume binding map where the first path is the host path and the second is the container path
    * In a Docker command, it will become `--volume hostPath:containerPath`
    */
-  public Map<Path, Path> getVolumeBinding(){
+  public Map<Path, Path> getVolumeBinding() {
     return conf.volumeMap;
   }
 
@@ -86,7 +254,7 @@ public class DockerContainer {
    * It's the image parameter in a Docker command.
    * For instance, for a run, it's the `IMAGE` in `docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
    */
-  public String getImage(){
+  public String getImage() {
     return conf.image;
   }
 
@@ -95,7 +263,7 @@ public class DockerContainer {
    * It's the name parameter in a Docker command.
    * For instance, for a run, it's the `NAME` in `docker run --name NAME`
    */
-  public String getName(){
+  public String getName() {
     return conf.containerName;
   }
 
@@ -135,7 +303,7 @@ public class DockerContainer {
       return this;
     }
 
-    public DockerContainer build(){
+    public DockerContainer build() {
       return new DockerContainer(this);
     }
 
