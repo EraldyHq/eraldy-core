@@ -2,5 +2,7 @@
 # Ignore everything
 *
 # Allow only Java files
+!*.html
+!*.cgi
 !*.java
 !pom.xml

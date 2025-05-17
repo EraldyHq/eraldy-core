@@ -9,28 +9,53 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import net.bytle.os.Oss;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class DockerContainerTest {
 
+  public static final String ENV_NAME = "ONE";
+  public static final String ENV_VALUE = "two";
   private DockerContainer dockerContainer;
   private DockerClient dockerClient;
-  private static final String CONTAINER_NAME = "httpbin-test-container";
-  private static final String IMAGE_NAME = "kennethreitz/httpbin";
+
+  private static final String CONTAINER_NAME = "httpd-test-container";
+  private static final String IMAGE_NAME = "busybox";
+  private Integer STARTED_PORT;
 
   @BeforeEach
   void setUp() {
-    // Create DockerContainer with httpbin image
+    // Create DockerContainer with busybox image
     DockerContainer.Conf conf = DockerContainer.createConf(IMAGE_NAME);
     conf.setContainerName(CONTAINER_NAME);
-    Integer port = Oss.getRandomAvailablePort();
-    conf.setPortBinding(port, 80);
+    STARTED_PORT = Oss.getRandomAvailablePort();
+    Path baseBusyBoxHostPath = Paths.get("src/test/resources/busybox");
+    Path wwwHostPath = baseBusyBoxHostPath.resolve("var/www");
+    if (!Files.exists(wwwHostPath)) {
+      throw new RuntimeException("The www host path does not exists");
+    }
+    String verboseOutput = "-v";
+    String runInForeground = "-f";
+    conf
+      .setPortBinding(STARTED_PORT, 80)
+      .setEnv(ENV_NAME, ENV_VALUE)
+      .setVolumeBinding(wwwHostPath, Paths.get("/var/www/"))
+      .setCommand("httpd", runInForeground, verboseOutput, "-h", "/var/www/");
 
     dockerContainer = conf.build();
-    if(dockerContainer.exists()){
+    if (dockerContainer.exists()) {
       dockerContainer.rm();
     }
 
@@ -54,23 +79,58 @@ class DockerContainerTest {
     }
   }
 
+
+
   @Test
   void testRunStopContainer() throws InterruptedException {
+
+    if (dockerContainer.isRunning()) {
+      dockerContainer.stop();
+      dockerContainer.rm();
+    }
 
     // Run the container
     dockerContainer.run();
 
     // Verify container is running
-    assertTrue(dockerContainer.isRunning(), "Container should be running after run() call");
+    // Wait for the container to fully initialize with polling
+    int timeoutToStartStop = 3000;
+    Assertions.assertTimeoutPreemptively(java.time.Duration.ofMillis(timeoutToStartStop), () -> {
+      while (!dockerContainer.isRunning()) {
+        //noinspection BusyWait
+        Thread.sleep(100);
+      }
+    });
 
     // Run it again, should not throw any errors
     assertDoesNotThrow(() -> dockerContainer.run(), "Running an already running container should not throw errors");
 
+    // Make HTTP request to verify environment variable
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("http://localhost:" + STARTED_PORT + "/cgi-bin/print-env.cgi?name="+ENV_NAME))
+        .GET()
+        .build();
+
+    try {
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode(), "HTTP response status code should be 200");
+        assertEquals(ENV_VALUE, response.body().trim(), "Environment variable "+ENV_NAME+" should have value "+ENV_VALUE);
+    } catch (IOException e) {
+        fail("HTTP request failed: " + e.getMessage());
+    }
+
     // Stop the container
     dockerContainer.stop();
 
-    // Wait a moment for the container to stop
-    Thread.sleep(1000);
+    // Wait for the container to stop with polling
+    // Wait for the container to fully initialize with polling
+    Assertions.assertTimeoutPreemptively(java.time.Duration.ofMillis(timeoutToStartStop), () -> {
+      while (dockerContainer.isRunning()) {
+        //noinspection BusyWait
+        Thread.sleep(100);
+      }
+    });
 
     // Verify container is stopped
     assertFalse(dockerContainer.isRunning(), "Container should be stopped after stop() call");

@@ -15,6 +15,7 @@ import net.bytle.type.Strings;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A Docker container class to start, stop, and run Docker containers
@@ -83,7 +84,7 @@ public class DockerContainer {
         dockerClient.startContainerCmd(containerName).exec();
         System.err.println("Container " + containerName + " started");
       } catch (Exception e) {
-        System.err.println("Failed to start container: " + e.getMessage());
+        throw new RuntimeException("Failed to start container: " + e.getMessage());
       }
       return;
     }
@@ -101,6 +102,7 @@ public class DockerContainer {
     String image = getImage();
     Map<Integer, Integer> portMap = getPortBinding();
     Map<Path, Path> volumeMap = getVolumeBinding();
+
 
     try {
       // Prepare port bindings
@@ -135,7 +137,13 @@ public class DockerContainer {
       CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(image)
         .withName(containerName)
         .withHostConfig(hostConfig)
+        .withEnv(getEnvs().entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()))
         .withExposedPorts(exposedPorts);
+
+      // Add command if specified
+      if (conf.command != null && !conf.command.isEmpty()) {
+        createContainerCmd.withCmd(conf.command.toArray(new String[0]));
+      }
 
       CreateContainerResponse container = createContainerCmd.exec();
 
@@ -154,17 +162,23 @@ public class DockerContainer {
   public void rm() {
     String containerName = getName();
 
-    if (exists()) {
-      // Container exists, remove it
-      try {
-        dockerClient.removeContainerCmd(containerName).exec();
-        System.out.println("Container " + containerName + " removed");
-      } catch (Exception e) {
-        System.err.println("Failed to remove container: " + e.getMessage());
-      }
-    } else {
+    if (!exists()) {
       System.out.println("Container " + containerName + " does not exist");
+      return;
     }
+
+    if (isRunning()) {
+      stop();
+    }
+
+    // Container exists, remove it
+    try {
+      dockerClient.removeContainerCmd(containerName).exec();
+      System.out.println("Container " + containerName + " removed");
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to remove container: " + e.getMessage());
+    }
+
   }
 
 
@@ -205,7 +219,7 @@ public class DockerContainer {
         stringBuilder.append("Bash:").append(Strings.EOL);
       }
       stringBuilder.append("docker run ").append(separator);
-      for (Map.Entry<String, String> env : conf.env.entrySet()) {
+      for (Map.Entry<String, String> env : conf.envs.entrySet()) {
         stringBuilder.append(spaces).append("-e ")
           .append(env.getKey())
           .append("=")
@@ -250,6 +264,13 @@ public class DockerContainer {
   }
 
   /**
+   * @return the os envs
+   */
+  public Map<String, String> getEnvs() {
+    return conf.envs;
+  }
+
+  /**
    * @return the image name
    * It's the image parameter in a Docker command.
    * For instance, for a run, it's the `IMAGE` in `docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
@@ -278,8 +299,9 @@ public class DockerContainer {
     private String containerName = "test-container";
     private final String image;
     private Map<Integer, Integer> portMap = new HashMap<>();
-    private Map<String, String> env = new HashMap<>();
+    private Map<String, String> envs = new HashMap<>();
     private Map<Path, Path> volumeMap = new HashMap<>();
+    private List<String> command = new ArrayList<>();
 
     public Conf(String image) {
       this.image = image;
@@ -295,19 +317,48 @@ public class DockerContainer {
       return this;
     }
 
+    public Conf setPortBindings(Map<Integer, Integer> hostToContainersPortMap) {
+      this.portMap.putAll(hostToContainersPortMap);
+      return this;
+    }
+
     public Conf setVolumeBinding(Path hostPath, Path containerPath) {
-      this.volumeMap.put(hostPath, containerPath);
+      if (!containerPath.isAbsolute()) {
+        throw new RuntimeException("The container path " + containerPath + " is not an absolute path");
+      }
+      this.volumeMap.put(hostPath.toAbsolutePath(), containerPath);
+      return this;
+    }
+
+    public Conf setVolumeBindings(Map<Path, Path> volumeBindings) {
+      this.volumeMap.putAll(volumeBindings);
+      return this;
+    }
+
+    public Conf setCommand(List<String> command) {
+      this.command = command;
+      return this;
+    }
+
+    public Conf setCommand(String... command) {
+      this.command = Arrays.asList(command);
       return this;
     }
 
     public Conf setEnv(String key, String value) {
-      this.env.put(key, value);
+      this.envs.put(key, value);
+      return this;
+    }
+
+    public Conf setEnvs(Map<String,String> envs) {
+      this.envs.putAll(envs);
       return this;
     }
 
     public DockerContainer build() {
       return new DockerContainer(this);
     }
+
 
   }
 }
