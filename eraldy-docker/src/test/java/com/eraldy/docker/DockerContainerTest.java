@@ -51,7 +51,7 @@ class DockerContainerTest {
     conf
       .setPortBinding(STARTED_PORT, 80)
       .setEnv(ENV_NAME, ENV_VALUE)
-      .setVolumeBinding(wwwHostPath, Paths.get("/var/www/"))
+      .setVolumes(wwwHostPath, Paths.get("/var/www/"))
       .setCommand("httpd", runInForeground, verboseOutput, "-h", "/var/www/");
 
     dockerContainer = conf.build();

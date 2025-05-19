@@ -322,7 +322,7 @@ public class DockerContainer {
       return this;
     }
 
-    public Conf setVolumeBinding(Path hostPath, Path containerPath) {
+    public Conf setVolumes(Path hostPath, Path containerPath) {
       if (!containerPath.isAbsolute()) {
         throw new RuntimeException("The container path " + containerPath + " is not an absolute path");
       }
@@ -350,7 +350,7 @@ public class DockerContainer {
       return this;
     }
 
-    public Conf setEnvs(Map<String,String> envs) {
+    public Conf setEnvs(Map<String, String> envs) {
       this.envs.putAll(envs);
       return this;
     }
