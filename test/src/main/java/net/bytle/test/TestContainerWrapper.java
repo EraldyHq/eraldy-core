@@ -7,6 +7,7 @@ import org.testcontainers.containers.GenericContainer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static net.bytle.os.Oss.MAX_PORT_NUMBER;
 import static net.bytle.os.Oss.MIN_PORT_NUMBER;
@@ -24,6 +25,7 @@ import static net.bytle.os.Oss.MIN_PORT_NUMBER;
  * You can also use the correspondent test container in the constructor
  * that will have most of this default value.
  */
+@SuppressWarnings("unused")
 public class TestContainerWrapper {
 
   private final GenericContainer<?> container;
@@ -34,11 +36,13 @@ public class TestContainerWrapper {
   private Integer containerPort;
   private final String name;
 
-  public TestContainerWrapper(String name, String dockerImageName) {
-    this.name = name;
+  public TestContainerWrapper(String containerName, String dockerImageName) {
+    this.name = containerName;
     this.image = dockerImageName;
     this.container = new GenericContainer<>(dockerImageName);
-    this.dockerContainerCommand = DockerContainer.createConf(image);
+    this.dockerContainerCommand = DockerContainer
+      .createConf(image)
+      .setContainerName(containerName);
   }
 
   /**
@@ -100,9 +104,9 @@ public class TestContainerWrapper {
       if (this.hostPort == null) {
         System.out.println("Set a host port. Your container port " + this.containerPort + " is a privileged port and cannot be used on the host. Choose one above " + MIN_PORT_NUMBER + " and below " + MAX_PORT_NUMBER);
       } else {
-        System.out.println("You can start it with the following command on Windows:");
+        System.out.println("You can start it with the following command:");
         System.out.println();
-        System.out.println(this. dockerContainerCommand.build().createDockerCommand());
+        System.out.println(this.dockerContainerCommand.build().createDockerCommand());
       }
       System.out.println();
 
@@ -127,6 +131,13 @@ public class TestContainerWrapper {
   public TestContainerWrapper withEnv(String key, String value) {
     this.container.withEnv(key, value);
     this.dockerContainerCommand.setEnv(key, value);
+    return this;
+  }
+
+  public TestContainerWrapper withEnvs(Map<String, String> envs) {
+    for (Map.Entry<String, String> entry : envs.entrySet()) {
+      withEnv(entry.getKey(), entry.getValue());
+    }
     return this;
   }
 

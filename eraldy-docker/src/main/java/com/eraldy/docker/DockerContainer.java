@@ -98,11 +98,11 @@ public class DockerContainer {
    * Create and run a new container based on DockerContainer configuration
    */
   private void createAndRunContainer() {
+
     String containerName = getName();
     String image = getImage();
     Map<Integer, Integer> portMap = getPortBinding();
     Map<Path, Path> volumeMap = getVolumeBinding();
-
 
     try {
       // Prepare port bindings
@@ -152,7 +152,7 @@ public class DockerContainer {
       System.out.println("Container " + containerName + " created and started");
 
     } catch (Exception e) {
-      System.err.println("Failed to create and run container: " + e.getMessage());
+      throw new RuntimeException("Failed to create and run container: " + this + ". Error: " + e.getMessage(), e);
     }
   }
 
@@ -183,22 +183,29 @@ public class DockerContainer {
 
 
   /**
-   * Stop the container if it exists
+   * Stop the container
+   * No error will be thrown if the container exists or does not run
+   *
+   * @throws RuntimeException if the container cannot be stopped
    */
   public void stop() {
     String containerName = getName();
 
-    if (exists()) {
-      // Container exists, stop it
-      try {
-        dockerClient.stopContainerCmd(containerName).exec();
-        System.out.println("Container " + containerName + " stopped");
-      } catch (Exception e) {
-        System.err.println("Failed to stop container: " + e.getMessage());
-      }
-    } else {
-      System.out.println("Container " + containerName + " does not exist");
+    if (!exists()) {
+      return;
     }
+
+    if (!isRunning()) {
+      return;
+    }
+
+    try {
+      dockerClient.stopContainerCmd(containerName).exec();
+      System.err.println("Container " + containerName + " stopped");
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to stop container: " + this + "," + e.getMessage(), e);
+    }
+
   }
 
   /**

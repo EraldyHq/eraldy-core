@@ -81,8 +81,9 @@ public class DockerContainer {
       this.image = image;
     }
 
-    public void setContainerName() {
+    public Conf setContainerName(String containerName) {
       this.containerName = containerName;
+      return this;
     }
 
     public Conf setPortBonding(Integer hostPort, Integer containerPort) {
