@@ -77,6 +77,8 @@ public class Casts {
    * @return null if the object is null, throw an exception if the class is not the expected one
    * the object to the asked clazz
    * @throws CastException when the cast does not work
+   * If the class is an interface, we just check if it's an instance of and fail otherwise
+   * Example: Number can be an integer, a float, a double, ...
    */
   public static <T> T cast(Object sourceObject, Class<T> targetClass) throws CastException {
 
@@ -87,11 +89,17 @@ public class Casts {
       return null;
     }
 
-    /**
-     * Interface can't be instantiated
-     */
+
     if (targetClass == Number.class) {
-      throw new CastException("The target class Number is an interface and cannot be instantiated. Choose a class with a constructor");
+      if (sourceObject instanceof Number) {
+        /**
+         * Number is an interface and
+         * can't be instantiated
+         * We just return the object
+         */
+        return (T) sourceObject;
+      }
+      throw new CastException("The source object is not a number. Value: " + sourceObject);
     }
 
     try {
@@ -670,24 +678,5 @@ public class Casts {
 
   }
 
-
-  /**
-   * Utility function to see if an object is empty or not
-   */
-  public static Boolean isEmpty(Object object) {
-    if (object instanceof String) {
-      return ((String) object).isEmpty();
-    }
-    if (object instanceof List) {
-      return ((List<?>) object).isEmpty();
-    }
-    if (object instanceof Map) {
-      return ((Map<?, ?>) object).isEmpty();
-    }
-    if (object.getClass().isArray()) {
-      return ((Object[]) object).length == 0;
-    }
-    return false;
-  }
 
 }
