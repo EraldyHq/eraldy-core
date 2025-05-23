@@ -643,7 +643,7 @@ public class BMailMimeMessage {
 
       attachmentPart.setDataHandler(dataHandler);
       try {
-        attachmentPart.setHeader("Content-Type", MediaTypes.createFromPath(absolutePath).toString());
+        attachmentPart.setHeader("Content-Type", MediaTypes.detectMediaType(absolutePath).toString());
       } catch (NotAbsoluteException e) {
         throw new MessagingException(e.getMessage(), e);
       }
