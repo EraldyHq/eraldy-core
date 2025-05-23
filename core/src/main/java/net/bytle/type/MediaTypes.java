@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.nio.file.spi.FileTypeDetector;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 import static net.bytle.type.MediaType.TEXT_TYPE;
 
@@ -18,6 +21,7 @@ import static net.bytle.type.MediaType.TEXT_TYPE;
  * A collection of well known MediaType / Mime
  * and of static constructors
  */
+@SuppressWarnings("unused")
 public class MediaTypes {
 
 
@@ -238,11 +242,28 @@ public class MediaTypes {
   }
 
   /**
-   * @param absolutePath an absolute path
-   * @return the media Type
-   * @throws NotAbsoluteException if the path is not absolute (important to see if this is a directory media type)
+   * Same as {@link #detectMediaType(Path)} but you are sure that the path is absolute
+   * @throws InternalException if this is not the case
    */
-  public static MediaType createFromPath(Path absolutePath) throws NotAbsoluteException {
+  public static MediaType detectMediaTypeSafe(Path path) {
+
+    try {
+      return MediaTypes.detectMediaType(path);
+    } catch (NotAbsoluteException e) {
+      throw new InternalException("The path (" + path + ") is not absolute", e);
+    }
+
+  }
+
+  /**
+   * @param absolutePath an absolute path
+   * @return the media/content type string that is somewhat normalized
+   * @throws NotAbsoluteException if the path is not absolute (important to see if this is a directory media type)
+   *                              We don't return an object because MediaType object are created by the type manager
+   *                              because not all types are known in advance, and they are normally enum
+   *                              If you want to detect your own media type, you should implement a {@link FileTypeDetector}
+   */
+  public static MediaType detectMediaType(Path absolutePath) throws NotAbsoluteException {
 
     if (!absolutePath.isAbsolute()) {
       throw new NotAbsoluteException("The path (" + absolutePath + ") is not absolute, we can't determine it media type");
@@ -266,7 +287,7 @@ public class MediaTypes {
        */
       mediaTypeString = Files.probeContentType(absolutePath);
       try {
-        return createFromMediaTypeString(mediaTypeString);
+        return createFromString(mediaTypeString);
       } catch (NullValueException e) {
         // mediaTypeString may be null if not detected
       }
@@ -296,7 +317,7 @@ public class MediaTypes {
     if (i != -1) {
       extension = fullFileName.substring(i + 1);
       try {
-        return createFromExtension(extension);
+        return getFromExtension(extension);
       } catch (NullValueException e) {
         // could not happen
         throw new InternalException("This exception should not happen", e);
@@ -309,7 +330,7 @@ public class MediaTypes {
      */
     mediaTypeString = URLConnection.guessContentTypeFromName(fileName.toString());
     try {
-      return createFromMediaTypeString(mediaTypeString);
+      return createFromString(mediaTypeString);
     } catch (NullValueException e) {
       // null
     }
@@ -331,7 +352,7 @@ public class MediaTypes {
     try (InputStream is = new BufferedInputStream(Files.newInputStream(absolutePath))) {
       mediaTypeString = URLConnection.guessContentTypeFromStream(is);
       if (mediaTypeString != null) {
-        return createFromMediaTypeString(mediaTypeString);
+        return createFromString(mediaTypeString);
       }
     } catch (Exception e) {
       /**
@@ -349,68 +370,101 @@ public class MediaTypes {
 
   }
 
+
   /**
-   * In a email content mime may be
+   * @param value a mime from an email
+   * @return the media type without any character set
+   * In an email content mime may be
    * text/plain; charset=utf-8
    */
-  public static String getMediaTypeFromMimeType(String value) {
+  public static String getFromMimeValue(String value) {
 
     int firstComma = value.indexOf(";");
     if (firstComma != -1) {
       return value.substring(0, firstComma);
     }
     return value;
-  }
-
-  /**
-   * @param value a mime from an email
-   * @return the media type without any character set
-   */
-  public static MediaType createFromMimeValue(String value) throws NullValueException {
-
-    String mediaType = getMediaTypeFromMimeType(value);
-    return createFromMediaTypeString(mediaType);
 
   }
 
-  public static MediaType createFromExtension(String fileExtension) throws NullValueException {
+  public static MediaType getFromExtension(String fileExtension) throws NullValueException {
 
     if (fileExtension == null) {
       throw new NullValueException();
     }
-    return createFromMediaTypeString("application/" + fileExtension);
+    return parse(fileExtension);
+
+  }
+
+  public static MediaType createFromString(String mediaTypeString) throws NullValueException {
+    return parse(mediaTypeString);
+  }
+
+  /**
+   * Wrapper of {@link #parse(String)} that does not throw any exception
+   * Be sure to not pass a null of empty value
+   */
+  public static MediaType parseSafe(String string) {
+    try {
+      return parse(string);
+    } catch (NullValueException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * To avoid
+   * java.lang.NoSuchMethodError: 'boolean net.bytle.type.MediaTypes.equals(net.bytle.type.MediaType, net.bytle.type.MediaType)'
+   */
+  public static boolean equals(MediaType mediaType1, MediaType mediaType2) {
+    return equals(mediaType1, (Object) mediaType2);
+  }
+
+  /**
+   * Because media type may be enum, we need this equality
+   * static function
+   */
+  public static boolean equals(MediaType mediaType, Object o) {
+
+    if (mediaType == o) return true;
+    if (!(o instanceof MediaType)) return false;
+    MediaType obejctMediaType = (MediaType) o;
+    return mediaType.getType().equals(obejctMediaType.getType()) && mediaType.getSubType().equals(obejctMediaType.getSubType());
 
   }
 
   /**
-   * @param mediaTypeString the media type string
+   * Parse the string and returns a dynamically created MediaType
+   *
+   * @param string a string (a content type, a media type, a mime type or an extension)
    * @return a media type
+   * @throws NullValueException if the value is null or empty
    */
-  public static MediaType createFromMediaTypeString(String mediaTypeString) throws NullValueException {
+  public static MediaType parse(String string) throws NullValueException {
 
-    if (mediaTypeString == null) {
+    if (string == null || string.isEmpty()) {
       throw new NullValueException();
     }
 
     /**
      * Delete character set if any
      */
-    mediaTypeString = getMediaTypeFromMimeType(mediaTypeString);
+    string = getFromMimeValue(string);
 
     /**
      * Processing
      */
-    int endIndex = mediaTypeString.indexOf("/");
-    mediaTypeString = mediaTypeString.toLowerCase(Locale.ROOT);
+    int endIndex = string.indexOf("/");
+    string = string.toLowerCase(Locale.ROOT);
 
     String type;
     String subType;
     if (endIndex != -1) {
-      type = mediaTypeString.substring(0, endIndex);
-      subType = mediaTypeString.substring(endIndex + 1);
+      type = string.substring(0, endIndex);
+      subType = string.substring(endIndex + 1);
     } else {
       type = null;
-      subType = mediaTypeString;
+      subType = string;
     }
 
     /**
@@ -437,7 +491,7 @@ public class MediaTypes {
     MediaType sameSubtype = null;
 
     for (MediaType mediaType : standardizeDataTypes) {
-      if (mediaTypeString.equals(mediaType.toString())) {
+      if (string.equals(mediaType.toString())) {
         return mediaType;
       }
       if (
@@ -465,7 +519,7 @@ public class MediaTypes {
    */
   public static MediaType createFromMediaTypeNonNullString(String s) {
     try {
-      return createFromMediaTypeString(s);
+      return createFromString(s);
     } catch (NullValueException e) {
       throw new InternalException("This function should not be filled with a null value");
     }

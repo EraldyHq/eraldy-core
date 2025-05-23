@@ -20,6 +20,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.nio.file.spi.FileTypeDetector;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
@@ -690,11 +691,18 @@ public class Fs {
     return getFileContent(path, Charset.defaultCharset());
   }
 
+  /**
+   * @param path - detect the media/content type
+   * @return a media type
+   * @throws NotAbsoluteException if the path is not absolute
+   *                              If you want to detect your own media type, you should implement a {@link FileTypeDetector}
+   */
   public static MediaType detectMediaType(Path path) throws NotAbsoluteException {
 
-    return MediaTypes.createFromPath(path);
+    return MediaTypes.detectMediaType(path);
 
   }
+
 
   public static boolean isRoot(Path path) {
     return path.getRoot().equals(path);

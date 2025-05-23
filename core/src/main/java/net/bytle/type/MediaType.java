@@ -6,9 +6,9 @@ package net.bytle.type;
  * * for a file system (web): mime type (ie csv, ...)
  * * for a memory system: list / queue / gen
  * * for a relational system: table, view, query
- *
+ * <p></p>
  * This is an interface to be able to create enum
- *
+ * <p></p>
  * When checking for equality, you need to check the equality on the `toString`
  * method if the enum class are not the same
  *
