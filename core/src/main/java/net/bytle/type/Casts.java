@@ -77,8 +77,8 @@ public class Casts {
    * @return null if the object is null, throw an exception if the class is not the expected one
    * the object to the asked clazz
    * @throws CastException when the cast does not work
-   * If the class is an interface, we just check if it's an instance of and fail otherwise
-   * Example: Number can be an integer, a float, a double, ...
+   *                       If the class is an interface, we just check if it's an instance of and fail otherwise
+   *                       Example: Number can be an integer, a float, a double, ...
    */
   public static <T> T cast(Object sourceObject, Class<T> targetClass) throws CastException {
 
@@ -492,32 +492,30 @@ public class Casts {
    * @param clazzV - the value class
    * @param <K>    the key type
    * @param <V>    the value type
-   * @return the same object but casted
+   * @return the same object but cast
    * @throws CastException if there is a problem
    */
   public static <K, V> Map<K, V> castToSameMap(Object object, Class<K> clazzK, Class<V> clazzV) throws CastException {
 
-    Map<?, ?> map;
     if (!(object instanceof Map)) {
       throw new CastException("The object (value: " + object + ") is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
-    } else {
-      map = (Map<?, ?>) object;
     }
 
-    for (Map.Entry<?, ?> e : map.entrySet()) {
-      if (e.getKey() != null && !clazzK.equals(Object.class)) {
-        if (!e.getKey().getClass().equals(clazzK)) {
-          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + " but a " + e.getKey().getClass().getName());
-        }
+    Map.Entry<?, ?> firstElement = ((Map<?, ?>) object).entrySet().iterator().next();
+    if (firstElement == null) {
+      return (Map<K, V>) object;
+    }
+    if (firstElement.getKey() != null && !clazzK.equals(Object.class)) {
+      if (!firstElement.getKey().getClass().equals(clazzK)) {
+        throw new CastException("The key (" + firstElement.getKey() + ") is not a " + clazzK.getSimpleName() + " but a " + firstElement.getKey().getClass().getName());
       }
-      if (e.getValue() != null && !clazzV.equals(Object.class)) {
-        if (!e.getValue().getClass().equals(clazzV)) {
-          throw new CastException("The key (" + e.getValue() + ") is not a " + clazzV.getSimpleName() + ".");
-        }
+    }
+    if (firstElement.getValue() != null && !clazzV.equals(Object.class)) {
+      if (!firstElement.getValue().getClass().equals(clazzV)) {
+        throw new CastException("The key (" + firstElement.getValue() + ") is not a " + clazzV.getSimpleName() + ".");
       }
     }
 
-    //noinspection unchecked
     return (Map<K, V>) object;
 
   }

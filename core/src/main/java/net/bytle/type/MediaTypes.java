@@ -413,8 +413,8 @@ public class MediaTypes {
   }
 
   /**
-   * To avoid
-   * java.lang.NoSuchMethodError: 'boolean net.bytle.type.MediaTypes.equals(net.bytle.type.MediaType, net.bytle.type.MediaType)'
+   * For whatever reason, Java does not pick {@link #equals(MediaType, Object)}
+   * and throws a: java.lang.NoSuchMethodError: 'boolean net.bytle.type.MediaTypes.equals(net.bytle.type.MediaType, net.bytle.type.MediaType)'
    */
   public static boolean equals(MediaType mediaType1, MediaType mediaType2) {
     return equals(mediaType1, (Object) mediaType2);

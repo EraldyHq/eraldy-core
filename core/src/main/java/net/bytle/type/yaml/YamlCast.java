@@ -14,15 +14,14 @@ public class YamlCast {
 
     if (object instanceof Map) {
       return Casts.castToSameMap(object, keyClass, valueClass);
-    } else {
-      String message = "The values (" + object + ") are not a map";
-      if (object instanceof List) {
-        message += " but a list. You should delete the minus characters before the keys.";
-      } else {
-        message += " but a " + object.getClass().getSimpleName();
-      }
-      throw new CastException(message);
     }
+    String message = "The values (" + object + ") are not a map";
+    if (object instanceof List) {
+      message += " but a list. You should delete the minus characters before the keys.";
+    } else {
+      message += " but a " + object.getClass().getSimpleName();
+    }
+    throw new CastException(message);
 
   }
 
