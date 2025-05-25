@@ -3,6 +3,7 @@ package net.bytle.type;
 import net.bytle.exception.InternalException;
 import net.bytle.exception.NotAbsoluteException;
 import net.bytle.exception.NullValueException;
+import net.bytle.fs.Fs;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -243,6 +244,7 @@ public class MediaTypes {
 
   /**
    * Same as {@link #detectMediaType(Path)} but you are sure that the path is absolute
+   *
    * @throws InternalException if this is not the case
    */
   public static MediaType detectMediaTypeSafe(Path path) {
@@ -364,6 +366,13 @@ public class MediaTypes {
 
     }
 
+    /**
+     * Try to return a text (Charset to verify that this is a text file)
+     */
+    String charset = Fs.detectCharacterSet(absolutePath);
+    if (charset != null) {
+      return MediaTypes.TEXT_PLAIN;
+    }
 
     // Unknown
     return MediaTypes.BINARY_FILE;

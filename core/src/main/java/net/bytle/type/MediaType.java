@@ -29,7 +29,10 @@ public interface MediaType {
 
   /**
    * @return the top-level type (text, image, video, audio, application)
-   * This is a file type category
+   * This is a file type category.
+   * May be null if the string has no separator
+   * if the string `json` will return a media type of null
+   * while `text/json` will not.
    */
   String getType();
 
