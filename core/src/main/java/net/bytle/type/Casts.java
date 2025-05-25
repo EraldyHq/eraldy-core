@@ -322,7 +322,8 @@ public class Casts {
           if (constant == null) {
             throw new InternalError("The enum class (" + targetClass + ") does not have any constants");
           }
-          if (KeyNormalizer.create(constant).equals(normalizedLookupKey)) {
+          Enum<?> constantAsEnum = (Enum<?>) constant;
+          if (KeyNormalizer.create(constantAsEnum.name()).equals(normalizedLookupKey)) {
             return constant;
           }
         }
