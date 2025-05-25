@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class MediaTypeTest {
 
   @Test
-  public void fromMime() throws NullValueException {
+  public void fromMime() {
 
     String validEmailValue = "text/plain; charset=utf-8";
     String mediaType = MediaTypes.getFromMimeValue(validEmailValue);
@@ -35,6 +35,15 @@ public class MediaTypeTest {
     Assertions.assertEquals("csv", mediaType.getSubType());
     Assertions.assertEquals("text/csv", mediaType.toString());
 
+    /**
+     * A single word should have a null type
+     */
+    mediaType = MediaTypes.parse("yolo");
+    Assertions.assertEquals(null, mediaType.getType());
+    Assertions.assertEquals("yolo", mediaType.getSubType());
+
   }
+
+
 
 }
