@@ -70,6 +70,22 @@ public class DocShellTest {
     Assertions.assertEquals(String.join(",", command1), String.join(",", commands.get(0)), "The first command");
   }
 
+  /**
+   * Test backslash in bash command
+   */
+  @Test
+  public void bashWithBackslash() {
+    final Path path = Paths.get("./src/test/resources/docTest/bash-with-backslash-command.txt");
+    List<DocUnit> docUnits = DocParser.getDocTests(path);
+    DocUnit docUnit = docUnits.get(0);
+    DocExecutor docExecutor = DocExecutor.
+      create("test")
+      .setCaptureStdErr(false);
+    String result = DocExecutorUnit.create(docExecutor)
+      .run(docUnit);
+    String console = docUnit.getConsole();
+    Assertions.assertEquals(console.trim(), result, "The run and the expectations are the same");
+  }
 
   @Test
   public void envWindowsTest() {

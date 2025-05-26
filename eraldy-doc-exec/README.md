@@ -80,7 +80,8 @@ The doc must have a unit with the following format.
     <file lang path/to/File>
     </file>
     <code dos>
-        echo %HOME%
+        echo ^
+          %HOME%
     </code>
     <console>
         Whatever
@@ -88,6 +89,19 @@ The doc must have a unit with the following format.
 </unit>
 ```
 
+```xml
+<unit envHOME="Whatever">
+    <file lang path/to/File>
+    </file>
+    <code bash>
+        echo \
+         $HOME
+    </code>
+    <console>
+        Whatever
+    </console>
+</unit>
+```
 
 
 ### File replacement
