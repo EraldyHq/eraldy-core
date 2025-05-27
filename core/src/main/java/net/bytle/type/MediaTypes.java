@@ -122,6 +122,14 @@ public class MediaTypes {
     }
 
   };
+  static public MediaType TEXT_LOG = new MediaTypeText() {
+
+    @Override
+    public String getSubType() {
+      return "log";
+    }
+
+  };
   /**
    * A type used to define relation (in memory data)
    * Tpc
@@ -235,6 +243,7 @@ public class MediaTypes {
     standardizeDataTypes.add(TEXT_JAVASCRIPT);
     standardizeDataTypes.add(TEXT_JSONL);
     standardizeDataTypes.add(TEXT_JSON);
+    standardizeDataTypes.add(TEXT_LOG);
     standardizeDataTypes.add(TEXT_PLAIN);
     standardizeDataTypes.add(TEXT_MD);
     standardizeDataTypes.add(TEXT_SQL);
@@ -437,8 +446,8 @@ public class MediaTypes {
 
     if (mediaType == o) return true;
     if (!(o instanceof MediaType)) return false;
-    MediaType obejctMediaType = (MediaType) o;
-    return mediaType.getType().equals(obejctMediaType.getType()) && mediaType.getSubType().equals(obejctMediaType.getSubType());
+    MediaType objectMediaType = (MediaType) o;
+    return mediaType.getType().equals(objectMediaType.getType()) && mediaType.getSubType().equals(objectMediaType.getSubType());
 
   }
 
@@ -472,14 +481,14 @@ public class MediaTypes {
       type = string.substring(0, endIndex);
       subType = string.substring(endIndex + 1);
     } else {
-      type = null;
+      type = "";
       subType = string;
     }
 
     /**
      * Special case when the user enter text or txt
      */
-    if (type == null && (subType.equalsIgnoreCase(TEXT_TYPE) || subType.equalsIgnoreCase("txt"))) {
+    if (type.isEmpty() &&  (subType.equalsIgnoreCase(TEXT_TYPE) || subType.equalsIgnoreCase("txt"))) {
       return TEXT_PLAIN;
     }
 
