@@ -11,6 +11,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
+import net.bytle.type.Casts;
 import net.bytle.type.Strings;
 
 import java.nio.file.Path;
@@ -141,8 +142,8 @@ public class DockerContainer {
         .withExposedPorts(exposedPorts);
 
       // Add command if specified
-      if (conf.command != null && !conf.command.isEmpty()) {
-        createContainerCmd.withCmd(conf.command.toArray(new String[0]));
+      if (!conf.command.isEmpty()) {
+        createContainerCmd.withCmd(conf.command);
       }
 
       CreateContainerResponse container = createContainerCmd.exec();
@@ -348,7 +349,7 @@ public class DockerContainer {
     }
 
     public Conf setCommand(String... command) {
-      this.command = Arrays.asList(command);
+      setCommand(Casts.castToListSafe(command, String.class));
       return this;
     }
 

@@ -36,15 +36,6 @@ public class TestContainerWrapper {
   private Integer containerPort;
   private final String name;
 
-  public TestContainerWrapper(String containerName, String dockerImageName) {
-    this.name = containerName;
-    this.image = dockerImageName;
-    this.container = new GenericContainer<>(dockerImageName);
-    this.dockerContainerCommand = DockerContainer
-      .createConf(image)
-      .setContainerName(containerName);
-  }
-
   /**
    * By default, you should use this constructor as the pre-created container
    * of test container have also defaults
@@ -55,8 +46,13 @@ public class TestContainerWrapper {
     this.container = container;
     this.name = name;
     this.image = container.getDockerImageName();
-    this.dockerContainerCommand = DockerContainer.createConf(image);
+    this.dockerContainerCommand = DockerContainer.createConf(image).setContainerName(name);
   }
+
+  public TestContainerWrapper(String containerName, String dockerImageName) {
+    this(containerName, new GenericContainer<>(dockerImageName));
+  }
+
 
   /**
    * Start the container if it's not detected already running (by port)
