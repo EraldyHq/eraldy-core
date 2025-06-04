@@ -120,6 +120,77 @@ public class DockerImage {
   }
 
   /**
+   * Delete all images with the same name as this image, regardless of tag
+   * This will remove all versions/tags of the image
+   */
+  public void deleteAllImagesWithoutTag() {
+    String imageName = getImageNameWithoutTag();
+    
+    try {
+      // List all images and filter by name (without tag)
+      dockerClient.listImagesCmd()
+        .exec()
+        .stream()
+        .filter(image -> image.getRepoTags() != null)
+        .filter(image -> Arrays.stream(image.getRepoTags())
+          .anyMatch(tag -> tag.startsWith(imageName + ":")))
+        .forEach(image -> {
+          try {
+            dockerClient.removeImageCmd(image.getId()).withForce(true).exec();
+            System.out.println("Deleted image: " + Arrays.toString(image.getRepoTags()));
+          } catch (Exception e) {
+            System.err.println("Failed to delete image " + Arrays.toString(image.getRepoTags()) + ": " + e.getMessage());
+          }
+        });
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to delete images for " + imageName + ": " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Delete a specific image with a specific tag (static method)
+   * 
+   * @param imageWithTag the image name with tag (e.g., "nginx:1.21", "ubuntu:20.04")
+   */
+  public static void deleteImageWithTag(String imageWithTag) {
+    // Create a temporary Docker client for this static operation
+    DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+      .dockerHost(config.getDockerHost())
+      .sslConfig(config.getSSLConfig())
+      .build();
+    DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient);
+    
+    try {
+      dockerClient.removeImageCmd(imageWithTag).withForce(true).exec();
+      System.out.println("Deleted image: " + imageWithTag);
+    } catch (NotFoundException e) {
+      System.out.println("Image " + imageWithTag + " not found");
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to delete image " + imageWithTag + ": " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Helper method to extract image name without tag from this image
+   * 
+   * @return the image name without tag
+   */
+  private String getImageNameWithoutTag() {
+    StringBuilder nameWithoutTag = new StringBuilder();
+    
+    if (registry != null) {
+      nameWithoutTag.append(registry).append("/");
+    }
+    if (project != null) {
+      nameWithoutTag.append(project).append("/");
+    }
+    nameWithoutTag.append(imageName);
+    
+    return nameWithoutTag.toString();
+  }
+
+  /**
    * Get the canonical name of the image (with default registry and tag if not specified)
    *
    * @return the canonical image name

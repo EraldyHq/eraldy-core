@@ -209,69 +209,6 @@ public class DockerContainer {
 
   }
 
-  /**
-   * Delete all images with the same name as the configured image, regardless of tag
-   * This will remove all versions/tags of the image
-   */
-  public void deleteAllImagesWithoutTag() {
-    String imageName = getImageNameWithoutTag();
-    
-    try {
-      // List all images and filter by name (without tag)
-      dockerClient.listImagesCmd()
-        .exec()
-        .stream()
-        .filter(image -> image.getRepoTags() != null)
-        .filter(image -> Arrays.stream(image.getRepoTags())
-          .anyMatch(tag -> tag.startsWith(imageName + ":")))
-        .forEach(image -> {
-          try {
-            dockerClient.removeImageCmd(image.getId()).withForce(true).exec();
-            System.out.println("Deleted image: " + Arrays.toString(image.getRepoTags()));
-          } catch (Exception e) {
-            System.err.println("Failed to delete image " + Arrays.toString(image.getRepoTags()) + ": " + e.getMessage());
-          }
-        });
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to delete images for " + imageName + ": " + e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Delete a specific image with a specific tag
-   * 
-   * @param imageWithTag the image name with tag (e.g., "nginx:1.21", "ubuntu:20.04")
-   */
-  public void deleteImageWithTag(String imageWithTag) {
-    try {
-      dockerClient.removeImageCmd(imageWithTag).withForce(true).exec();
-      System.out.println("Deleted image: " + imageWithTag);
-    } catch (NotFoundException e) {
-      System.out.println("Image " + imageWithTag + " not found");
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to delete image " + imageWithTag + ": " + e.getMessage(), e);
-    }
-  }
-
-  /**
-   * Helper method to extract image name without tag from the configured image
-   * 
-   * @return the image name without tag
-   */
-  private String getImageNameWithoutTag() {
-    DockerImage dockerImage = getImage();
-    StringBuilder nameWithoutTag = new StringBuilder();
-    
-    if (dockerImage.getRegistry() != null) {
-      nameWithoutTag.append(dockerImage.getRegistry()).append("/");
-    }
-    if (dockerImage.getProject() != null) {
-      nameWithoutTag.append(dockerImage.getProject()).append("/");
-    }
-    nameWithoutTag.append(dockerImage.getImageName());
-    
-    return nameWithoutTag.toString();
-  }
 
   /**
    * @return the shell command to run in dos and bash format
