@@ -9,6 +9,10 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,6 +168,47 @@ public class DockerImage {
         });
     } catch (Exception e) {
       throw new RuntimeException("Failed to delete images for " + imageName + ": " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * List all available local images without tags
+   * Returns a list of unique image names (without tags) that are available locally
+   *
+   * @return a list of image names without tags
+   * @throws RuntimeException if unable to list local images
+   */
+  public static List<String> listLocal() {
+    DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+      .dockerHost(config.getDockerHost())
+      .sslConfig(config.getSSLConfig())
+      .build();
+    DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient);
+
+    try {
+      Set<String> imageNamesWithoutTag = new HashSet<>();
+      
+      dockerClient.listImagesCmd()
+        .exec()
+        .stream()
+        .filter(image -> image.getRepoTags() != null)
+        .forEach(image -> {
+          Arrays.stream(image.getRepoTags())
+            .filter(repoTag -> !repoTag.equals("<none>:<none>"))
+            .forEach(repoTag -> {
+              // Extract image name without tag
+              String nameWithoutTag = repoTag.contains(":") ? 
+                repoTag.substring(0, repoTag.lastIndexOf(":")) : repoTag;
+              imageNamesWithoutTag.add(nameWithoutTag);
+            });
+        });
+
+      return imageNamesWithoutTag.stream()
+        .sorted()
+        .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to list local images: " + e.getMessage(), e);
     }
   }
 
