@@ -101,7 +101,7 @@ public class DockerContainer {
   private void createAndRunContainer() {
 
     String containerName = getName();
-    String image = getImage();
+    String image = getImage().getFullImageReference();
     Map<Integer, Integer> portMap = getPortBinding();
     Map<Path, Path> volumeMap = getVolumeBinding();
 
@@ -248,7 +248,7 @@ public class DockerContainer {
       stringBuilder
         .append(spaces).append("-d ").append(separator)
         .append(spaces).append("--name ").append(conf.containerName).append(" ").append(separator)
-        .append(spaces).append(conf.image).append(Strings.EOL);
+        .append(spaces).append(conf.image.getFullImageReference()).append(Strings.EOL);
     }
 
     return stringBuilder.toString();
@@ -280,11 +280,11 @@ public class DockerContainer {
   }
 
   /**
-   * @return the image name
+   * @return the DockerImage object
    * It's the image parameter in a Docker command.
    * For instance, for a run, it's the `IMAGE` in `docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
    */
-  public String getImage() {
+  public DockerImage getImage() {
     return conf.image;
   }
 
@@ -298,6 +298,10 @@ public class DockerContainer {
   }
 
   public static Conf createConf(String image) {
+    return new Conf(new DockerImage(image));
+  }
+
+  public static Conf createConf(DockerImage image) {
     return new Conf(image);
   }
 
@@ -306,13 +310,13 @@ public class DockerContainer {
   public static class Conf {
 
     private String containerName = "test-container";
-    private final String image;
+    private final DockerImage image;
     private Map<Integer, Integer> portMap = new HashMap<>();
     private Map<String, String> envs = new HashMap<>();
     private Map<Path, Path> volumeMap = new HashMap<>();
     private List<String> command = new ArrayList<>();
 
-    public Conf(String image) {
+    public Conf(DockerImage image) {
       this.image = image;
     }
 
