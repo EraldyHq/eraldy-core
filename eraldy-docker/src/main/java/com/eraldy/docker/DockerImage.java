@@ -2,7 +2,6 @@ package com.eraldy.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -75,7 +74,7 @@ public class DockerImage {
         .anyMatch(image -> {
           if (image.getRepoTags() != null) {
             return Arrays.stream(image.getRepoTags())
-              .anyMatch(repoTag -> repoTag.equals(fullImageReference) || 
+              .anyMatch(repoTag -> repoTag.equals(fullImageReference) ||
                                    repoTag.equals(getCanonicalName()));
           }
           if (image.getRepoDigests() != null && digest != null) {
@@ -125,7 +124,7 @@ public class DockerImage {
    */
   public void deleteAllImagesWithoutTag() {
     String imageName = getImageNameWithoutTag();
-    
+
     try {
       // List all images and filter by name (without tag)
       dockerClient.listImagesCmd()
@@ -148,37 +147,13 @@ public class DockerImage {
   }
 
   /**
-   * Delete a specific image with a specific tag (static method)
-   * 
-   * @param imageWithTag the image name with tag (e.g., "nginx:1.21", "ubuntu:20.04")
-   */
-  public static void deleteImageWithTag(String imageWithTag) {
-    // Create a temporary Docker client for this static operation
-    DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-    DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
-      .dockerHost(config.getDockerHost())
-      .sslConfig(config.getSSLConfig())
-      .build();
-    DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient);
-    
-    try {
-      dockerClient.removeImageCmd(imageWithTag).withForce(true).exec();
-      System.out.println("Deleted image: " + imageWithTag);
-    } catch (NotFoundException e) {
-      System.out.println("Image " + imageWithTag + " not found");
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to delete image " + imageWithTag + ": " + e.getMessage(), e);
-    }
-  }
-
-  /**
    * Helper method to extract image name without tag from this image
-   * 
+   *
    * @return the image name without tag
    */
   private String getImageNameWithoutTag() {
     StringBuilder nameWithoutTag = new StringBuilder();
-    
+
     if (registry != null) {
       nameWithoutTag.append(registry).append("/");
     }
@@ -186,7 +161,7 @@ public class DockerImage {
       nameWithoutTag.append(project).append("/");
     }
     nameWithoutTag.append(imageName);
-    
+
     return nameWithoutTag.toString();
   }
 
