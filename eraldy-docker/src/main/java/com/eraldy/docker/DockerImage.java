@@ -105,6 +105,27 @@ public class DockerImage {
   }
 
   /**
+   * Delete the image from local Docker only if it exists
+   * This method will not throw exceptions if the image doesn't exist
+   *
+   * @return true if the image was deleted, false if it didn't exist
+   */
+  public boolean deleteIfExists() {
+    if (!exists()) {
+      System.out.println("Image " + fullImageReference + " does not exist locally");
+      return false;
+    }
+    
+    try {
+      dockerClient.removeImageCmd(fullImageReference).withForce(true).exec();
+      System.out.println("Deleted image: " + fullImageReference);
+      return true;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to delete image " + fullImageReference + ": " + e.getMessage(), e);
+    }
+  }
+
+  /**
    * Pull the image from the registry
    *
    * @throws RuntimeException if the image cannot be pulled
