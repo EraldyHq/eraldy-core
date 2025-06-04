@@ -50,10 +50,11 @@ public class DockerImage {
       throw new IllegalArgumentException("Invalid image reference format: " + imageReference);
     }
 
-    this.registry = matcher.group(1);
-    this.project = matcher.group(2);
+    // Apply defaults for optional components
+    this.registry = matcher.group(1); // null if not specified
+    this.project = matcher.group(2);  // null if not specified
     this.imageName = matcher.group(3);
-    this.tag = matcher.group(4);
+    this.tag = matcher.group(4) != null ? matcher.group(4) : (matcher.group(5) == null ? "latest" : null);
     this.digest = matcher.group(5);
 
     // Initialize Docker client
@@ -63,6 +64,16 @@ public class DockerImage {
       .sslConfig(config.getSSLConfig())
       .build();
     this.dockerClient = DockerClientImpl.getInstance(config, httpClient);
+  }
+
+  /**
+   * Static factory method to create a DockerImage instance
+   *
+   * @param imageReference the image reference in OCI format
+   * @return a new DockerImage instance
+   */
+  public static DockerImage create(String imageReference) {
+    return new DockerImage(imageReference);
   }
 
   /**
