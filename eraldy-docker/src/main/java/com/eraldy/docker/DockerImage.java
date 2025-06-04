@@ -119,7 +119,7 @@ public class DockerImage {
       System.out.println("Image " + fullImageReference + " does not exist locally");
       return false;
     }
-    
+
     try {
       dockerClient.removeImageCmd(fullImageReference).withForce(true).exec();
       System.out.println("Deleted image: " + fullImageReference);
@@ -139,7 +139,7 @@ public class DockerImage {
       dockerClient.pullImageCmd(fullImageReference).start().awaitCompletion();
       System.out.println("Pulled image: " + fullImageReference);
     } catch (Exception e) {
-      throw new RuntimeException("Failed to pull image " + fullImageReference + ": " + e.getMessage(), e);
+      throw new RuntimeException("Failed to pull image (" + fullImageReference + "): " + e.getMessage(), e);
     }
   }
 
@@ -188,7 +188,7 @@ public class DockerImage {
 
     try {
       Set<String> imageNamesWithoutTag = new HashSet<>();
-      
+
       dockerClient.listImagesCmd()
         .exec()
         .stream()
@@ -198,7 +198,7 @@ public class DockerImage {
             .filter(repoTag -> !repoTag.equals("<none>:<none>"))
             .forEach(repoTag -> {
               // Extract image name without tag
-              String nameWithoutTag = repoTag.contains(":") ? 
+              String nameWithoutTag = repoTag.contains(":") ?
                 repoTag.substring(0, repoTag.lastIndexOf(":")) : repoTag;
               imageNamesWithoutTag.add(nameWithoutTag);
             });
