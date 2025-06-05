@@ -52,8 +52,8 @@ public class DockerImage {
     }
 
     // Apply defaults for optional components
-    this.registry = matcher.group(1); // null if not specified
-    this.project = matcher.group(2);  // null if not specified
+    this.registry = matcher.group(1) != null && matcher.group(2) != null ? matcher.group(1) : null;
+    this.project = matcher.group(2) != null ? matcher.group(2) : matcher.group(1);
     this.imageName = matcher.group(3);
     this.tag = matcher.group(4) != null ? matcher.group(4) : (matcher.group(5) == null ? "latest" : null);
     this.digest = matcher.group(5);
@@ -91,7 +91,7 @@ public class DockerImage {
           if (image.getRepoTags() != null) {
             return Arrays.stream(image.getRepoTags())
               .anyMatch(repoTag -> repoTag.equals(imageReference) ||
-                                   repoTag.equals(getCanonicalName()));
+                repoTag.equals(getCanonicalName()));
           }
           if (image.getRepoDigests() != null && digest != null) {
             return Arrays.stream(image.getRepoDigests())
