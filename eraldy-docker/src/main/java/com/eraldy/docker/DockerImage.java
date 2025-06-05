@@ -8,13 +8,10 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A Docker image class that handles OCI-compliant image references
@@ -22,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public class DockerImage {
 
-  private final String fullImageReference;
+  private final String imageReference;
   private final String registry;
   private final String project;
   private final String imageName;
@@ -42,7 +39,7 @@ public class DockerImage {
    * @param imageReference the image reference in OCI format
    */
   public DockerImage(String imageReference) {
-    this.fullImageReference = imageReference;
+    this.imageReference = imageReference;
 
     // Parse the image reference
     Matcher matcher = IMAGE_PATTERN.matcher(imageReference);
@@ -89,12 +86,12 @@ public class DockerImage {
         .anyMatch(image -> {
           if (image.getRepoTags() != null) {
             return Arrays.stream(image.getRepoTags())
-              .anyMatch(repoTag -> repoTag.equals(fullImageReference) ||
+              .anyMatch(repoTag -> repoTag.equals(imageReference) ||
                                    repoTag.equals(getCanonicalName()));
           }
           if (image.getRepoDigests() != null && digest != null) {
             return Arrays.stream(image.getRepoDigests())
-              .anyMatch(repoDigest -> repoDigest.equals(fullImageReference));
+              .anyMatch(repoDigest -> repoDigest.equals(imageReference));
           }
           return false;
         });
@@ -110,12 +107,12 @@ public class DockerImage {
    */
   public void delete() {
     try {
-      dockerClient.removeImageCmd(fullImageReference).withForce(true).exec();
-      System.out.println("Deleted image: " + fullImageReference);
+      dockerClient.removeImageCmd(imageReference).withForce(true).exec();
+      System.err.println("Deleted image: " + imageReference);
     } catch (NotFoundException e) {
-      System.out.println("Image " + fullImageReference + " not found");
+      System.err.println("Image " + imageReference + " not found");
     } catch (Exception e) {
-      throw new RuntimeException("Failed to delete image " + fullImageReference + ": " + e.getMessage(), e);
+      throw new RuntimeException("Failed to delete image " + imageReference + ": " + e.getMessage(), e);
     }
   }
 
@@ -127,16 +124,16 @@ public class DockerImage {
    */
   public boolean deleteIfExists() {
     if (!exists()) {
-      System.out.println("Image " + fullImageReference + " does not exist locally");
+      System.err.println("Image " + imageReference + " does not exist locally");
       return false;
     }
 
     try {
-      dockerClient.removeImageCmd(fullImageReference).withForce(true).exec();
-      System.out.println("Deleted image: " + fullImageReference);
+      dockerClient.removeImageCmd(imageReference).withForce(true).exec();
+      System.err.println("Deleted image: " + imageReference);
       return true;
     } catch (Exception e) {
-      throw new RuntimeException("Failed to delete image " + fullImageReference + ": " + e.getMessage(), e);
+      throw new RuntimeException("Failed to delete image " + imageReference + ": " + e.getMessage(), e);
     }
   }
 
@@ -146,11 +143,23 @@ public class DockerImage {
    * @throws RuntimeException if the image cannot be pulled
    */
   public void pull() {
+    // We don't use the image string given in the constructor but the canonical one because the tag default is
+    // platform dependent
+    // For instance, busybox will become docker.io/library/busybox:1-ubuntu
+    // and, we get the following error because the image is not in a good format
+    //
+    // Failed to pull image (busybox): Could not pull image: [DEPRECATION NOTICE]
+    // Docker Image Format v1 and Docker Image manifest version 2, schema 1 support is disabled by default
+    // and will be removed in an upcoming release.
+    // Suggest the author of docker.io/library/busybox:1-ubuntu
+    // to upgrade the image to the OCI Format or Docker Image manifest v2, schema 2.
+    // More information at https://docs.docker.com/go/deprecated-image-specs/
+    String canonicalName = this.getCanonicalName();
     try {
-      dockerClient.pullImageCmd(fullImageReference).start().awaitCompletion();
-      System.out.println("Pulled image: " + fullImageReference);
+      System.err.println("Pulling image: " + canonicalName);
+      dockerClient.pullImageCmd(canonicalName).start().awaitCompletion();
     } catch (Exception e) {
-      throw new RuntimeException("Failed to pull image (" + fullImageReference + "): " + e.getMessage(), e);
+      throw new RuntimeException("Failed to pull image (" + canonicalName + "): " + e.getMessage(), e);
     }
   }
 
@@ -172,7 +181,7 @@ public class DockerImage {
         .forEach(image -> {
           try {
             dockerClient.removeImageCmd(image.getId()).withForce(true).exec();
-            System.out.println("Deleted image: " + Arrays.toString(image.getRepoTags()));
+            System.err.println("Deleted image: " + Arrays.toString(image.getRepoTags()));
           } catch (Exception e) {
             System.err.println("Failed to delete image " + Arrays.toString(image.getRepoTags()) + ": " + e.getMessage());
           }
@@ -251,11 +260,7 @@ public class DockerImage {
     StringBuilder canonical = new StringBuilder();
 
     // Add registry (default to docker.io if not specified)
-    if (registry != null) {
-      canonical.append(registry);
-    } else {
-      canonical.append("docker.io");
-    }
+    canonical.append(Objects.requireNonNullElse(registry, "docker.io"));
     canonical.append("/");
 
     // Add project (default to library if not specified and registry is docker.io)
@@ -286,8 +291,8 @@ public class DockerImage {
    *
    * @return the full image reference
    */
-  public String getFullImageReference() {
-    return fullImageReference;
+  public String getImageReference() {
+    return imageReference;
   }
 
   /**
@@ -338,7 +343,7 @@ public class DockerImage {
   @Override
   public String toString() {
     return "DockerImage{" +
-      "fullImageReference='" + fullImageReference + '\'' +
+      "fullImageReference='" + imageReference + '\'' +
       ", registry='" + registry + '\'' +
       ", project='" + project + '\'' +
       ", imageName='" + imageName + '\'' +

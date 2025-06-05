@@ -63,10 +63,16 @@ class DockerContainerTest {
   @Test
   void testHttpdContainer() throws InterruptedException {
 
-    final String IMAGE_NAME = "busybox";
     // Create DockerContainer with busybox image
-    DockerContainer.Conf conf = DockerContainer.createConf(IMAGE_NAME);
-    conf.setContainerName(CONTAINER_NAME);
+    DockerImage image = new DockerImage("busybox");
+    image.deleteIfExists();
+
+    /**
+     * Container
+     */
+    DockerContainer.Conf conf = DockerContainer.createConf(image)
+      .setContainerName(CONTAINER_NAME);
+
     Integer startedPort = Oss.getRandomAvailablePort();
     Path baseBusyBoxHostPath = Paths.get("src/test/resources/busybox");
     Path wwwHostPath = baseBusyBoxHostPath.resolve("var/www");
@@ -82,8 +88,8 @@ class DockerContainerTest {
       .setEnv(ENV_NAME, ENV_VALUE)
       .setVolumes(wwwHostPath, Paths.get("/var/www/"))
       .setCommand("httpd", runInForeground, verboseOutput, "-h", "/var/www/");
-
     DockerContainer dockerContainer = conf.build();
+
     if (dockerContainer.exists()) {
       dockerContainer.rm();
     }

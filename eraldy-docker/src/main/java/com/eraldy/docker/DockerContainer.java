@@ -100,8 +100,11 @@ public class DockerContainer {
    */
   private void createAndRunContainer() {
 
+    DockerImage image = getImage();
+    if(!image.exists()){
+      image.pull();
+    }
     String containerName = getName();
-    String image = getImage().getFullImageReference();
     Map<Integer, Integer> portMap = getPortBinding();
     Map<Path, Path> volumeMap = getVolumeBinding();
 
@@ -135,7 +138,7 @@ public class DockerContainer {
         .withBinds(binds);
 
       // Create container
-      CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(image)
+      CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(image.getImageReference())
         .withName(containerName)
         .withHostConfig(hostConfig)
         .withEnv(getEnvs().entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()))
@@ -150,7 +153,7 @@ public class DockerContainer {
 
       // Start container
       dockerClient.startContainerCmd(container.getId()).exec();
-      System.out.println("Container " + containerName + " created and started");
+      System.err.println("Container " + containerName + " created and started");
 
     } catch (Exception e) {
       throw new RuntimeException("Failed to create and run container: " + this + ". Error: " + e.getMessage(), e);
@@ -164,7 +167,7 @@ public class DockerContainer {
     String containerName = getName();
 
     if (!exists()) {
-      System.out.println("Container " + containerName + " does not exist");
+      System.err.println("Container " + containerName + " does not exist");
       return;
     }
 
@@ -175,7 +178,7 @@ public class DockerContainer {
     // Container exists, remove it
     try {
       dockerClient.removeContainerCmd(containerName).exec();
-      System.out.println("Container " + containerName + " removed");
+      System.err.println("Container " + containerName + " removed");
     } catch (Exception e) {
       throw new RuntimeException("Failed to remove container: " + e.getMessage());
     }
@@ -248,7 +251,7 @@ public class DockerContainer {
       stringBuilder
         .append(spaces).append("-d ").append(separator)
         .append(spaces).append("--name ").append(conf.containerName).append(" ").append(separator)
-        .append(spaces).append(conf.image.getFullImageReference()).append(Strings.EOL);
+        .append(spaces).append(conf.image.getImageReference()).append(Strings.EOL);
     }
 
     return stringBuilder.toString();
