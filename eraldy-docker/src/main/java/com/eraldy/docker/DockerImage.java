@@ -7,6 +7,8 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
  * Format: [<registry>/][<project>/]<image>[:<tag>|@<digest>]
  */
 public class DockerImage {
+
+  private static final Logger logger = LoggerFactory.getLogger(DockerImage.class);
 
   private final String imageReference;
   private final String registry;
@@ -108,9 +112,9 @@ public class DockerImage {
   public void delete() {
     try {
       dockerClient.removeImageCmd(imageReference).withForce(true).exec();
-      System.err.println("Deleted image: " + imageReference);
+      logger.info("Deleted image: {}", imageReference);
     } catch (NotFoundException e) {
-      System.err.println("Image " + imageReference + " not found");
+      logger.warn("Image {} not found", imageReference);
     } catch (Exception e) {
       throw new RuntimeException("Failed to delete image " + imageReference + ": " + e.getMessage(), e);
     }
@@ -124,13 +128,13 @@ public class DockerImage {
    */
   public boolean deleteIfExists() {
     if (!exists()) {
-      System.err.println("Image " + imageReference + " does not exist locally");
+      logger.info("Image {} does not exist locally", imageReference);
       return false;
     }
 
     try {
       dockerClient.removeImageCmd(imageReference).withForce(true).exec();
-      System.err.println("Deleted image: " + imageReference);
+      logger.info("Deleted image: {}", imageReference);
       return true;
     } catch (Exception e) {
       throw new RuntimeException("Failed to delete image " + imageReference + ": " + e.getMessage(), e);
@@ -156,7 +160,7 @@ public class DockerImage {
     // More information at https://docs.docker.com/go/deprecated-image-specs/
     String canonicalName = this.getCanonicalName();
     try {
-      System.err.println("Pulling image: " + canonicalName);
+      logger.info("Pulling image: {}", canonicalName);
       dockerClient.pullImageCmd(canonicalName).start().awaitCompletion();
     } catch (Exception e) {
       throw new RuntimeException("Failed to pull image (" + canonicalName + "): " + e.getMessage(), e);
@@ -181,9 +185,9 @@ public class DockerImage {
         .forEach(image -> {
           try {
             dockerClient.removeImageCmd(image.getId()).withForce(true).exec();
-            System.err.println("Deleted image: " + Arrays.toString(image.getRepoTags()));
+            logger.info("Deleted image: {}", Arrays.toString(image.getRepoTags()));
           } catch (Exception e) {
-            System.err.println("Failed to delete image " + Arrays.toString(image.getRepoTags()) + ": " + e.getMessage());
+            logger.error("Failed to delete image {}: {}", Arrays.toString(image.getRepoTags()), e.getMessage());
           }
         });
     } catch (Exception e) {

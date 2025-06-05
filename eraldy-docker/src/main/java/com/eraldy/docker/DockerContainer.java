@@ -13,6 +13,8 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import net.bytle.type.Casts;
 import net.bytle.type.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
  * A Docker container class to start, stop, and run Docker containers
  */
 public class DockerContainer {
+
+  private static final Logger logger = LoggerFactory.getLogger(DockerContainer.class);
 
   private final Conf conf;
   private final DockerClient dockerClient;
@@ -83,7 +87,7 @@ public class DockerContainer {
       // Container exists, start it if not running
       try {
         dockerClient.startContainerCmd(containerName).exec();
-        System.err.println("Container " + containerName + " started");
+        logger.info("Container {} started", containerName);
       } catch (Exception e) {
         throw new RuntimeException("Failed to start container: " + e.getMessage());
       }
@@ -153,7 +157,7 @@ public class DockerContainer {
 
       // Start container
       dockerClient.startContainerCmd(container.getId()).exec();
-      System.err.println("Container " + containerName + " created and started");
+      logger.info("Container {} created and started", containerName);
 
     } catch (Exception e) {
       throw new RuntimeException("Failed to create and run container: " + this + ". Error: " + e.getMessage(), e);
@@ -167,7 +171,7 @@ public class DockerContainer {
     String containerName = getName();
 
     if (!exists()) {
-      System.err.println("Container " + containerName + " does not exist");
+      logger.info("Container {} does not exist", containerName);
       return;
     }
 
@@ -178,7 +182,7 @@ public class DockerContainer {
     // Container exists, remove it
     try {
       dockerClient.removeContainerCmd(containerName).exec();
-      System.err.println("Container " + containerName + " removed");
+      logger.info("Container {} removed", containerName);
     } catch (Exception e) {
       throw new RuntimeException("Failed to remove container: " + e.getMessage());
     }
@@ -205,7 +209,7 @@ public class DockerContainer {
 
     try {
       dockerClient.stopContainerCmd(containerName).exec();
-      System.err.println("Container " + containerName + " stopped");
+      logger.info("Container {} stopped", containerName);
     } catch (Exception e) {
       throw new RuntimeException("Failed to stop container: " + this + "," + e.getMessage(), e);
     }
