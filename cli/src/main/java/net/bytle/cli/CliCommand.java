@@ -210,8 +210,9 @@ public class CliCommand extends CliWord {
 
             /**
              * Default
+             * Trim to delete trailing space
              */
-            stringBuilder.append(s)
+            stringBuilder.append(s.stripTrailing())
                     .append(CliUsage.EOL);
 
         }

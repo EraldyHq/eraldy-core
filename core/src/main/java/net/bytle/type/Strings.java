@@ -398,7 +398,7 @@ public class Strings {
 
     // Multiline, we delete the trailing spaces
     return new Strings(Arrays.stream(strings)
-      .map(s -> s == null ? "null" : s.trim())
+      .map(s -> s == null ? "null" : s.stripTrailing())
       .collect(Collectors.joining(EOL)));
 
   }
