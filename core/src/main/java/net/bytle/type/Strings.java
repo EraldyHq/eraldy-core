@@ -396,12 +396,10 @@ public class Strings {
    */
   public static Strings createMultiLineFromStrings(String... strings) {
 
-//    if (strings.length==1){
-//      if (strings[0].getClass().isArray()){
-//        strings = (String[]) strings[0];
-//      }
-//    }
-    return createFromStrings(EOL, strings);
+    // Multiline, we delete the trailing spaces
+    return new Strings(Arrays.stream(strings)
+      .map(s -> s == null ? "null" : s.trim())
+      .collect(Collectors.joining(EOL)));
 
   }
 
