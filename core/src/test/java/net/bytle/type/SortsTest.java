@@ -13,11 +13,23 @@ class SortsTest {
   @Test
   void baselineNaturalSort() {
 
-    List<String> actual = Stream.of("img12.png", "img10.png", "img2.png", "img1.png")
-      .sorted(Sorts::naturalSortComparator)
-      .collect(Collectors.toList());
-    List<String> expected = Arrays.asList("img1.png", "img2.png", "img10.png", "img12.png");
-    Assertions.assertEquals(expected, actual);
+    String[] toSort = {"img12.png", "img10.png", "img2.png", "img1.png"};
+    List<String> expectedNaturalOrder = Arrays.asList("img1.png", "img2.png", "img10.png", "img12.png");
+
+    Assertions.assertNotEquals(
+      expectedNaturalOrder,
+      Stream.of(toSort)
+        .sorted()
+        .collect(Collectors.toList()),
+      "Not a natural sort");
+
+    Assertions.assertEquals(expectedNaturalOrder, Stream.of(toSort)
+        .sorted(Sorts::naturalSortComparator)
+        .collect(Collectors.toList()),
+      "Natural Sorted"
+    );
+
+
 
   }
 }

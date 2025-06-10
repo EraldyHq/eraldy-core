@@ -1,5 +1,7 @@
 package net.bytle.type;
 
+import java.util.Comparator;
+
 public class Sorts {
 
   /**
@@ -11,6 +13,9 @@ public class Sorts {
    * @param ignoreCase - Ignore case or not
    * @return the natural sort comparison
    * Based on <a href="https://stackoverflow.com/a/26884326/297420">...</a>
+   * <p>
+   * By default, Java use the {@link Comparator#naturalOrder()} that is not natural order
+   * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html#naturalOrder--">...</a>
    */
   public static int naturalSortComparator(String s1, String s2, boolean ignoreCase) {
     if (ignoreCase) {
