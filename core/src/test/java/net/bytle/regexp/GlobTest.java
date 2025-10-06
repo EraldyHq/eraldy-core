@@ -2,6 +2,7 @@ package net.bytle.regexp;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
@@ -22,6 +23,16 @@ public class GlobTest {
     backReference = "$0";
     targetProcessed = globPattern.replace(string, backReference);
     Assert.assertEquals("The replacement of $0 has succeed", string, targetProcessed);
+
+  }
+
+  /**
+   * Star should return always a match
+   */
+  @Test
+  public void starTest() {
+
+    Assertions.assertTrue(Glob.createOf("*").matches("yolo"));
 
   }
 

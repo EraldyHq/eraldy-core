@@ -1,5 +1,6 @@
 package net.bytle.command;
 
+import net.bytle.exec.Command;
 import org.junit.Assert;
 import org.junit.Test;
 

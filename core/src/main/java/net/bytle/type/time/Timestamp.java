@@ -74,7 +74,14 @@ public class Timestamp {
   }
 
 
+  /**
+   *
+   * @throws CastException
+   * Note: We consider a number to be representing the timestamp, in milliseconds, of the current time.
+   * As Javascript does <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now">...</a>
+   */
   public static Timestamp createFromObject(Object sourceObject) throws CastException {
+
     if (sourceObject == null) {
       return new Timestamp(null);
     } else if (sourceObject instanceof Timestamp) {
@@ -87,6 +94,8 @@ public class Timestamp {
       return createFromLocalDate((LocalDate) sourceObject);
     } else if (sourceObject instanceof Long) {
       return createFromEpochMilli((Long) sourceObject);
+    } else if (sourceObject instanceof Double) {
+      return createFromEpochMilli(((Double) sourceObject).longValue());
     } else if (sourceObject instanceof String) {
       return createFromString((String) sourceObject);
     } else if (sourceObject instanceof Date) {

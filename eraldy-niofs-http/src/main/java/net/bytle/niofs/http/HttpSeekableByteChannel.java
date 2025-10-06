@@ -12,7 +12,7 @@ import java.nio.channels.*;
 import java.util.logging.Level;
 
 /**
- * https://docs.oracle.com/javase/8/docs/api/index.html?java/net/HttpURLConnection.html
+ * <a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/HttpURLConnection.html">...</a>
  * Implemented with a range request
  */
 class HttpSeekableByteChannel implements SeekableByteChannel {
@@ -21,7 +21,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
 
 
   // The connection Url
-  private final HttpRequestPath httpPath;
+  private final HttpPath httpPath;
   // The current position in the connection
   private long currentPosition = 0;
   // The connection (fetch)
@@ -31,7 +31,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
 
   private long byteSize;
 
-  HttpSeekableByteChannel(final HttpRequestPath httpPath) {
+  HttpSeekableByteChannel(final HttpPath httpPath) {
     assert httpPath != null : "httpPath cannot be null";
     this.httpPath = httpPath;
     build(currentPosition);
@@ -40,7 +40,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
 
   private void build(long start) {
 
-    fetch = HttpStatic.getHttpFetchObject(httpPath);
+    fetch = HttpRequest.getHttpRequest(httpPath);
     fetch.addRequestProperty("Range", "bytes=" + start + "-");
     fetch.setInstanceFollowRedirects(true);
 
@@ -49,7 +49,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
      * The size is mandatory for
      * {@link java.nio.file.Files.readAllBytes()}
      * because it creates an array in advance to get the data
-     *
+     * <p>
      * If the server does not publish it, we read the input stream
      * to determine it
      */
@@ -119,7 +119,7 @@ class HttpSeekableByteChannel implements SeekableByteChannel {
   }
 
   @Override
-  public SeekableByteChannel truncate(long size) throws IOException {
+  public SeekableByteChannel truncate(long size) {
     throw new NonWritableChannelException();
   }
 

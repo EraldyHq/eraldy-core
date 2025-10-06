@@ -6,35 +6,38 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URLConnection;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 class HttpFileTypeDetectorTest {
 
-    @Test
-    void wikipediaXmlFileTypeDetectionTest() throws IOException, IllegalStructure {
+  @Test
+  void wikipediaXmlFileTypeDetectionTest() throws IOException, IllegalStructure, URISyntaxException {
 
-        URI uriWik = UriEnhanced.createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=xml&prop=description|categories").toUri();
+    URI uri = UriEnhanced.createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=xml&prop=description|categories").toUri();
+    HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+    conn.setRequestProperty(HttpHeader.USER_AGENT.toKeyNormalizer().toHttpHeaderCase(), HttpHeader.USER_AGENT.toString());
+    conn.setRequestMethod("GET");
+    // Check response code
+    int responseCode = conn.getResponseCode();
+    Assertions.assertEquals(200, responseCode);
+    String contentType = conn.getContentType();
+    String expected = "text/xml; charset=utf-8";
+    Assertions.assertEquals(expected, contentType);
+    conn.disconnect();
 
-        /**
-         * Direct
-         */
-        URLConnection urlConnection = uriWik.toURL().openConnection();
-        String contentType = urlConnection.getContentType();
-        String expected = "text/xml; charset=utf-8";
-        Assertions.assertEquals(expected, contentType);
+    /**
+     * Via Path
+     */
+    Path path = Paths.get(uri);
+    Assertions.assertEquals(HttpPath.class, path.getClass());
+    contentType = Files.probeContentType(path);
+    Assertions.assertEquals(expected, contentType);
 
-        /**
-         * Via Path
-         */
-        Path path = Paths.get(uriWik);
-        Assertions.assertEquals(HttpRequestPath.class, path.getClass());
-        contentType = Files.probeContentType(path);
-        Assertions.assertEquals(expected, contentType);
-
-    }
+  }
 
 }

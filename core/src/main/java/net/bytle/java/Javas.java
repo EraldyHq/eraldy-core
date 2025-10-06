@@ -136,7 +136,7 @@ public class Javas {
 
     for (String buildPathName : buildPathNames) {
       try {
-        return Fs.getPathUntilName(sourceCodePath.getParent(), buildPathName);
+        return Fs.closest(sourceCodePath.getParent(), buildPathName);
       } catch (FileNotFoundException e) {
         // not found
       }

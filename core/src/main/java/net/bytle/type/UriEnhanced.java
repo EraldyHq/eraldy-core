@@ -4,16 +4,19 @@ import net.bytle.exception.CastException;
 import net.bytle.exception.IllegalStructure;
 import net.bytle.exception.NotFoundException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A URI wrapper to be able to build and get URI data
  * <p>
- * that java does not provide such as key case and separation key independence
+ * Feature:
+ * * key case and separation key independence
+ * * URI from URL
  */
+@SuppressWarnings("unused")
 public class UriEnhanced {
 
 
@@ -44,6 +47,9 @@ public class UriEnhanced {
       uri = URI.create(s);
     } catch (Exception e) {
       try {
+        /**
+         * Maybe a bad formatted URL
+         */
         URL url = new URL(s);
         StringBuilder encodedUrl = new StringBuilder()
           .append(url.getProtocol())
@@ -55,10 +61,10 @@ public class UriEnhanced {
         if (!url.getQuery().isEmpty()) {
           encodedUrl
             .append("?")
-            .append(URLEncoder.encode(url.getQuery(), "UTF-8"));
+            .append(URLEncoder.encode(url.getQuery(), StandardCharsets.UTF_8));
         }
         uri = URI.create(encodedUrl.toString());
-      } catch (MalformedURLException | UnsupportedEncodingException ex) {
+      } catch (MalformedURLException ex) {
         throw new IllegalStructure("Illegal URI, URL or encoding: " + e.getMessage(), e);
       }
     }
@@ -309,12 +315,24 @@ public class UriEnhanced {
     return getQueryProperty(enumValue.toString());
   }
 
+  /**
+   *
+   * @return a scheme or null
+   * A URI string with as single word such as "scheme" is a valid URI
+   * but will return null as the scheme is not mandatory and should be delimited by `:`
+   * A valid minimal URI with only a scheme is "scheme:/" that will set the scheme
+   * to "scheme" and the path to `/`
+   */
   public String getScheme() {
     return this.scheme;
   }
 
   public String getPath() {
     return this.path;
+  }
+
+  public String getSchemeSpecificPart(){
+    return this.schemeSpecificPart;
   }
 
   /**
@@ -355,4 +373,17 @@ public class UriEnhanced {
     return this;
 
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    UriEnhanced that = (UriEnhanced) o;
+    return Objects.equals(toUri(), that.toUri());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(toUri());
+  }
+
 }

@@ -176,7 +176,7 @@ public class CliUsage {
 
         List<CliWord> moduleWords;
         try {
-          moduleWords = Lists.cast(cliCommand.getChildCommands(), CliWord.class);
+          moduleWords = Lists.castToNewList(cliCommand.getChildCommands(), CliWord.class);
         } catch (CastException e) {
           throw new InternalException(e);
         }

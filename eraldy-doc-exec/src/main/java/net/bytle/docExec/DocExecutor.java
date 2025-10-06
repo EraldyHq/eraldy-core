@@ -3,6 +3,8 @@ package net.bytle.docExec;
 
 import net.bytle.fs.Fs;
 import net.bytle.log.Log;
+import net.bytle.log.LogLevel;
+import net.bytle.log.Logs;
 import net.bytle.type.Strings;
 
 import java.nio.file.Files;
@@ -24,13 +26,18 @@ public class DocExecutor {
   private final String name;
 
   private final String eol = Strings.EOL;
+  private final DocSecurityManager securityManager;
+  public boolean captureStdErr = true;
 
   DocCache docCache;
-  Map<String, Class<?>> commands = new HashMap<>();
+  private final Map<String, Class<?>> shellCommandMainClassMap = new HashMap<>();
+  // The fully qualified path of the command
+  // to be sure that we don't hit another command
+  private final Map<String, Path> shellCommandAbsolutePathMap = new HashMap<>();
+  private final Map<String, Boolean> shellCommandUseShellBinaryMap = new HashMap<>();
+  private Level logLevel = LogLevel.INFO;
 
   /**
-   *
-   *
    * @param overwrite If set to true, the console and the file node will be overwritten
    * @return the object for chaining
    */
@@ -39,22 +46,30 @@ public class DocExecutor {
     return this;
   }
 
+  /**
+   * @param captureStdErr If set to true, the std err is added to the output
+   * @return the object for chaining
+   */
+  public DocExecutor setCaptureStdErr(boolean captureStdErr) {
+    this.captureStdErr = captureStdErr;
+    return this;
+  }
+
   private boolean overwrite = false;
 
 
   /**
-   *
-   *
    * @param name The execution name
    */
   private DocExecutor(String name) {
     this.name = name;
-    // Managing System.exit with the security manager
-    System.setSecurityManager(DocSecurityManager.create());
+    // Managing System.exit in code execution with the security manager
+    securityManager = DocSecurityManager.create();
+    System.setSecurityManager(securityManager);
   }
 
   public static List<DocExecutorResult> Run(Path path, String command, Class<?> commandClass) {
-    return create("defaultRun").addCommand(command, commandClass).run(path);
+    return create("defaultRun").setShellCommandExecuteViaMainClass(command, commandClass).run(path);
   }
 
 
@@ -86,7 +101,7 @@ public class DocExecutor {
    */
   public List<DocExecutorResult> run(Path... paths) {
 
-    DocLog.LOGGER.setLevel(Level.INFO);
+    Logs.setLevel(this.logLevel);
 
     List<DocExecutorResult> results = new ArrayList<>();
     for (Path path : paths) {
@@ -156,12 +171,11 @@ public class DocExecutor {
 
 
   /**
-   *
-   *
    * @param path the doc to execute
    * @return the new page
    */
   private DocExecutorResult execute(Path path) throws NoSuchFileException {
+
 
     DocExecutorResult docExecutorResult = DocExecutorResult
       .get(path)
@@ -174,9 +188,6 @@ public class DocExecutor {
 
     // A code executor
     DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(this);
-    for (String commandName : commands.keySet()) {
-      docExecutorUnit.addMainClass(commandName, commands.get(commandName));
-    }
 
     List<DocUnit> cachedDocUnits = new ArrayList<>();
     if (docCache != null) {
@@ -264,10 +275,10 @@ public class DocExecutor {
             || (!cacheIsOn())
             || oneCodeBlockHasAlreadyRun
         ) {
+          DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
           try {
-            DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
             docExecutorResult.incrementCodeExecutionCounter();
-            result = docExecutorUnit.eval(docUnit).trim();
+            result = docExecutorUnit.run(docUnit).trim();
             DocLog.LOGGER.fine(this.name, "Code executed, no error");
             oneCodeBlockHasAlreadyRun = true;
           } catch (Exception e) {
@@ -280,7 +291,7 @@ public class DocExecutor {
             DocLog.LOGGER.severe(this.name, "Error during execute: " + result);
             if (stopRunAtFirstError) {
               DocLog.LOGGER.fine(this.name, "Stop at first run. Throwing the error");
-              throw new RuntimeException(e);
+              throw new RuntimeException(e.getMessage(), e);
             }
           }
         } else {
@@ -317,17 +328,49 @@ public class DocExecutor {
     targetDoc.append(originalDoc, previousEnd, originalDoc.length());
     docExecutorResult.setNewDoc(targetDoc.toString());
     return docExecutorResult;
+
   }
 
 
-  public DocExecutor addCommand(String command, Class<?> mainClazz) {
-    commands.put(command, mainClazz);
+  /**
+   * Execute a shell command via a Java Main Class
+   * <p></p>
+   * If the {@link DocUnit#getLanguage() language} is a shell language (dos or bash),
+   * * the first name that we called cli is replaced by the mainClass
+   * * the others args forms the args that are passed to the main method of the mainClass
+   *
+   * @param command   - the name of the command (ie the first word in a command statement)
+   * @param mainClazz - a main class that will receive the parsed arguments
+   * @throws IllegalArgumentException - if the command was already set to use {@link #setShellCommandExecuteViaShellBinary(String, Boolean)}
+   */
+  public DocExecutor setShellCommandExecuteViaMainClass(String command, Class<?> mainClazz) {
+    shellCommandMainClassMap.put(command, mainClazz);
+    if (shellCommandUseShellBinaryMap.get(command) == null) {
+      shellCommandUseShellBinaryMap.put(command, false);
+    } else {
+      throw new IllegalArgumentException("The command " + command + " was already set to use the shell binary (bash -c) for execution. You can't have both the main class (" + mainClazz + ") and the shell binary execution");
+    }
     return this;
   }
 
   /**
+   * If the {@link DocUnit#getLanguage() language} is a shell language (dos or bash), set the full qualified path of the command.
+   * When your command is not in the path and that you can't change it easily,
+   * if a path is set, we will replace the command by its full qualified path
    *
-   *
+   * @param command      - the name of the command (ie the first word in a command statement)
+   * @param absolutePath - the qualified path of the command (not the directory, the binary file)
+   * @throws IllegalArgumentException - if the path is not absolute
+   */
+  public DocExecutor setShellCommandQualifiedPath(String command, Path absolutePath) {
+    if (!absolutePath.isAbsolute()) {
+      throw new IllegalArgumentException("The path (" + absolutePath + ") is not absolute");
+    }
+    shellCommandAbsolutePathMap.put(command, absolutePath);
+    return this;
+  }
+
+  /**
    * @param path the base path (Where do we will find the files defined in the file node)
    * @return the runner for chaining instantiation
    */
@@ -336,14 +379,22 @@ public class DocExecutor {
     return this;
   }
 
+  public DocExecutor setLogLevel(Level level) {
+    this.logLevel = level;
+    return this;
+  }
+
+  /**
+   * @return if the cache is on
+   */
   private Boolean cacheIsOn() {
     return docCache != null;
   }
 
   /**
-   * Add java system property
+   * Add a java system property
    *
-   * @param key the key
+   * @param key   the key
    * @param value the value
    * @return the object for chaining
    */
@@ -355,5 +406,59 @@ public class DocExecutor {
   public boolean doesStopAtFirstError() {
     return this.stopRunAtFirstError;
   }
+
+  /**
+   * If the {@link DocUnit#getLanguage() language} is a shell language (dos, bash, ...)
+   * Use the shell cli or parse the args and execute via java exec
+   * (ie use "bash -c" or execute the arguments)
+   * It can be handy in environment where no bash is provided
+   * <p></p>
+   * Note that this parameter has no effect if a {@link #setShellCommandExecuteViaMainClass(String, Class)}
+   * command class was specified
+   *
+   * @param commandName - the command name (the first word in the command statement)
+   * @param useShellCli - use "bash -c" to execute the command (True by default) or parse the args and execute via java exec
+   * @return the object for chaining
+   */
+  public DocExecutor setShellCommandExecuteViaShellBinary(String commandName, Boolean useShellCli) {
+    this.shellCommandUseShellBinaryMap.put(commandName, useShellCli);
+    Class<?> mainClazz = shellCommandMainClassMap.get(commandName);
+    if (mainClazz != null) {
+      throw new IllegalArgumentException("The command " + commandName + " was already set to use the main class (" + mainClazz + ") for execution. You can't have both the main class (" + mainClazz + ") and the shell binary execution");
+    }
+    return this;
+  }
+
+  /**
+   * @param commandName - the command name (the first word in the command statement)
+   * @return the Path of the command on the system
+   */
+  protected Path getShellCommandPath(String commandName) {
+    return this.shellCommandAbsolutePathMap.get(commandName);
+  }
+
+  /**
+   * @param commandName - the cli/exec
+   * @return the main class that implements a cli/exec
+   * <p>
+   * This is used to generate Java code when the documentation is a shell documentation
+   */
+  public Class<?> getShellCommandMainClass(String commandName) {
+    return this.shellCommandMainClassMap.get(commandName);
+  }
+
+  protected boolean isExecuteShellCommandViaShellBinary(String commandName) {
+    Boolean executeViaShellBinary = this.shellCommandUseShellBinaryMap.get(commandName);
+    if (executeViaShellBinary == null) {
+      return true;
+    }
+    return executeViaShellBinary;
+  }
+
+  protected DocSecurityManager getSecurityManager() {
+    return this.securityManager;
+  }
+
+
 
 }

@@ -149,8 +149,8 @@ public class CliParser {
     int argumentCountFound = 0;
 
     CliLog.LOGGER.fine("Known Words");
-    for(Map.Entry<String,CliWord> knownWord: knownWords.entrySet()){
-      CliLog.LOGGER.fine("   - Word ("+knownWord.getKey()+")");
+    for (Map.Entry<String, CliWord> knownWord : knownWords.entrySet()) {
+      CliLog.LOGGER.fine("   - Word (" + knownWord.getKey() + ")");
     }
 
     boolean unknownOption = false;
@@ -158,7 +158,7 @@ public class CliParser {
 
       String s = args[i];
 
-      CliLog.LOGGER.fine("Processing ("+s+")");
+      CliLog.LOGGER.fine("Processing (" + s + ")");
 
       CliWord namedCliWord = getNamedKnownWord(s);
       if (namedCliWord == null) {
@@ -321,159 +321,155 @@ public class CliParser {
 
       return null;
 
+    }
+
+    /**
+     * Value determination
+     * Value in args ?
+     */
+    List<String> value = foundWordsInArgs.get(cliWord);
+
+    /**
+     * Not found
+     * In System Property
+     */
+    if (value == null) {
+      String systemPropertyName = cliWord.getSystemPropertyName();
+      if (systemPropertyName == null) {
+        /**
+         * Retrieve by name with scope
+         * Value is for a property, we delete from the name the long option `--`
+         * Word can have minus option in their name ie (--log-level)
+         */
+        systemPropertyName = cliWord.getId().replace(CliParser.PREFIX_LONG_OPTION, "");
+      }
+      String systemPropertyValue = System.getProperty(systemPropertyName);
+      if (systemPropertyValue == null) {
+        /**
+         * Retrieve by name
+         */
+        systemPropertyValue = System.getProperty(cliWord.getName());
+      }
+      if (systemPropertyValue != null) {
+        value = Collections.singletonList(systemPropertyValue);
+      }
+    }
+
+    /**
+     * Not found in the args
+     * In env ?
+     */
+    if (value == null) {
+      String envName = cliWord.getEnvName();
+      if (cliWord.getEnvName() == null) {
+        envName = cliWord.getId();
+      }
+      String env = System.getenv().get(envName);
+      if (env != null) {
+        value = Collections.singletonList(env);
+      }
+    }
+
+    /**
+     * Not found
+     * In Conf map ?
+     */
+    if (value == null) {
+      String configName = cliWord.getConfigName();
+      if (configName == null) {
+        /**
+         * Get the id with the scope
+         * (ie the command is attached)
+         */
+        configName = cliWord.getId();
+      }
+      String configPropertyValue = cliCommand.getConf(configName);
+      if (configPropertyValue == null) {
+        /**
+         * Retrieve by name without the scope (command)
+         */
+        configPropertyValue = cliCommand.getConf(cliWord.getName());
+      }
+      if (configPropertyValue != null) {
+        value = Collections.singletonList(configPropertyValue);
+      }
+    }
+
+    /**
+     * Default value
+     */
+    if (value == null) {
+
+      String defaultValue = cliWord.getDefaultValue();
+
+      /**
+       * Flag have always false as default
+       */
+      if (defaultValue == null && cliWord.isFlag()) {
+        defaultValue = "false";
+      }
+      if (defaultValue != null) {
+        value = Collections.singletonList(defaultValue);
+      }
+    }
+
+    if (value != null) {
+
+      /**
+       * Flags has always a value.
+       * Ie default set or otherwise false
+       * <p>
+       * If flag is present, opposite of the value
+       */
+      if (cliWord.isFlag()) {
+
+        if (aClass != Boolean.class) {
+          throw new RuntimeException("The word (" + cliWord + ") is a flag and you can ask only a boolean value, not a" + aClass.getSimpleName());
+        }
+        Boolean booleanValue = cast(value.get(0), Boolean.class, cliWord);
+
+        /**
+         *  If flag is present, opposite of the value
+         */
+        boolean found = foundWordsInArgs.containsKey(cliWord);
+        if (found) {
+          booleanValue = !booleanValue;
+        }
+        logger.info("(" + cliWord + ") word was found with the value: " + booleanValue);
+        return aClass.cast(booleanValue);
+
+      } else {
+        T result;
+        if (value.size() == 1) {
+          result = cast(value.get(0), aClass, cliWord);
+        } else {
+          String join = String.join(" ", value);
+          result = cast(join, aClass, cliWord);
+        }
+
+        logger.info("(" + cliWord + ") word was found with the value (" + result + ")");
+        return result;
+      }
+
     } else {
 
       /**
-       * Value determination
-       * Value in args ?
+       * No value
        */
-      List<String> value = foundWordsInArgs.get(cliWord);
-
-      /**
-       * Not found
-       * In System Property
-       */
-      if (value == null) {
-        String systemPropertyName = cliWord.getSystemPropertyName();
-        if (systemPropertyName == null) {
-          /**
-           * Retrieve by name with scope
-           * Value is for a property, we delete from the name the long option `--`
-           * Word can have minus option in their name ie (--log-level)
-           */
-          systemPropertyName = cliWord.getId().replace(CliParser.PREFIX_LONG_OPTION, "");
-        }
-        String systemPropertyValue = System.getProperty(systemPropertyName);
-        if (systemPropertyValue == null) {
-          /**
-           * Retrieve by name
-           */
-          systemPropertyValue = System.getProperty(cliWord.getName());
-        }
-        if (systemPropertyValue != null) {
-          value = Collections.singletonList(systemPropertyValue);
-        }
-      }
-
-      /**
-       * Not found in the args
-       * In env ?
-       */
-      if (value == null) {
-        String envName = cliWord.getEnvName();
-        if (cliWord.getEnvName() == null) {
-          envName = cliWord.getId();
-        }
-        String env = System.getenv().get(envName);
-        if (env != null) {
-          value = Collections.singletonList(env);
-        }
-      }
-
-      /**
-       * Not found
-       * In Conf map ?
-       */
-      if (value == null) {
-        String configName = cliWord.getConfigName();
-        if (configName == null) {
-          /**
-           * Get the id with the scope
-           * (ie the command is attached)
-           */
-          configName = cliWord.getId();
-        }
-        String configPropertyValue = cliCommand.getConf(configName);
-        if (configPropertyValue == null) {
-          /**
-           * Retrieve by name without the scope (command)
-           */
-          configPropertyValue = cliCommand.getConf(cliWord.getName());
-        }
-        if (configPropertyValue != null) {
-          value = Collections.singletonList(configPropertyValue);
-        }
-      }
-
-      /**
-       * Default value
-       */
-      if (value == null) {
-
-        String defaultValue = cliWord.getDefaultValue();
-
-        /**
-         * Flag have always false as default
-         */
-        if (defaultValue == null && cliWord.isFlag()) {
-          defaultValue = "false";
-        }
-        if (defaultValue != null) {
-          value = Collections.singletonList(defaultValue);
-        }
-      }
-
-      if (value != null) {
-
-        /**
-         * Flags has always a value.
-         * Ie default set or otherwise false
-         *
-         * If flag is present, opposite of the value
-         */
-        if (cliWord.isFlag()) {
-
-          if (aClass != Boolean.class) {
-            throw new RuntimeException("The word (" + cliWord + ") is a flag and you can ask only a boolean value, not a" + aClass.getSimpleName());
-          }
-          Boolean booleanValue = cast(value.get(0), Boolean.class, cliWord);
-
-          /**
-           *  If flag is present, opposite of the value
-           */
-          boolean found = foundWordsInArgs.containsKey(cliWord);
-          if (found) {
-            booleanValue = !booleanValue;
-          }
-          logger.info("(" + cliWord + ") word was found with the value: " + booleanValue);
-          return aClass.cast(booleanValue);
-
-        } else {
-          T result;
-          if (value.size() == 1) {
-            result = cast(value.get(0), aClass, cliWord);
-          } else {
-            String join = String.join(" ", value);
-            result = cast(join, aClass, cliWord);
-          }
-
-          logger.info("(" + cliWord + ") word was found with the value (" + result + ")");
-          return result;
-        }
-
+      String defaultValue = cliWord.getDefaultValue();
+      if (defaultValue != null) {
+        T castedDefaultValue = cast(defaultValue, aClass, cliWord);
+        logger.info("(" + cliWord + ") word was not found. Default value returned (" + castedDefaultValue + ")");
+        return castedDefaultValue;
       } else {
 
-        /**
-         * No value
-         */
-
-
-        String defaultValue = cliWord.getDefaultValue();
-        if (defaultValue != null) {
-          T castedDefaultValue = cast(defaultValue, aClass, cliWord);
-          logger.info("(" + cliWord + ") word was not found. Default value returned (" + castedDefaultValue + ")");
-          return castedDefaultValue;
+        if (aClass == Boolean.class) {
+          logger.info("(" + cliWord + ") word was not found. False returned.");
+          return aClass.cast(false);
         } else {
-
-          if (aClass == Boolean.class) {
-            logger.info("(" + cliWord + ") word was not found. False returned.");
-            return aClass.cast(false);
-          } else {
-            logger.info("(" + cliWord + ") word was not found. Null returned.");
-            return null;
-          }
+          logger.info("(" + cliWord + ") word was not found. Null returned.");
+          return null;
         }
-
       }
 
     }

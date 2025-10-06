@@ -1,10 +1,42 @@
 
+
+## Large Object (Range Header)
+
+you can use the Range HTTP header to download a specified byte range from an object.
+
+* Class: [HttpSeekableByteChannel](../src/main/java/net/bytle/niofs/http)
+* AWS Doc https://docs.aws.amazon.com/AmazonS3/latest/userguide/range-get-olap.html
+
+Excerpt from
+https://codeberg.org/valpackett/rxjava-http-tail/src/branch/trunk/src/main/java/rx/HttpTail.java
+```java
+HttpResponse getContent(long currentLength) throws IOException {
+      HttpRequest request = requestFactory.buildGetRequest(url);
+      request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff()));
+      HttpHeaders requestHeaders = new HttpHeaders();
+      requestHeaders.setRange(String.format("bytes=%d-%d", offset, currentLength));
+      request.setHeaders(requestHeaders);
+      return request.execute();
+}
+```
+
+
+
 ## Third library
 
-* [Tail like library](https://github.com/myfreeweb/rxjava-http-tail) - allows you to follow logs over HTTP, like tail -f
-* [HttpCore](https://hc.apache.org/httpcomponents-core-5.1.x/examples.html)
+See all clients at: https://mvnrepository.com/open-source/http-clients
 
-## Model
+* [Tail like library](https://codeberg.org/valpackett/rxjava-http-tail) - allows you to follow logs over HTTP, like tail -f
+* com.google.http-client
+* [HttpCore](https://hc.apache.org/httpcomponents-core-5.1.x/examples.html)
+* [Apache HttpClient 5](https://hc.apache.org/index.html)
+  * Example: https://hc.apache.org/httpcomponents-client-5.4.x/examples.html
+  * Recommended by [Docker Java](https://github.com/docker-java/docker-java/blob/main/docs/transports.md)
+  * Byte Range supported only via Header https://stackoverflow.com/questions/7362719/apache-httpclient-get-add-a-byte-range-header
+* https://commons.apache.org/proper/commons-vfs/filesystems.html
+
+## Note
+### Model
 
 You can make a `get` to execute a rest call
 with:
@@ -48,7 +80,7 @@ header=--user "anystring:${apikey}"'
           body: {"email_address":"","status_if_new":"subscribed","email_type":"","status":"subscribed","merge_fields":{},"interests":{},"language":"","vip":false,"location":{"latitude":0,"longitude":0},"marketing_permissions":[],"ip_signup":"","timestamp_signup":"","ip_opt":"","timestamp_opt":""}
 ```
 
-## Authentication Management for users
+### Authentication Management for users
 
 We should implement an Oauth server to store the client token
 in order to retrieve them locally or in a batch run (Vertx offers them luckily).

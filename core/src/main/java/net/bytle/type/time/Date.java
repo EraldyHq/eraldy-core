@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -82,7 +83,20 @@ public class Date {
     } else if (o instanceof java.sql.Date) {
       return createFromSqlDate((java.sql.Date) o);
     } else if (o instanceof java.util.Date) {
-      return createFromDate((java.util.Date) o);
+      /**
+       * Date Util may have time component, we set them to zero
+       * May be done during casting?
+       */
+      java.util.Date dateUtil = (java.util.Date) o;
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(dateUtil);
+      // Set time components to zero
+      calendar.set(Calendar.HOUR_OF_DAY, 0);
+      calendar.set(Calendar.MINUTE, 0);
+      calendar.set(Calendar.SECOND, 0);
+      calendar.set(Calendar.MILLISECOND, 0);
+      dateUtil = calendar.getTime();
+      return createFromDate(dateUtil);
     } else if (o instanceof String) {
       return createFromString((String) o);
     } else if (o instanceof Integer) {

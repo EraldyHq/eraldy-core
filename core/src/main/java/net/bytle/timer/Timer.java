@@ -1,11 +1,11 @@
 package net.bytle.timer;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 public class Timer {
-
 
 
   private final String name;
@@ -22,9 +22,7 @@ public class Timer {
   private Instant startTime;
   private Instant endTime;
 
-  private long SECONDS_IN_MILLI = 1000;
-  private long MINUTES_IN_MILLI = 1000 * 60;
-  private long HOURS_IN_MILLI = 1000 * 60 * 60;
+
 
 
   private Long responseTimeInMs;
@@ -51,42 +49,26 @@ public class Timer {
 
   public void stop() {
 
-    if (responseTimeInMs == null) {
-      endTime = Instant.now();
-      responseTimeInMs = ChronoUnit.MILLIS.between(startTime, endTime);
-    } else {
+    if (endTime != null) {
       throw new IllegalStateException("The timer was already stopped");
     }
+    endTime = Instant.now();
+
+    responseTimeInMs = ChronoUnit.MILLIS.between(startTime, endTime);
 
   }
 
+  public boolean hasStopped() {
+    return endTime != null;
+  }
 
-  public long getResponseTimeInMilliSeconds() {
+
+
+  public Duration getDuration() {
     if (responseTimeInMs == null) {
       stop();
     }
-    return responseTimeInMs;
-  }
-
-  /**
-   * @return the response time in (hour:minutes:seconds.milli)
-   */
-
-  public String getResponseTimeInString() {
-
-    long elapsedHours = getResponseTimeInMilliSeconds() / HOURS_IN_MILLI;
-
-    long diff = getResponseTimeInMilliSeconds() % HOURS_IN_MILLI;
-    long elapsedMinutes = diff / MINUTES_IN_MILLI;
-
-    diff = diff % MINUTES_IN_MILLI;
-    long elapsedSeconds = diff / SECONDS_IN_MILLI;
-
-    diff = diff % SECONDS_IN_MILLI;
-    long elapsedMilliSeconds = diff;
-
-    return elapsedHours + ":" + elapsedMinutes + ":" + elapsedSeconds + "." + elapsedMilliSeconds;
-
+    return Duration.of(responseTimeInMs, ChronoUnit.MILLIS);
   }
 
   public Instant getStartTime() {

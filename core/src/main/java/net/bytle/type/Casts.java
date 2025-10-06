@@ -2,12 +2,15 @@ package net.bytle.type;
 
 import net.bytle.exception.CastException;
 import net.bytle.exception.IllegalArgumentExceptions;
+import net.bytle.exception.NullValueException;
 import net.bytle.type.time.Date;
+import net.bytle.type.time.DurationShort;
 import net.bytle.type.time.Time;
 import net.bytle.type.time.Timestamp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -16,15 +19,38 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 
+@SuppressWarnings("unused")
 public class Casts {
 
   protected static Set<String> nullableStrings = new HashSet<>(Arrays.asList("", "null", "na"));
+  static final Map<Class<?>, Set<Class<?>>> wideningMap = new HashMap<>();
 
+  static {
+
+    wideningMap.put(byte.class, Set.of(short.class, int.class, long.class, float.class, double.class));
+    wideningMap.put(short.class, Set.of(int.class, long.class, float.class, double.class));
+    wideningMap.put(int.class, Set.of(long.class, float.class, double.class));
+    wideningMap.put(long.class, Set.of(float.class, double.class));
+    wideningMap.put(float.class, Set.of(double.class));
+    // Include wrapper classes
+    wideningMap.put(Byte.class, Set.of(Short.class, Integer.class, Long.class, Float.class, Double.class));
+    wideningMap.put(Short.class, Set.of(Integer.class, Long.class, Float.class, Double.class));
+    wideningMap.put(Integer.class, Set.of(Long.class, Float.class, Double.class));
+    wideningMap.put(Long.class, Set.of(Float.class, Double.class));
+    wideningMap.put(Float.class, Set.of(Double.class));
+    // time
+    wideningMap.put(java.sql.Date.class, Set.of(java.sql.Timestamp.class));
+    wideningMap.put(java.sql.Time.class, Set.of(java.sql.Timestamp.class));
+    // character
+    wideningMap.put(char.class, Set.of(String.class));
+
+  }
 
   /**
    * Cast to a collection
@@ -54,7 +80,6 @@ public class Casts {
     // We need to create a new one and to add the element
     Collection<E> target;
     try {
-      //noinspection unchecked
       target = (Collection<E>) typeClazz.getDeclaredConstructor().newInstance();
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new CastException(e);
@@ -77,6 +102,8 @@ public class Casts {
    * @return null if the object is null, throw an exception if the class is not the expected one
    * the object to the asked clazz
    * @throws CastException when the cast does not work
+   *                       If the class is an interface, we just check if it's an instance of and fail otherwise
+   *                       Example: Number can be an integer, a float, a double, ...
    */
   public static <T> T cast(Object sourceObject, Class<T> targetClass) throws CastException {
 
@@ -87,11 +114,17 @@ public class Casts {
       return null;
     }
 
-    /**
-     * Interface can't be instantiated
-     */
+
     if (targetClass == Number.class) {
-      throw new CastException("The target class Number is an interface and cannot be instantiated. Choose a class with a constructor");
+      if (sourceObject instanceof Number) {
+        /**
+         * Number is an interface and
+         * can't be instantiated
+         * We just return the object
+         */
+        return (T) sourceObject;
+      }
+      throw new CastException("The source object is not a number. Value: " + sourceObject);
     }
 
     try {
@@ -112,12 +145,10 @@ public class Casts {
         if (!targetClass.isArray()) {
           if (targetClass.equals(String.class)) {
             String[] values = castToArray(sourceObject, String.class);
-            //noinspection unchecked
             return (T) String.join(", ", values);
           }
           throw new CastException("The source object is an array and the target class is not");
         }
-        //noinspection unchecked
         return (T) castToArray(sourceObject, targetClass.getComponentType());
       }
 
@@ -146,6 +177,56 @@ public class Casts {
           throw new CastException("A string source object is mandatory to cast to KeyNormalizer. The source object is not a string but a " + sourceObject.getClass().getSimpleName());
         }
         return targetClass.cast(KeyNormalizer.create(sourceObject));
+      }
+
+      /**
+       * Duration
+       */
+      if (targetClass == DurationShort.class) {
+        if (sourceObject instanceof String) {
+          return targetClass.cast(DurationShort.create(sourceObject.toString()));
+        }
+        throw new CastException("A duration short cannot be created because the value is not a string but a " + sourceObject.getClass().getSimpleName());
+      }
+      if (targetClass == Duration.class) {
+        if (sourceObject instanceof String) {
+          Duration parse;
+          String durationString = sourceObject.toString();
+          try {
+            parse = Duration.parse(durationString);
+          } catch (Exception e) {
+            throw new CastException("The iso duration string (" + durationString + ") is not valid. Error: " + e.getMessage(), e);
+          }
+          return targetClass.cast(parse);
+        }
+        throw new CastException("A duration cannot be created because the value is not a string but a " + sourceObject.getClass().getSimpleName());
+      }
+
+      /**
+       * Uri Enhanced
+       */
+      if (targetClass == UriEnhanced.class) {
+        String uri = sourceObject.toString();
+        try {
+
+          return targetClass.cast(UriEnhanced.createFromString(uri));
+
+        } catch (Exception e) {
+          String message = "The string `" + uri + "` is not a valid uri.";
+          if (uri.startsWith("\"") || uri.startsWith("'")) {
+            message += " You should delete the character quote.";
+          }
+          message += " Error: " + e.getMessage();
+          throw new CastException(message, e);
+        }
+
+      }
+
+      if (targetClass == DnsName.class) {
+
+        String dnsNameAsString = sourceObject.toString();
+        return targetClass.cast(DnsName.create(dnsNameAsString));
+
       }
 
       /**
@@ -221,6 +302,18 @@ public class Casts {
        * String
        */
       if (targetClass == String.class) {
+        /**
+         * Input Stream
+         * Not sure where the character set fit here
+         * https://stackoverflow.com/questions/309424/how-to-read-convert-an-inputstream-into-a-string-in-java
+         */
+        if (sourceObject instanceof InputStream) {
+          InputStream is = (InputStream) sourceObject;
+          try (Scanner s = new Scanner(is)) {
+            String value = s.useDelimiter("\\A").hasNext() ? s.next() : "";
+            return targetClass.cast(value);
+          }
+        }
         return targetClass.cast(sourceObject.toString());
       }
 
@@ -242,7 +335,7 @@ public class Casts {
       }
 
       /**
-       * Time
+       * Xml
        */
       if (targetClass == java.sql.SQLXML.class) {
         boolean isSqlXmlObject = java.sql.SQLXML.class.isAssignableFrom(sourceObject.getClass());
@@ -287,11 +380,14 @@ public class Casts {
           if (constant == null) {
             throw new InternalError("The enum class (" + targetClass + ") does not have any constants");
           }
-          if (KeyNormalizer.create(constant).equals(normalizedLookupKey)) {
+          Enum<?> constantAsEnum = (Enum<?>) constant;
+          if (KeyNormalizer.create(constantAsEnum.name()).equals(normalizedLookupKey)) {
             return constant;
           }
         }
-        throw new ClassCastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the enum class (" + targetClass.getSimpleName() + "). Possible values: " + Enums.toConstantAsStringCommaSeparated(targetClass));
+        // Not uppercase
+        String enumsPossibleValues = Enums.toConstantAsStringOfUriAttributeCommaSeparated(targetClass);
+        throw new CastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the enum class (" + targetClass.getSimpleName() + "). Possible values: " + enumsPossibleValues);
       }
 
       /**
@@ -307,6 +403,18 @@ public class Casts {
       }
 
       /**
+       * Media Type
+       */
+      if (targetClass == MediaType.class) {
+        try {
+          return targetClass.cast(MediaTypes.parse(sourceObject.toString()));
+        } catch (NullValueException e) {
+          return null;
+        }
+      }
+
+
+      /**
        * If we are here, we have not yet a
        * transformation,
        * we try to cast it directly
@@ -314,7 +422,7 @@ public class Casts {
       try {
         return targetClass.cast(sourceObject);
       } catch (ClassCastException e) {
-        throw new ClassCastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the class (" + targetClass.getSimpleName() + ")");
+        throw new CastException("We couldn't cast the value (" + sourceObject + ") with the class (" + sourceObjectClass.getSimpleName() + ") to the class (" + targetClass.getSimpleName() + ")");
       }
 
     } catch (IllegalCharsetNameException | ClassCastException e) {
@@ -392,7 +500,7 @@ public class Casts {
   public static <K, V> Map<K, V> castToNewMap(Object object, Class<K> clazzK, Class<V> clazzV, Boolean strictKey) throws CastException {
     Map<?, ?> map;
     if (!(object instanceof Map)) {
-      throw new ClassCastException("The object is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
+      throw new CastException("The object is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
     } else {
       map = (Map<?, ?>) object;
     }
@@ -437,6 +545,18 @@ public class Casts {
   }
 
   /**
+   * Same function as {@link #castToSameMap(Object, Class, Class)}
+   * but without exception. To use when you know the data in advance.
+   */
+  public static <K, V> Map<K, V> castToSameMapSafe(Object object, Class<K> clazzK, Class<V> clazzV) {
+    try {
+      return castToSameMap(object, clazzK, clazzV);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
    * This function cast the object to a map and don't create new one (meaning that the object
    * are not cast)
    *
@@ -445,34 +565,50 @@ public class Casts {
    * @param clazzV - the value class
    * @param <K>    the key type
    * @param <V>    the value type
-   * @return the same object but casted
+   * @return the same object but cast
    * @throws CastException if there is a problem
    */
   public static <K, V> Map<K, V> castToSameMap(Object object, Class<K> clazzK, Class<V> clazzV) throws CastException {
 
-    Map<?, ?> map;
     if (!(object instanceof Map)) {
       throw new CastException("The object (value: " + object + ") is not a map but a " + object.getClass().getSimpleName() + " and can't be then casted");
-    } else {
-      map = (Map<?, ?>) object;
     }
 
-    for (Map.Entry<?, ?> e : map.entrySet()) {
-      if (e.getKey() != null && !clazzK.equals(Object.class)) {
-        if (!e.getKey().getClass().equals(clazzK)) {
-          throw new CastException("The key (" + e.getKey() + ") is not a " + clazzK.getSimpleName() + " but a " + e.getKey().getClass().getName());
-        }
+    Map.Entry<?, ?> firstElement = ((Map<?, ?>) object).entrySet().iterator().next();
+    if (firstElement == null) {
+      return (Map<K, V>) object;
+    }
+    if (firstElement.getKey() != null && !clazzK.equals(Object.class)) {
+      if (!firstElement.getKey().getClass().equals(clazzK)) {
+        throw new CastException("The key (" + firstElement.getKey() + ") is not a " + clazzK.getSimpleName() + " but a " + firstElement.getKey().getClass().getSimpleName());
       }
-      if (e.getValue() != null && !clazzV.equals(Object.class)) {
-        if (!e.getValue().getClass().equals(clazzV)) {
-          throw new CastException("The key (" + e.getValue() + ") is not a " + clazzV.getSimpleName() + ".");
-        }
+    }
+    if (firstElement.getValue() != null && !clazzV.equals(Object.class)) {
+      if (!firstElement.getValue().getClass().equals(clazzV)) {
+        throw new CastException("The key (" + firstElement.getValue() + ") is not a " + clazzV.getSimpleName() + ".");
       }
     }
 
-    //noinspection unchecked
     return (Map<K, V>) object;
 
+  }
+
+  // No collection in the value
+  public static <T> List<T> castToListScalar(Object o, Class<T> clazz) throws CastException {
+    List<T> result = castToNewList(o, clazz);
+    for (Object element : result) {
+      if (isNotCollection(element)) {
+        continue;
+      }
+      throw new CastException("The value " + element + " is not a scalar but a collection of type " + element.getClass().getSimpleName());
+    }
+    return result;
+  }
+
+  public static boolean isNotCollection(Object obj) {
+    return !(obj instanceof Collection) &&
+      !(obj instanceof Map) &&
+      !(obj.getClass().isArray());
   }
 
   /**
@@ -483,7 +619,7 @@ public class Casts {
    * @param <T>   the return type
    * @return the list
    */
-  public static <T> List<T> castToList(Object o, Class<T> clazz) throws CastException {
+  public static <T> List<T> castToNewList(Object o, Class<T> clazz) throws CastException {
 
     if (o == null) {
       return null;
@@ -494,9 +630,9 @@ public class Casts {
       List<?> list = (List<?>) o;
       List<T> returnList = new ArrayList<>();
       for (Object object : list) {
-        if (object.getClass() == clazz) {
-          //noinspection unchecked
-          return (List<T>) list;
+        if (object == null) {
+          returnList.add(null);
+          continue;
         }
         returnList.add(cast(object, clazz));
       }
@@ -521,16 +657,17 @@ public class Casts {
       return returnList;
     }
 
-    throw new IllegalArgumentException("The object is not a collection (list, set) nor an array but a " + o.getClass().getSimpleName() + " and can't therefore be cast to a list");
+    throw new CastException("The object is not a collection (list, set) nor an array but a " + o.getClass().getSimpleName() + " and can't therefore be cast to a list");
 
   }
 
+
   @SuppressWarnings("unused")
-  public static <T> Set<T> toSameSet(Object object, Class<T> clazzV) {
+  public static <T> Set<T> toSameSet(Object object, Class<T> clazzV) throws CastException {
 
     Set<?> set;
     if (!(object instanceof Set)) {
-      throw new ClassCastException("The object (value: " + object + ") is not a set but a " + object.getClass().getSimpleName() + " and can't be then casted");
+      throw new CastException("The object (value: " + object + ") is not a set but a " + object.getClass().getSimpleName() + " and can't be then casted");
     } else {
       set = (Set<?>) object;
     }
@@ -538,7 +675,7 @@ public class Casts {
     for (Object value : set) {
       if (!clazzV.equals(Object.class)) {
         if (!clazzV.isAssignableFrom(value.getClass())) {
-          throw new ClassCastException("The value (" + value + ") is not a " + clazzV.getSimpleName() + ".");
+          throw new CastException("The value (" + value + ") is not a " + clazzV.getSimpleName() + ".");
         }
       }
     }
@@ -564,9 +701,9 @@ public class Casts {
     }
   }
 
-  public static <T> List<T> castToListSafe(Object o, Class<T> aClass) {
+  public static <T> List<T> castToNewListSafe(Object o, Class<T> aClass) {
     try {
-      return castToList(o, aClass);
+      return castToNewList(o, aClass);
     } catch (CastException e) {
       throw IllegalArgumentExceptions.createFromValue(o, e);
     }
@@ -580,7 +717,25 @@ public class Casts {
     }
   }
 
-  public static <T> Collection<T> castToCollection(Object o, Class<T> clazzV) {
+  /**
+   * Same as {@link #castToCollection} but when you have checked before that the object is a collection
+   * Example:
+   * <code>
+   * boolean isCollection = Collection.class.isAssignableFrom(originalValue.getClass());
+   * </code>
+   */
+  public static <T> Collection<T> castToCollectionSafe(Object o, Class<T> clazzV) {
+    try {
+      return castToCollection(o, clazzV);
+    } catch (CastException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * @throws CastException if the object is not a collection or an element is not from the same class
+   */
+  public static <T> Collection<T> castToCollection(Object o, Class<T> clazzV) throws CastException {
     if (o == null) {
       return null;
     }
@@ -589,14 +744,14 @@ public class Casts {
       for (Object object : array) {
         if (!clazzV.equals(Object.class)) {
           if (!clazzV.isAssignableFrom(object.getClass())) {
-            throw new ClassCastException("The value (" + object + ") is not a " + clazzV.getSimpleName() + ".");
+            throw new CastException("The element (" + object + ") of the collection is not a " + clazzV.getSimpleName() + " but a " + object.getClass().getSimpleName());
           }
         }
       }
       //noinspection unchecked
       return (Collection<T>) array;
     }
-    throw new ClassCastException("The object (" + o + ") is not a collection but a " + o.getClass().getSimpleName());
+    throw new CastException("The object (" + o + ") is not a collection but a " + o.getClass().getSimpleName());
 
   }
 
@@ -627,6 +782,23 @@ public class Casts {
     }
 
     return stringBuilder.toString();
+
+  }
+
+
+  /**
+   * A narrowing conversion changes a value to a data type that might not be able to hold some of the possible values. For example, a fractional value is rounded when it is converted to an integral type, and a numeric type being converted to Boolean is reduced to either True or False.
+   * A widening conversion changes a value to a data type that can allow for any possible value of the original data.
+   * Widening conversions preserve the source value but can change its representation.
+   * This occurs if you convert from an integral type to Decimal, or from Char to String.
+   * <a href="https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/data-types/widening-and-narrowing-conversions">...</a>
+   */
+  public static boolean isNarrowingConversion(Class<?> from, Class<?> to) {
+
+    if(from.equals(to)){
+      return false;
+    }
+    return !wideningMap.getOrDefault(from, Collections.emptySet()).contains(to);
 
   }
 

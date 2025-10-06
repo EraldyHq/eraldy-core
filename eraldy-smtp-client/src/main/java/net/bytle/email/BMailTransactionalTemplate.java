@@ -94,7 +94,7 @@ public class BMailTransactionalTemplate {
    * @return the object for chaining
    */
   public BMailTransactionalTemplate addIntroParagraph(String intro) {
-    List<String> intros = Casts.castToListSafe(
+    List<String> intros = Casts.castToNewListSafe(
       this.templateVariable.computeIfAbsent("intros", k -> new ArrayList<String>()),
       String.class
     );
@@ -129,7 +129,7 @@ public class BMailTransactionalTemplate {
       return actions;
     }
     try {
-      return Casts.castToList(actionsVariable, Action.class);
+      return Casts.castToNewList(actionsVariable, Action.class);
     } catch (CastException e) {
       throw new RuntimeException("The actions value (" + actionsVariable + ") of the template body could not be cast to an action");
     }
@@ -142,7 +142,7 @@ public class BMailTransactionalTemplate {
    * @return the template
    */
   public BMailTransactionalTemplate addOutroParagraph(String outro) {
-    List<String> outros = Casts.castToListSafe(
+    List<String> outros = Casts.castToNewListSafe(
       this.templateVariable.computeIfAbsent("outros", k -> new ArrayList<String>()),
       String.class
     );
@@ -153,7 +153,7 @@ public class BMailTransactionalTemplate {
 
   public BMailTransactionalTemplate addClosingParagraph(String signature) {
     String closing = "closings";
-    List<String> signatures = Casts.castToListSafe(
+    List<String> signatures = Casts.castToNewListSafe(
       this.templateVariable.computeIfAbsent(closing, k -> new ArrayList<String>()),
       String.class
     );
@@ -209,7 +209,7 @@ public class BMailTransactionalTemplate {
   }
 
   public BMailTransactionalTemplate addPostScriptum(String postScriptum) {
-    List<String> postScriptums = Casts.castToListSafe(
+    List<String> postScriptums = Casts.castToNewListSafe(
       this.templateVariable.computeIfAbsent("ps", k -> new ArrayList<String>()),
       String.class
     );

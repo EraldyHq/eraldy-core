@@ -1,25 +1,24 @@
 package net.bytle.fs;
 
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
 import net.bytle.crypto.Digest;
 import net.bytle.exception.NotAbsoluteException;
 import net.bytle.os.Oss;
 import net.bytle.type.MediaType;
 import net.bytle.type.MediaTypes;
 
-import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.nio.file.spi.FileTypeDetector;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
@@ -28,6 +27,7 @@ import java.util.stream.StreamSupport;
 import static net.bytle.os.Oss.WIN;
 
 
+@SuppressWarnings("UnusedReturnValue")
 public class Fs {
 
 
@@ -309,12 +309,14 @@ public class Fs {
    * Wrapper around {@link Files#write(Path, byte[], OpenOption...)}
    * to write a string to a file in UTF8
    * without exception handling
+   * and with parent directory creation if not exists
    *
    * @param path - the path
    * @param s    - the content to add to the path
    */
   public static void write(Path path, String s) {
     try {
+      Fs.createDirectoryIfNotExists(path.getParent());
       Files.write(path, s.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -430,25 +432,46 @@ public class Fs {
    * @param path - a file or a directory
    */
   public static List<Path> deleteIfExists(Path path) {
+    return deleteIfExists(path, false);
+  }
+
+  /**
+   * @param path - a file or a directory
+   */
+  public static List<Path> deleteIfExists(Path path, boolean cascade) {
     if (Files.exists(path)) {
-      return Fs.delete(path);
-    } else {
-      return new ArrayList<>();
+      return Fs.delete(path, cascade);
+    }
+    return new ArrayList<>();
+  }
+
+  public static List<Path> delete(Path path) {
+    return delete(path, false);
+  }
+
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+  public static boolean isDirectoryEmpty(Path directory) throws IOException {
+    try (var stream = Files.list(directory)) {
+      return stream.findFirst().isEmpty();
     }
   }
 
   /**
    * Delete a file or a directory (with all its content)
    *
-   * @param path the path to delete
+   * @param path    the path to delete
+   * @param cascade if true and the path is a directory delete cascade all files recursively
    * @return all deleted path
    */
-  private static List<Path> delete(Path path) {
+  public static List<Path> delete(Path path, boolean cascade) {
     try {
 
       List<Path> deletedPaths = new ArrayList<>();
 
       if (Files.isDirectory(path)) {
+        if (!isDirectoryEmpty(path) && !cascade) {
+          throw new IllegalArgumentException("The path (" + path + ") is a non-empty directory, set recursive/cascade to true if you want to delete the directory recursively");
+        }
         try (Stream<Path> walk = Files.walk(path)) {
           walk
             .map(Path::toFile)
@@ -458,7 +481,7 @@ public class Fs {
               if (result) {
                 deletedPaths.add(file.toPath());
               } else {
-                throw new RuntimeException("Unable to delete the file (" + file + ")");
+                throw new RuntimeException("The path (" + file + ") was not successfully deleted. No reason was given.");
               }
             });
           return deletedPaths;
@@ -554,12 +577,45 @@ public class Fs {
    * @param path a directory path
    */
   public static void createDirectoryIfNotExists(Path path) {
+
     try {
       if (Files.notExists(path)) {
+        /**
+         * Validation check all parts
+         * but as it happens only if it does not exist
+         * that's cool
+         */
+        Fs.validateDirectoryPath(path);
         Files.createDirectories(path);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+
+  }
+
+
+  /**
+   * A directory path should not have any file in it.
+   * Otherwise, we get: `Not a directory` error
+   * Example:
+   * /tmp/zip/my-file
+   * is not a valid directory path if
+   * /tmp/zip is a file
+   */
+  public static void validateDirectoryPath(Path directoryPath) {
+    Path currentPath = directoryPath;
+
+    while (currentPath != null) {
+      if (Files.exists(currentPath)) {
+        if (Files.isRegularFile(currentPath)) {
+          throw new IllegalArgumentException(
+            String.format("The directory path '%s' is not valid because the child path '%s' is an existing file. Delete the file or change the directory path.",
+              directoryPath, currentPath)
+          );
+        }
+      }
+      currentPath = currentPath.getParent();
     }
   }
 
@@ -631,43 +687,6 @@ public class Fs {
 
   }
 
-  /**
-   * <a href="http://userguide.icu-project.org/conversion/detection">...</a>
-   *
-   * @param path - the path
-   * @return a encoding value or null if this is not possible
-   * See possible values at
-   * <a href="http://userguide.icu-project.org/conversion/detection#TOC-Detected-Encodings">...</a>
-   */
-  public static String detectCharacterSet(Path path) {
-    /**
-     * Buffered reader is important because
-     * the detector make us of the mark/reset
-     */
-    try (InputStream bis = new BufferedInputStream(Files.newInputStream(path))) {
-      CharsetDetector charsetDetector = new CharsetDetector();
-      charsetDetector.setText(bis);
-      CharsetMatch match = charsetDetector.detect();
-      if (match == null) {
-        return null;
-      } else {
-        return match.getName();
-      }
-    } catch (Exception e) {
-      /**
-       * If the file is used, we can get a java.nio.file.FileSystemException exception
-       * such as `The process cannot access the file`
-       * Example on windows with `C:/Users/userName/NTUSER.DAT`
-       * <p>
-       * We can also get a problem when basic authentication is mandatory
-       * for http path
-       */
-      FsLog.LOGGER.fine("Error while reading the file (" + path + ")" + e.getMessage());
-      return null;
-    }
-
-  }
-
 
   /**
    * @param path - the path
@@ -690,11 +709,18 @@ public class Fs {
     return getFileContent(path, Charset.defaultCharset());
   }
 
+  /**
+   * @param path - detect the media/content type
+   * @return a media type
+   * @throws NotAbsoluteException if the path is not absolute
+   *                              If you want to detect your own media type, you should implement a {@link FileTypeDetector}
+   */
   public static MediaType detectMediaType(Path path) throws NotAbsoluteException {
 
-    return MediaTypes.createFromPath(path);
+    return MediaTypes.detectMediaType(path);
 
   }
+
 
   public static boolean isRoot(Path path) {
     return path.getRoot().equals(path);
@@ -768,5 +794,59 @@ public class Fs {
 
     return attributes.creationTime().toInstant();
 
+  }
+
+  /**
+   * Truncate the file (no data anymore)
+   * Truncate file to 0 bytes (empty the file)
+   */
+  public static void truncate(Path filePath) {
+    truncate(filePath, 0, false);
+  }
+
+  /**
+   * Truncate the file to a specific size
+   * Truncate file to x bytes
+   *
+   * @return
+   */
+  public static List<Path> truncate(Path path, long size, boolean cascade) {
+    try {
+
+      List<Path> truncatedPath = new ArrayList<>();
+
+      if (Files.isDirectory(path)) {
+        if (!isDirectoryEmpty(path) && !cascade) {
+          throw new IllegalArgumentException("The path (" + path + ") is a directory, set recursive/cascade to true if you want to truncate all files in the directory recursively");
+        }
+        try (Stream<Path> walk = Files.walk(path)) {
+          walk
+            .sorted(Comparator.reverseOrder())
+            .forEach(file -> {
+              truncateUtility(file, size);
+              truncatedPath.add(file);
+            });
+          return truncatedPath;
+        }
+      }
+
+      truncateUtility(path, size);
+      truncatedPath.add(path);
+      return truncatedPath;
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+
+  }
+
+  private static void truncateUtility(Path filePath, long size) {
+    try (SeekableByteChannel channel = Files.newByteChannel(filePath,
+      StandardOpenOption.WRITE)) {
+      channel.truncate(size);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

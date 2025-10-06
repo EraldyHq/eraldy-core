@@ -33,10 +33,19 @@ public class UriEnhancedTest {
   }
 
   @Test
+  void onlyScheme() throws IllegalStructure {
+    String uriString = "mem:/";
+    URI uri = URI.create(uriString);
+    Assertions.assertEquals("mem", uri.getScheme());
+    UriEnhanced uriEnhanced = UriEnhanced.createFromString(uriString);
+    Assertions.assertEquals("mem", uriEnhanced.getScheme());
+  }
+
+  @Test
   public void UriIllegalCharacter() throws IllegalStructure {
     // the symbol | in the query is illegal, need to be encoded
     UriEnhanced uriEnhanced = UriEnhanced
-            .createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=json&prop=description|categories");
+      .createFromString("https://en.wikipedia.org/w/api.php?action=query&titles=SQL&format=json&prop=description|categories");
     Assertions.assertEquals("description|categories", uriEnhanced.getQueryProperty("prop"));
   }
 
@@ -47,7 +56,7 @@ public class UriEnhancedTest {
   public void fileURI() throws IllegalStructure {
     // the symbol | in the query is illegal, need to be encoded
     URI uriEnhanced = UriEnhanced
-            .createFromString("file:///my/path").toUri();
+      .createFromString("file:///my/path").toUri();
     Assertions.assertEquals("/my/path", uriEnhanced.getPath());
   }
 

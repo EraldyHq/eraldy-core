@@ -1,7 +1,7 @@
 package net.bytle.type;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,18 +14,22 @@ public class MapKeyIndependentTest {
     MapKeyIndependent<Integer> map = new MapKeyIndependent<>();
     String lowercase = "smtp_to";
     map.put(lowercase, 1);
-    Assert.assertEquals(1, map.size());
+    Assertions.assertEquals(1, map.size());
     String uppercase = "SMTP_TO";
     map.put(uppercase, 1);
-    Assert.assertEquals(1, map.size());
+    Assertions.assertEquals(1, map.size());
     String javaCase = "smtpTo";
     map.put(javaCase, 1);
-    Assert.assertEquals(1, map.size());
-    Assert.assertEquals((Integer) 1, map.get(uppercase));
-    Assert.assertEquals((Integer) 1, map.get(lowercase));
+    Assertions.assertEquals(1, map.size());
+    Assertions.assertEquals((Integer) 1, map.get(uppercase));
+    Assertions.assertEquals((Integer) 1, map.get(lowercase));
+
+    // contains test
+    Assertions.assertTrue(map.containsKey("smtpTo"));
+    Assertions.assertTrue(map.containsKey("smtp_To"));
 
     Map.Entry<String, Integer> entry = map.entrySet().iterator().next();
-    Assert.assertEquals(javaCase, entry.getKey());
+    Assertions.assertEquals(javaCase, entry.getKey());
 
     /**
      * Put all
@@ -33,7 +37,7 @@ public class MapKeyIndependentTest {
     Map<String, Integer> collection = new HashMap<>();
     collection.put(lowercase, 1);
     map.putAll(collection);
-    Assert.assertEquals(1, map.size());
+    Assertions.assertEquals(1, map.size());
 
 
   }

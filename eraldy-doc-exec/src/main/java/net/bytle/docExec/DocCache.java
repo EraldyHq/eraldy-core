@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@SuppressWarnings("UnusedReturnValue")
 public class DocCache {
 
 
@@ -29,9 +30,6 @@ public class DocCache {
 
   /**
    * The name is a namespace to be able to cache two different set of doc
-   *
-   * @param name
-   * @return
    */
   public static DocCache get(String name) {
 
@@ -40,7 +38,6 @@ public class DocCache {
   }
 
   /**
-   * @param path
    * @return the MD5 of the path
    */
   public String getMd5(Path path) {
@@ -97,13 +94,12 @@ public class DocCache {
   }
 
   public List<Path> purgeAll() {
-    List<Path> paths = Fs.getDescendantFiles(cacheDirectory);
-    Fs.deleteIfExists(cacheDirectory);
-    return paths;
+    return Fs.deleteIfExists(cacheDirectory, true);
   }
 
   public void purge(Path path) {
     Path cacheFilePath = getPathCacheFile(path);
     Fs.deleteIfExists(cacheFilePath);
   }
+
 }

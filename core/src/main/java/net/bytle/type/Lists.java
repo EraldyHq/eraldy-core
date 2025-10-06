@@ -2,6 +2,8 @@ package net.bytle.type;
 
 import net.bytle.exception.CastException;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,9 +37,29 @@ public class Lists {
     return first;
   }
 
-  public static <T> List<T> cast(List<?> list, Class<T> aClass) throws CastException {
+  public static <T> List<T> castToNewList(List<?> list, Class<T> aClass) throws CastException {
 
-    return Casts.castToList(list,aClass);
+    return Casts.castToNewList(list,aClass);
 
+  }
+
+  /**
+   * Return a single hash of a list of string
+   */
+  public static String toHash(List<String> items) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+      // Hash each item and combine the hash bytes
+      items.forEach(item -> digest.update(item.getBytes()));
+
+      byte[] finalHash = digest.digest();
+
+      // bytes to hex
+      return Bytes.toHexaDecimal(finalHash);
+
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("SHA-256 algorithm not available", e);
+    }
   }
 }

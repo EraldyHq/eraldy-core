@@ -52,7 +52,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
 
 
   @Override
-  public final HttpRequestPath getPath(final URI uri) {
+  public final HttpPath getPath(final URI uri) {
 
     /**
      * This function may be called directly via {@link java.nio.file.Paths}
@@ -75,12 +75,11 @@ public class HttpFileSystemProvider extends FileSystemProvider {
 
     if (options.isEmpty() ||
       (options.size() == 1 && options.contains(StandardOpenOption.READ))) {
-      return new HttpSeekableByteChannel((HttpRequestPath) path);
-    } else {
-      throw new UnsupportedOperationException(
-        String.format("Only %s is supported for %s, but %s options(s) are provided",
-          StandardOpenOption.READ, this, options));
+      return new HttpSeekableByteChannel((HttpPath) path);
     }
+    throw new UnsupportedOperationException(
+      String.format("Only %s is supported for %s, but %s options(s) are provided",
+        StandardOpenOption.READ, this, options));
   }
 
   @Override
@@ -147,15 +146,15 @@ public class HttpFileSystemProvider extends FileSystemProvider {
   @Override
   public final void checkAccess(final Path path, final AccessMode... modes) throws IOException {
 
-    if (!((HttpRequestPath) path).getFileSystem().shouldCheckAccess()) {
+    if (!((HttpPath) path).getFileSystem().shouldCheckAccess()) {
       return;
     }
 
     if (modes.length == 0) {
 
       // check the existence of the file
-      HttpRequestPath httpPath = (HttpRequestPath) path;
-      HttpURLConnection fetch = HttpStatic.getHttpFetchObject(httpPath);
+      HttpPath httpPath = (HttpPath) path;
+      HttpURLConnection fetch = HttpRequest.getHttpRequest(httpPath);
       fetch.setRequestMethod("HEAD");
       fetch.connect();
       int responseCode = fetch.getResponseCode();
@@ -177,8 +176,8 @@ public class HttpFileSystemProvider extends FileSystemProvider {
       if (modes.length == 1 && modes[0] == AccessMode.READ) {
 
         // check the existence of the file
-        HttpRequestPath httpPath = (HttpRequestPath) path;
-        HttpURLConnection connection = HttpStatic.getHttpFetchObject(httpPath);
+        HttpPath httpPath = (HttpPath) path;
+        HttpURLConnection connection = HttpRequest.getHttpRequest(httpPath);
         connection.setRequestMethod("HEAD");
         connection.connect();
         int responseCode = connection.getResponseCode();
@@ -207,7 +206,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
   public final <A extends BasicFileAttributes> A readAttributes(final Path path,
                                                                 final Class<A> type, final LinkOption... options) throws IOException {
     //noinspection unchecked
-    return (A) new HttpBasicFileAttributes((HttpRequestPath) path);
+    return (A) new HttpBasicFileAttributes((HttpPath) path);
   }
 
   @Override
@@ -218,7 +217,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
     }
     Map<String, Object> values = new HashMap<>();
     for (String attribute : attributes.split(",")) {
-      Object value = ((HttpRequestPath) path).readAttribute(attribute);
+      Object value = ((HttpPath) path).readAttribute(attribute);
       /**
        * {@link Files#getAttribute(Path, String, LinkOption...)} }
        * is checking only the attribute without the namespace strange
@@ -239,7 +238,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
     if (pos == -1) {
       name = attribute;
     } else {
-      name = (pos == attribute.length()) ? "" : attribute.substring(pos + 1);
+      name = attribute.substring(pos + 1);
     }
     return name;
   }
@@ -251,7 +250,7 @@ public class HttpFileSystemProvider extends FileSystemProvider {
       throw new UnsupportedOperationException(this.getClass().getName() +
         " is read-only: cannot set attributes to paths");
     }
-    ((HttpRequestPath) path).setAttribute(attribute, value);
+    ((HttpPath) path).setAttribute(attribute, value);
   }
 
   @Override

@@ -1,6 +1,5 @@
 package net.bytle.niofs.http;
 
-import net.bytle.type.Base64Utility;
 import net.bytle.type.Casts;
 
 import java.io.IOException;
@@ -11,17 +10,17 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.*;
 
-final class HttpFileSystem extends FileSystem {
+public final class HttpFileSystem extends FileSystem {
 
 
-    static final String USER_AGENT = "Eraldy NioFs Http";
+
     private final HttpFileSystemProvider provider;
     private final URL url;
     @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
     private final Map<String, Object> envs = new HashMap<>();
-    private Object user;
+    private String user;
 
-    private Object password;
+    private String password;
 
     public HttpFileSystem(HttpFileSystemProvider provider, URL url, final Map<String, ?> envs) {
 
@@ -39,10 +38,10 @@ final class HttpFileSystem extends FileSystem {
                     attributeObject = Casts.cast(attribute, HttpRequestAttribute.class);
                     switch (attributeObject) {
                         case USER:
-                            this.setUser(value);
+                            this.setUser(value.toString());
                             break;
                         case PASSWORD:
-                            this.setPassword(value);
+                            this.setPassword(value.toString());
                             break;
                     }
                 } catch (Exception e) {
@@ -56,7 +55,7 @@ final class HttpFileSystem extends FileSystem {
 
     }
 
-    HttpFileSystem setUser(Object user) {
+    HttpFileSystem setUser(String user) {
         this.user = user;
         return this;
     }
@@ -65,14 +64,10 @@ final class HttpFileSystem extends FileSystem {
         return this.password != null;
     }
 
-    public String getBasicAuthenticationString() {
-        Objects.requireNonNull(this.user, "User should be provided for basic authentication string");
-        Objects.requireNonNull(this.password, "Password should be provided for basic authentication string");
-        return Base64Utility.stringToBase64UrlString(this.user + ":" + this.password);
-    }
 
 
-    HttpFileSystem setPassword(Object password) {
+
+    HttpFileSystem setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -109,7 +104,7 @@ final class HttpFileSystem extends FileSystem {
     @Override
     public Iterable<Path> getRootDirectories() {
 
-        HttpRequestPath rootPath = getPath(this.getSeparator());
+        HttpPath rootPath = getPath(this.getSeparator());
         return Collections.singletonList(rootPath);
 
     }
@@ -126,13 +121,13 @@ final class HttpFileSystem extends FileSystem {
     }
 
     @Override
-    public HttpRequestPath getPath(final String first, final String... more) {
+    public HttpPath getPath(final String first, final String... more) {
 
         String path = first;
         if (more.length > 0) {
             path += getSeparator() + String.join(getSeparator(), more);
         }
-        return new HttpRequestPath(this, path, null);
+        return new HttpPath(this, path, null);
 
     }
 
@@ -205,7 +200,15 @@ final class HttpFileSystem extends FileSystem {
      * A http system defines the address with a path and the query property
      * (ie the uri)
      */
-    public HttpRequestPath getPath(URI uri) {
-        return new HttpRequestPath(this, uri.getPath(), uri.getQuery());
+    public HttpPath getPath(URI uri) {
+        return new HttpPath(this, uri.getPath(), uri.getQuery());
     }
+
+  public String getPassword() {
+    return this.password;
+  }
+
+  public String getUser() {
+    return this.user;
+  }
 }

@@ -86,6 +86,9 @@ public class Doubles {
 
 
   public static Doubles createFromString(String s) {
+    /**
+     * See also {@link Double#parseDouble(String)}
+     */
     try {
       return new Doubles(numberFormat.parse(s).doubleValue());
     } catch (ParseException e) {

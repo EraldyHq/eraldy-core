@@ -40,9 +40,16 @@ public class Glob {
   }
 
   public static boolean matchOneOfGlobs(String key, List<Glob> globs) {
+    return matchOneOfGlobs(key, globs, 0);
+  }
+
+  /**
+   * @param flags - flags of {@link Pattern#compile(String, int)} or 0
+   */
+  public static boolean matchOneOfGlobs(String key, List<Glob> globs, int flags) {
     boolean match = false;
     for (Glob glob : globs) {
-      if (glob.matches(key)) {
+      if (glob.matches(key, flags)) {
         match = true;
         break;
       }
@@ -212,8 +219,20 @@ public class Glob {
   }
 
   public Boolean matches(String s) {
+    return matches(s, 0);
+  }
+
+  public Boolean matchesIgnoreCase(String s) {
+    return matches(s, Pattern.CASE_INSENSITIVE);
+  }
+
+  /**
+   * @param flags - {@link Pattern#compile(String, int)} flags
+   */
+  public Boolean matches(String s, int flags) {
     String regexpPattern = toRegexPattern();
-    return s.matches(regexpPattern);
+    Pattern mypattern = Pattern.compile(regexpPattern, flags);
+    return mypattern.matcher(s).matches();
   }
 
   @Override
@@ -258,6 +277,19 @@ public class Glob {
   }
 
   /**
+   * @param inputString - a glob expression
+   * @return a matcher
+   * so that you can do a {@link Matcher#find()}
+   * and other logic
+   */
+  public Matcher toMatcher(String inputString) {
+    assert inputString != null : "inputString should not be null";
+    String regex = toRegexPatternWithGroup();
+    Pattern pattern = Pattern.compile(regex);
+    return pattern.matcher(inputString);
+  }
+
+  /**
    * Return the matched groups.
    * <p>
    * If there is no match, the groups will be only composed
@@ -268,9 +300,7 @@ public class Glob {
    */
   public List<String> getGroups(String inputString) {
 
-    String regex = toRegexPatternWithGroup();
-    Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(inputString);
+    Matcher matcher = toMatcher(inputString);
     List<String> groups = new ArrayList<>();
     groups.add(inputString);
     if (matcher.find()) {

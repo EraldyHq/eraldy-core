@@ -1,21 +1,19 @@
 package net.bytle.test;
 
-import com.github.dockerjava.api.model.Bind;
 import net.bytle.os.Oss;
-import net.bytle.type.Strings;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static net.bytle.os.Oss.MAX_PORT_NUMBER;
 import static net.bytle.os.Oss.MIN_PORT_NUMBER;
 
 /**
- * A wrapper around test container
+ * A wrapper around test-container
  * * to implement the singleton container <a href="https://www.testcontainers.org/test_framework_integration/manual_lifecycle_control/#singleton-containers">documentation</a>
  * * to print the command so that the container is long-lived
  * <p>
@@ -27,20 +25,16 @@ import static net.bytle.os.Oss.MIN_PORT_NUMBER;
  * You can also use the correspondent test container in the constructor
  * that will have most of this default value.
  */
+@SuppressWarnings("unused")
 public class TestContainerWrapper {
 
   private final GenericContainer<?> container;
   private final String image;
+  private final DockerContainer.Conf dockerContainerCommand;
   private String hostName = "localhost";
   private Integer hostPort;
   private Integer containerPort;
   private final String name;
-
-  public TestContainerWrapper(String name, String dockerImageName) {
-    this.name = name;
-    this.image = dockerImageName;
-    this.container = new GenericContainer<>(dockerImageName);
-  }
 
   /**
    * By default, you should use this constructor as the pre-created container
@@ -52,7 +46,13 @@ public class TestContainerWrapper {
     this.container = container;
     this.name = name;
     this.image = container.getDockerImageName();
+    this.dockerContainerCommand = DockerContainer.createConf(image).setContainerName(name);
   }
+
+  public TestContainerWrapper(String containerName, String dockerImageName) {
+    this(containerName, new GenericContainer<>(dockerImageName));
+  }
+
 
   /**
    * Start the container if it's not detected already running (by port)
@@ -100,9 +100,9 @@ public class TestContainerWrapper {
       if (this.hostPort == null) {
         System.out.println("Set a host port. Your container port " + this.containerPort + " is a privileged port and cannot be used on the host. Choose one above " + MIN_PORT_NUMBER + " and below " + MAX_PORT_NUMBER);
       } else {
-        System.out.println("You can start it with the following command on Windows:");
+        System.out.println("You can start it with the following command:");
         System.out.println();
-        System.out.println(this.createDockerCommand());
+        System.out.println(this.dockerContainerCommand.build().createDockerCommand());
       }
       System.out.println();
 
@@ -123,43 +123,17 @@ public class TestContainerWrapper {
     return this;
   }
 
-  public String createDockerCommand() {
-    String windowsLineSeparator = "^" + Strings.EOL;
-    String bashLineSeparator = "\\" + Strings.EOL;
-    List<String> separators = Arrays.asList(windowsLineSeparator, bashLineSeparator);
-    String spaces = "    ";
-
-    StringBuilder stringBuilder = new StringBuilder();
-    for (String separator : separators) {
-      stringBuilder.append(Strings.EOL);
-      if (separator.equals(windowsLineSeparator)) {
-        stringBuilder.append("Cmd:").append(Strings.EOL);
-      } else {
-        stringBuilder.append("Bash:").append(Strings.EOL);
-      }
-      stringBuilder.append("docker run ").append(separator);
-      for (Object env : container.getEnv()) {
-        stringBuilder.append(spaces).append("-e ").append(env).append(" ").append(separator);
-      }
-      for (Bind bind : container.getBinds()) {
-        // https://docs.docker.com/engine/storage/bind-mounts/#syntax
-        String hostPath = bind.getPath();
-        String containerPath = bind.getVolume().getPath();
-        stringBuilder.append(spaces).append("--volume ").append(hostPath).append(":").append(containerPath).append(" ").append(separator);
-      }
-      stringBuilder
-        .append(spaces).append("-p ").append(hostPort).append(":").append(containerPort).append(" ").append(separator)
-        .append(spaces).append("-d ").append(separator)
-        .append(spaces).append("--name ").append(this.name).append(" ").append(separator)
-        .append(spaces).append(this.image).append(Strings.EOL);
-    }
-
-
-    return stringBuilder.toString();
-  }
 
   public TestContainerWrapper withEnv(String key, String value) {
     this.container.withEnv(key, value);
+    this.dockerContainerCommand.setEnv(key, value);
+    return this;
+  }
+
+  public TestContainerWrapper withEnvs(Map<String, String> envs) {
+    for (Map.Entry<String, String> entry : envs.entrySet()) {
+      withEnv(entry.getKey(), entry.getValue());
+    }
     return this;
   }
 
@@ -170,7 +144,7 @@ public class TestContainerWrapper {
   public TestContainerWrapper withPort(Integer containerPort) {
     this.containerPort = containerPort;
     this.container.addExposedPort(containerPort);
-
+    this.dockerContainerCommand.setPortBonding(containerPort, containerPort);
     return this;
   }
 
@@ -179,6 +153,7 @@ public class TestContainerWrapper {
     this.containerPort = containerPort;
     container.setPortBindings(List.of(hostPort + ":" + containerPort));
     container.withExposedPorts(containerPort);
+    this.dockerContainerCommand.setPortBonding(hostPort, containerPort);
     return this;
   }
 
@@ -216,6 +191,7 @@ public class TestContainerWrapper {
       throw new RuntimeException("The host path (" + hostPath + ") does not exists");
     }
     this.container.withFileSystemBind(hostPath.toAbsolutePath().toString(), containerPath, BindMode.READ_WRITE);
+    this.dockerContainerCommand.setVolumeBonding(hostPath, Path.of(containerPath));
     return this;
   }
 
@@ -223,4 +199,8 @@ public class TestContainerWrapper {
     return this.container;
   }
 
+
+  public String createDockerCommand() {
+    return this.dockerContainerCommand.build().createDockerCommand();
+  }
 }

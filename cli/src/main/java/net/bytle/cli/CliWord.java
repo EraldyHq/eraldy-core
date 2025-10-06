@@ -334,6 +334,9 @@ public class CliWord implements Comparable<CliWord> {
    */
   public CliWord setDefaultValue(Object defaultValue) {
 
+    if (defaultValue == null) {
+      return this;
+    }
     this.defaultValues = new ArrayList<>();
     this.defaultValues.add(String.valueOf(defaultValue));
     return this;
@@ -471,8 +474,6 @@ public class CliWord implements Comparable<CliWord> {
   }
 
   /**
-   *
-   *
    * @return The {@link #getId Id} without the cli root name (Used as key in conf file)
    */
   public String getRelativeId() {
