@@ -26,7 +26,6 @@ class HttpRequest {
    *
    * @param httpPath - the path request to fetch
    * @return the connection (fetch object, response comes after connect)
-   *
    */
   static HttpURLConnection getHttpRequest(HttpPath httpPath) {
     try {
@@ -42,7 +41,15 @@ class HttpRequest {
         // TODO: implement it as an option
         ((HttpsURLConnection) urlConnection).setSSLSocketFactory(Ssls.getTrustAllCertificateSocketFactory());
       }
-      Files.getAttribute(httpPath, HttpHeader.USER_AGENT.toKeyNormalizer().toHttpHeaderCase());
+
+      String httpHeaderCase = HttpHeader.USER_AGENT.toKeyNormalizer().toHttpHeaderCase();
+      Object value = Files.getAttribute(httpPath, httpHeaderCase);
+      if (value != null) {
+        connection.addRequestProperty(httpHeaderCase, value.toString());
+      } else {
+        connection.addRequestProperty(httpHeaderCase, HttpHeader.USER_AGENT.getDefaultValue());
+      }
+
       if (httpPath.getFileSystem().hasPassword()) {
         connection.addRequestProperty(HttpHeader.AUTHORIZATION.toKeyNormalizer().toHttpHeaderCase(), "Basic " + getBasicAuthenticationString(httpPath));
       }

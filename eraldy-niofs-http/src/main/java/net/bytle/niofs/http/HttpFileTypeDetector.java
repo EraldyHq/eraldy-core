@@ -44,7 +44,7 @@ public class HttpFileTypeDetector extends FileTypeDetector {
      */
     URL url = httpPath.toUri().toURL();
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    conn.setRequestProperty("User-Agent", HttpHeader.USER_AGENT.toString());
+    conn.setRequestProperty(HttpHeader.USER_AGENT.toKeyNormalizer().toHttpHeaderCase(), HttpHeader.USER_AGENT.toString());
     return conn.getContentType();
 
   }
