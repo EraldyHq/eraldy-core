@@ -69,7 +69,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- Eraldy Stack info -->
       <dependency>
         <groupId>com.eraldy</groupId>
         <artifactId>eraldy-core</artifactId>
