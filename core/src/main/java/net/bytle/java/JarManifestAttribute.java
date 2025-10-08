@@ -2,6 +2,12 @@ package net.bytle.java;
 
 import net.bytle.type.KeyInterface;
 
+/**
+ * See
+ * <a href="https://docs.oracle.com/javase/tutorial/deployment/jar/packageman.html">...</a>
+ * And
+ * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/versioning/spec/versioning2.html#wp89936">...</a>
+ */
 public enum JarManifestAttribute implements KeyInterface {
 
 
@@ -17,22 +23,34 @@ public enum JarManifestAttribute implements KeyInterface {
   // technotes/guides/extensions/spec.html#dependency
   EXTENSION_NAME("used for declaring dependencies on installed extensions"),
   // The specification fields describe what standard or API your code adheres to, while the implementation fields describe your particular version of that code.
-  // manifest attribute used for package versioning.
-  SPECIFICATION_TITLE("manifest attribute used for package versioning"),
-  // manifest attribute used for package versioning.
-  SPECIFICATION_VERSION("manifest attribute used for package versioning"),
-  // manifest attribute used for package versioning.
-  SPECIFICATION_VENDOR("manifest attribute used for package versioning"),
+  SPECIFICATION_TITLE("The title of the specification."),
+  SPECIFICATION_VERSION("The version of the specification."),
+  SPECIFICATION_VENDOR("The vendor of the specification."),
   // The specification fields describe what standard or API your code adheres to, while the implementation fields describe your particular version of that code.
   // See Java Product Versioning Specification, technotes/guides/versioning/spec/versioning2.html#wp90779
-  IMPLEMENTATION_TITLE("manifest attribute used for package versioning"),
+  IMPLEMENTATION_TITLE("The title of the implementation."),
   // manifest attribute used for package versioning.
-  IMPLEMENTATION_VERSION("manifest attribute used for package versioning"),
+  IMPLEMENTATION_VERSION("The build number of the implementation"),
   // manifest attribute used for package versioning.
-  IMPLEMENTATION_VENDOR("manifest attribute used for package versioning"),
+  IMPLEMENTATION_VENDOR("The vendor of the implementation."),
+  /**
+   * Package
+   * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/versioning/spec/versioning2.html#wp90779">...</a>
+   */
+  PACKAGE_TITLE("The package title"),
+  PACKAGE_VERSION("The package version"),
+  PACKAGE_VENDOR("The package vendor"),
+  PACKAGE_VENDOR_URL("The package vendor url"),
+  /**
+   * Creator, for instance Maven JAR Plugin 3.4.1
+   */
+  CREATED_BY("The creator"),
   //
   // The below parameters are not standard
   //
+  /**
+   * Maven
+   */
   MAVEN_PROJECT_GROUP_ID("The maven project group id (The organization)"),
   MAVEN_PROJECT_ARTIFACT_ID("The maven project artifact id (The project name)"),
   MAVEN_PROJECT_VERSION("The maven project version (The version)"),
@@ -95,10 +113,6 @@ public enum JarManifestAttribute implements KeyInterface {
    * git tag --contains
    */
   GIT_TAGS("The tags that contains the commits"),
-  /**
-   * Creator, for instance Maven JAR Plugin 3.4.1
-   */
-  CREATED_BY("The creator"),
 
   ;
 
@@ -106,7 +120,6 @@ public enum JarManifestAttribute implements KeyInterface {
 
   JarManifestAttribute(String description) {
     this.description = description;
-
   }
 
   public String getDescription() {
