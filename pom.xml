@@ -8,12 +8,12 @@
   <artifactId>eraldy-core-aggregator</artifactId>
   <name>Eraldy Core Aggregator</name>
   <packaging>pom</packaging>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <parent>
     <groupId>com.eraldy</groupId>
     <artifactId>eraldy-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2-SNAPSHOT</version>
   </parent>
 
 
