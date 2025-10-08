@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 /**
  * Static methods to parse a file into DocTestUnit
@@ -136,7 +139,17 @@ public class DocParser {
     // Test that all nodes are closed
     final Integer numberOfUnitTestNode = Strings.createFromString(s).numberOfOccurrences("<" + unitTestNode);
     if (docUnits.size() != numberOfUnitTestNode) {
-      throw new RuntimeException("A " + unitTestNode + " node seems not to be closed in the file (" + path + "). There is " + numberOfUnitTestNode + " unit test node with the name (" + unitTestNode + ") but we returns only " + docUnits.size() + " doc unit test code.");
+      String message = "A " + unitTestNode + " node seems not to be closed in the file (" + path + "). There is " + numberOfUnitTestNode + " unit test node with the name (" + unitTestNode + ") but we parsed only " + docUnits.size() + " doc unit test code. This unit test is not closed ?:\n";
+      message += Stream.of(docUnits.get(docUnits.size() - 1)).map(d -> {
+        if (d.getCodeLocation() != null) {
+          return "Code unit: " + d.getCode();
+        }
+        if (!d.getFileBlocks().isEmpty()) {
+          return "File unit: " + d.getFileBlocks().get(0).toString();
+        }
+        return "unknown";
+      }).collect(Collectors.joining("\n"));
+      throw new RuntimeException(message);
     }
 
 

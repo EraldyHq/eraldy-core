@@ -65,6 +65,9 @@ public class DocExecutor {
     this.name = name;
     // Managing System.exit in code execution with the security manager
     securityManager = DocSecurityManager.create();
+    // Removed but
+    // https://github.com/stefanbirkner/system-lambda/issues/27
+    // `-Djava.security.manager=allow`
     System.setSecurityManager(securityManager);
   }
 
