@@ -14,7 +14,7 @@ cli_name command -option <arg>
 
 Categorization of the passed arguments as several word type:
     * command. A command is sub command line utility inside the main command line.
-    * option 
+    * option
       * an option that does not expect a value is known as a flag
       * an option that expects a value is known as a property
     * or argument (values generally at the end, known also as operand)
@@ -57,7 +57,7 @@ This parsing will scan the words to find:
 
    * the command words.
    * and the options (the options of the first module are generally global options valid for all commands)
- 
+
 Because the value of property may be taken for command, the command are expected to be before
 the first option. After the first option, if a command word is found, it's discarded.
 
@@ -74,12 +74,12 @@ Every words should be known otherwise an error is reported.
   * Names of parameters that require substitution by actual values are shown with embedded <underscore> characters.
   * The angle brackets `<>` are used for the symbolic grouping of a phrase representing a single parameter
   * Arguments or option-arguments enclosed in the '[' and ']' notation are optional
-  * Options are usually listed in alphabetical order 
+  * Options are usually listed in alphabetical order
   * The -f option is required to appear at least once and may appear multiple times.
 ```bash
 utility_name -f option_argument [-f option_argument]... [operand...]
 ```
-   
+
 ## Features
 
   * Hierarchy of command - Several sub-command are possible
@@ -122,10 +122,22 @@ cli_name [-g option_argument]...[operand...]
   * Boolean Setter Name (setHasValue or setIsType)
   * Boolean Getter Name (hasValue or isValue)
   * One test file per feature
- 
-  
-## Annexes 
-### Command line syntax on the web  
+
+## TODO
+
+### Command word should be scoped to the command node
+
+Why? the same word can be:
+* a command
+* or an argument
+
+ie a command can have a command but the parser should parse only
+the words not captured by the parent.
+
+Example: `tabul app xxx` is a command but may be also an argument `tabul connection info app`
+
+## Annexes
+### Command line syntax on the web
 
 See [Command line syntax on the web](Syntax.md)
 
