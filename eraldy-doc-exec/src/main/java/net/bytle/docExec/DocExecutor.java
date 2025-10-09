@@ -65,9 +65,16 @@ public class DocExecutor {
     this.name = name;
     // Managing System.exit in code execution with the security manager
     securityManager = DocSecurityManager.create();
-    // Removed but
+    // Will be Removed in JDK 24 https://openjdk.org/jeps/486
+    // In most cases, we found that issues that seemed to need interception could be adequately addressed outside the JDK,
+    // using techniques such as:
+    // * source code modification,
+    // * static code analysis and rewriting,
+    // * or agent-based dynamic code rewriting at class load time.
+    // Example: Agent that blocks code from calling System::exit
+    // The transformer rewrites every call to System.exit(int) into throw new RuntimeException("System.exit not allowed").
+    // https://openjdk.org/jeps/486#Appendix
     // https://github.com/stefanbirkner/system-lambda/issues/27
-    // `-Djava.security.manager=allow`
     System.setSecurityManager(securityManager);
   }
 
@@ -286,15 +293,20 @@ public class DocExecutor {
             oneCodeBlockHasAlreadyRun = true;
           } catch (Exception e) {
             docExecutorResult.addError();
-            if (e.getClass().equals(NullPointerException.class)) {
-              result = "null pointer exception";
-            } else {
-              result = e.getMessage();
-            }
-            DocLog.LOGGER.severe(this.name, "Error during execute: " + result);
+
+            /**
+             * The message can be huge if the error adds a usage
+             */
             if (stopRunAtFirstError) {
               DocLog.LOGGER.fine(this.name, "Stop at first run. Throwing the error");
-              throw new RuntimeException(e.getMessage(), e);
+              throw new RuntimeException("Stop at first error", e);
+            } else {
+              if (e.getClass().equals(NullPointerException.class)) {
+                result = "null pointer exception";
+              } else {
+                result = e.getMessage();
+              }
+              DocLog.LOGGER.severe(this.name, "Error during execute: " + result);
             }
           }
         } else {
@@ -461,7 +473,6 @@ public class DocExecutor {
   protected DocSecurityManager getSecurityManager() {
     return this.securityManager;
   }
-
 
 
 }

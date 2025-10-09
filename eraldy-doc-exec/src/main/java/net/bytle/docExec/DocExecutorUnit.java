@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
 /**
@@ -145,8 +146,10 @@ public class DocExecutorUnit {
                   .execute()
                   .outputUTF8()
               );
-            } catch (Exception e) {
-              throw new RuntimeException(e);
+            } catch (IOException | InterruptedException | TimeoutException e) {
+              // Code exception is not there so we don't grow the normal application stack trace
+              // This is fired only if there is some resource errors
+              throw new RuntimeException("Error while running the command " + cliCommand, e);
             }
 
           }
