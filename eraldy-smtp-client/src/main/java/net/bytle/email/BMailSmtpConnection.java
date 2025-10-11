@@ -3,8 +3,6 @@ package net.bytle.email;
 import jakarta.mail.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.event.TransportEvent;
-import jakarta.mail.event.TransportListener;
 import jakarta.mail.internet.MimeMessage;
 import org.eclipse.angus.mail.smtp.SMTPTransport;
 
@@ -37,7 +35,9 @@ public class BMailSmtpConnection implements AutoCloseable {
     } else {
       transport = (SMTPTransport) smtpSession.getTransport(BMailSmtpProtocol.SMTP.toString());
     }
-    transport.addTransportListener(BMailTransportListener.create());
+    if (bMailSmtpClient.isDebug()) {
+      transport.addTransportListener(BMailTransportListener.create());
+    }
     /*
      * Ter info: The connect methods permits to change the session parameters
      * {@link Transport#connect(String, int, String, String)}}
@@ -83,24 +83,4 @@ public class BMailSmtpConnection implements AutoCloseable {
     System.out.println(ehloResponse);
   }
 
-  private static class BMailTransportListener implements TransportListener {
-    public static BMailTransportListener create() {
-      return new BMailTransportListener();
-    }
-
-    @Override
-    public void messageDelivered(TransportEvent e) {
-      System.out.println(e);
-    }
-
-    @Override
-    public void messageNotDelivered(TransportEvent e) {
-      System.out.println(e);
-    }
-
-    @Override
-    public void messagePartiallyDelivered(TransportEvent e) {
-      System.out.println(e);
-    }
-  }
 }

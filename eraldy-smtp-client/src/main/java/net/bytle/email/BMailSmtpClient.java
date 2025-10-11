@@ -285,6 +285,10 @@ public class BMailSmtpClient {
     return this.config.port;
   }
 
+  public boolean isDebug() {
+    return config.debugLogging;
+  }
+
 
   public static class config {
 

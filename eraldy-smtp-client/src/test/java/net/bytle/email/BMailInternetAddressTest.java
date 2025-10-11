@@ -142,6 +142,13 @@ public class BMailInternetAddressTest {
 
   }
 
+  /**
+   * An InternetAddress with a group represents an RFC 5322 email address group, which is a named collection of email addresses.
+   * Syntax: GroupName: address1@example.com, address2@example.com;
+   * <p>
+   * While a single InternetAddress object typically represents one address,
+   * when it's a group, it conceptually contains multiple addresses that can be extracted using getGroup()
+   */
   @Test()
   public void internetAddressGroupRfc822Test() throws AddressException {
     /**
@@ -152,7 +159,6 @@ public class BMailInternetAddressTest {
      * Firstname Lastname <username@example.com>
      */
     String groupName = "my group";
-    //String groupAddress = groupName + ":foo@bar," + emailAddress + ";";
     String groupAddress = groupName + ": \"Foo\" <Foo@localhost> (A comment), bar@example.com (Name), Barney;";
     InternetAddress groupedInternetAddress = new InternetAddress(groupAddress);
     Assertions.assertEquals(groupAddress, groupedInternetAddress.getAddress(), "Address is the whole string");

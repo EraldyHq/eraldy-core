@@ -24,10 +24,10 @@ import java.util.Objects;
  * and a {@link EmailAddress}
  * <p>
  * Internet Address are Strings using the common formats for email with or without real name.
- *  * Example of valid values
- *  * `username@example.com`
- *  * `username@example.com (Firstname Lastname)`
- *  * `Firstname Lastname <username@example.com>`
+ * * Example of valid values
+ * * `username@example.com`
+ * * `username@example.com (Firstname Lastname)`
+ * * `Firstname Lastname <username@example.com>`
  */
 public class BMailInternetAddress {
 
@@ -64,6 +64,7 @@ public class BMailInternetAddress {
     }
     return new BMailInternetAddress(internetAddress);
   }
+
   @Override
   public String toString() {
     return this.getInternetAddress().toString();
@@ -76,14 +77,17 @@ public class BMailInternetAddress {
 
     this.internetAddress = internetAddress;
 
-      try {
-          this.emailAddress = EmailAddress.of(internetAddress.getAddress());
-      } catch (CastException e) {
-        throw new AddressException("The email address is not valid ("+e.getMessage()+")");
-      }
-
-      if (internetAddress.isGroup()) {
+    /**
+     * A group is a list of email
+     */
+    if (internetAddress.isGroup()) {
       throw new RuntimeException("(" + internetAddress + ") is a group email and it's not yet supported");
+    }
+
+    try {
+      this.emailAddress = EmailAddress.of(internetAddress.getAddress());
+    } catch (CastException e) {
+      throw new AddressException("The email address is not valid (" + e.getMessage() + ")");
     }
 
     /**
@@ -105,7 +109,6 @@ public class BMailInternetAddress {
   }
 
   /**
-   *
    * @deprecated use {@link #getEmailAddress()} to get the domain
    */
   @Deprecated
