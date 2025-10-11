@@ -29,6 +29,14 @@ public class DocCache {
   }
 
   /**
+   * @return the base cache directory
+   */
+  @SuppressWarnings("unused")
+  public Path getCacheDirectory() {
+    return cacheDirectory;
+  }
+
+  /**
    * The name is a namespace to be able to cache two different set of doc
    */
   public static DocCache get(String name) {
@@ -97,9 +105,10 @@ public class DocCache {
     return Fs.deleteIfExists(cacheDirectory, true);
   }
 
+  @SuppressWarnings("unused")
   public void purge(Path path) {
     Path cacheFilePath = getPathCacheFile(path);
-    Fs.deleteIfExists(cacheFilePath);
+    Fs.deleteIfExists(cacheFilePath,true);
   }
 
 }
