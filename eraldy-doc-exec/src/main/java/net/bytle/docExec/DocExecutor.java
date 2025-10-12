@@ -36,6 +36,7 @@ public class DocExecutor {
   private final Map<String, Path> shellCommandAbsolutePathMap = new HashMap<>();
   private final Map<String, Boolean> shellCommandUseShellBinaryMap = new HashMap<>();
   private Level logLevel = LogLevel.INFO;
+  private boolean contentShrinkingWarning;
 
   /**
    * @param overwrite If set to true, the console and the file node will be overwritten
@@ -145,7 +146,7 @@ public class DocExecutor {
          * Execution
          */
         DocLog.LOGGER.info(this.name, "Executing the doc file (" + childPath + ")");
-        DocExecutorResult docExecutorResult = null;
+        DocExecutorResult docExecutorResult;
         try {
           docExecutorResult = this.execute(childPath);
         } catch (NoSuchFileException e) {
@@ -159,6 +160,13 @@ public class DocExecutor {
 
         if (docCache != null) {
           docCache.store(childPath);
+        }
+
+        if (docExecutorResult.hasWarnings()) {
+          for (String warning : docExecutorResult.getWarnings()) {
+            System.err.println("Warning: " + warning);
+          }
+          throw new DocWarning("Warning were seen");
         }
 
       }
@@ -323,8 +331,19 @@ public class DocExecutor {
           if (console == null) {
             throw new RuntimeException("No console were found, try a run without cache");
           }
-          if (!result.equals(console.trim())) {
+          // The result does not have the EOL, so th console should not
+          // <console>
+          //   output
+          // </console>
+          String consoleTrim = console.trim();
+          if (!result.equals(consoleTrim)) {
 
+            int resultLineCount = Strings.createFromString(result).getLineCount();
+            int actualConsoleLineCount = Strings.createFromString(consoleTrim).getLineCount();
+            if (resultLineCount < actualConsoleLineCount && this.contentShrinkingWarning) {
+              String s = "A unit code produces less console lines (" + resultLineCount + ") than the actual (" + actualConsoleLineCount + ") in the page. Unit code: " + Strings.createFromString(docUnit.getCode()).toPrintableCharacter();
+              docExecutorResult.addWarning(s);
+            }
             targetDoc
               .append(eol)
               .append(result)
@@ -475,4 +494,8 @@ public class DocExecutor {
   }
 
 
+  public DocExecutor setContentShrinkWarning(boolean b) {
+    this.contentShrinkingWarning = b;
+    return this;
+  }
 }

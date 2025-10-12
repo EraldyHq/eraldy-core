@@ -110,7 +110,7 @@ public class Strings {
   public List<String> splitWithoutRemovingTheSplitCharacter(String patter) {
     // zero-width positive lookahead
     return Arrays.asList(
-            this.stringBuilderField.toString().split("(?=" + patter + ")")
+      this.stringBuilderField.toString().split("(?=" + patter + ")")
     );
   }
 
@@ -514,7 +514,8 @@ public class Strings {
   public int getLineCount() {
     String s = toString();
     try (InputStream fis = new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8))) {
-      return parseEndOfLine(fis, Integer.class);
+      // +1 because if it's a line without end of line, you get still one line
+      return parseEndOfLine(fis, Integer.class) + 1;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
