@@ -36,7 +36,7 @@ public class DocExecutor {
   private final Map<String, Path> shellCommandAbsolutePathMap = new HashMap<>();
   private final Map<String, Boolean> shellCommandUseShellBinaryMap = new HashMap<>();
   private Level logLevel = LogLevel.INFO;
-  private boolean contentShrinkingWarning;
+  private boolean contentShrinkingWarning = true;
 
   /**
    * @param overwrite If set to true, the console and the file node will be overwritten
