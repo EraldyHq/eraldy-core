@@ -22,6 +22,7 @@ public class DocWarningTest {
 
     Assertions.assertThrows(DocWarning.class, () -> DocExecutor.create("test")
       .setContentShrinkWarning(true)
+      .build()
       .run(path)
     );
 

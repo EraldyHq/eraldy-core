@@ -11,14 +11,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-public class DocExecutorRun {
+public class DocExecutorRunner {
 
+  public static final String STOP_AT_FIRST_ERROR = "Stop at first error";
   private final DocExecutor docExecutor;
   private final String eol = Strings.EOL;
 
-  public DocExecutorRun(DocExecutor docExecutor) {
+  public DocExecutorRunner(DocExecutor docExecutor) {
     this.docExecutor = docExecutor;
   }
 
@@ -204,12 +204,14 @@ public class DocExecutorRun {
           } catch (Exception e) {
             docExecutorResult.addError();
 
-            /**
-             * The message can be huge if the error adds a usage
-             */
+
             if (docExecutor.doesStopAtFirstError()) {
               DocLog.LOGGER.fine(docExecutor.getName(), "Stop at first run. Throwing the error");
-              throw new RuntimeException("Stop at first error", e);
+              /**
+               * The message can be huge if the error adds a usage
+               * We don't add it in message
+               */
+              throw new RuntimeException(STOP_AT_FIRST_ERROR, e);
             } else {
               if (e.getClass().equals(NullPointerException.class)) {
                 result = "null pointer exception";

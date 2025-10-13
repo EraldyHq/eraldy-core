@@ -58,7 +58,7 @@ public class DocCache {
   }
 
   /**
-   * @param path
+   * @param path - the path
    * @return the file that is cached for this path
    */
   protected Path getPathCacheFile(Path path) {
@@ -72,7 +72,7 @@ public class DocCache {
   /**
    * Cache/store this path in the cache
    *
-   * @param path
+   * @param path - the path
    */
   public void store(Path path) {
     try {
@@ -89,7 +89,7 @@ public class DocCache {
   }
 
   /**
-   * @param path
+   * @param path - the path
    * @return {@link DocUnit} for this path, null if the path is not in the cache
    */
   public List<DocUnit> getDocTestUnits(Path path) {

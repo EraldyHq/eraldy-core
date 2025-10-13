@@ -1,19 +1,12 @@
 package net.bytle.docExec;
 
 
-import net.bytle.fs.Fs;
-import net.bytle.log.Log;
 import net.bytle.log.LogLevel;
-import net.bytle.log.Logs;
 import net.bytle.type.Strings;
 
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -79,9 +72,6 @@ public class DocExecutor {
     System.setSecurityManager(securityManager);
   }
 
-  public static List<DocExecutorResult> Run(Path path, String command, Class<?> commandClass) {
-    return create("defaultRun").setShellCommandExecuteViaMainClass(command, commandClass).build().run(path);
-  }
 
 
   /**
@@ -109,8 +99,8 @@ public class DocExecutor {
    *
    * @return a DocExecutorRun instance configured with this builder
    */
-  public DocExecutorRun build() {
-    return new DocExecutorRun(this);
+  public DocExecutorRunner build() {
+    return new DocExecutorRunner(this);
   }
 
   private Path baseFileDirectory = Paths.get(".");
