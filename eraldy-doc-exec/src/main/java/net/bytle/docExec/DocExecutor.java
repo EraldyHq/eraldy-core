@@ -80,7 +80,7 @@ public class DocExecutor {
   }
 
   public static List<DocExecutorResult> Run(Path path, String command, Class<?> commandClass) {
-    return create("defaultRun").setShellCommandExecuteViaMainClass(command, commandClass).run(path);
+    return create("defaultRun").setShellCommandExecuteViaMainClass(command, commandClass).build().run(path);
   }
 
 
@@ -105,74 +105,12 @@ public class DocExecutor {
   }
 
   /**
-   * Execute doc test file and the child of directory defined by the paths parameter
+   * Build the DocExecutorRun instance
    *
-   * @param paths the files to execute
-   * @return the list of results
+   * @return a DocExecutorRun instance configured with this builder
    */
-  public List<DocExecutorResult> run(Path... paths) {
-
-    Logs.setLevel(this.logLevel);
-
-    List<DocExecutorResult> results = new ArrayList<>();
-    for (Path path : paths) {
-
-      if (!Files.exists(path)) {
-        String msg = "The path (" + path.toAbsolutePath() + ") does not exist";
-        DocLog.LOGGER.severe(this.name, msg);
-        throw new RuntimeException(msg);
-      }
-
-      List<Path> childPaths = Fs.getDescendantFiles(path);
-
-
-      for (Path childPath : childPaths) {
-
-        /**
-         * Cache ?
-         */
-        if (docCache != null) {
-          String md5Cache = docCache.getMd5(childPath);
-          String md5 = Fs.getMd5(childPath);
-          if (md5.equals(md5Cache)) {
-            DocLog.LOGGER.info(this.name, "Cache is on and the file (" + childPath + ") has already been executed. Skipping the execution");
-            DocExecutorResult docExecutorResult = DocExecutorResult.get(childPath);
-            results.add(docExecutorResult);
-            continue;
-          }
-        }
-
-        /**
-         * Execution
-         */
-        DocLog.LOGGER.info(this.name, "Executing the doc file (" + childPath + ")");
-        DocExecutorResult docExecutorResult;
-        try {
-          docExecutorResult = this.execute(childPath);
-        } catch (NoSuchFileException e) {
-          throw new RuntimeException(e);
-        }
-        results.add(docExecutorResult);
-        if (overwrite) {
-          // Overwrite the new doc
-          Fs.toFile(docExecutorResult.getNewDoc(), childPath);
-        }
-
-        if (docCache != null) {
-          docCache.store(childPath);
-        }
-
-        if (docExecutorResult.hasWarnings()) {
-          for (String warning : docExecutorResult.getWarnings()) {
-            System.err.println("Warning: " + warning);
-          }
-          throw new DocWarning("Warning were seen");
-        }
-
-      }
-    }
-    return results;
-
+  public DocExecutorRun build() {
+    return new DocExecutorRun(this);
   }
 
   private Path baseFileDirectory = Paths.get(".");
@@ -188,182 +126,6 @@ public class DocExecutor {
   }
 
 
-  /**
-   * @param path the doc to execute
-   * @return the new page
-   */
-  private DocExecutorResult execute(Path path) throws NoSuchFileException {
-
-
-    DocExecutorResult docExecutorResult = DocExecutorResult
-      .get(path)
-      .setHasBeenExecuted(true);
-
-    // Parsing
-    List<DocUnit> docTests = DocParser.getDocTests(path);
-    String originalDoc = Fs.getFileContent(path);
-    StringBuilder targetDoc = new StringBuilder();
-
-    // A code executor
-    DocExecutorUnit docExecutorUnit = DocExecutorUnit.create(this);
-
-    List<DocUnit> cachedDocUnits = new ArrayList<>();
-    if (docCache != null) {
-      cachedDocUnits = docCache.getDocTestUnits(path);
-    }
-    Integer previousEnd = 0;
-    boolean oneCodeBlockHasAlreadyRun = false;
-    for (int i = 0; i < docTests.size(); i++) {
-
-      DocUnit docUnit = docTests.get(i);
-      DocUnit cachedDocUnit = null;
-      if (cachedDocUnits != null && i < cachedDocUnits.size()) {
-        cachedDocUnit = cachedDocUnits.get(i);
-      }
-      // Boolean to decide if we need to execute
-      boolean codeChange = false;
-      boolean fileChange = false;
-      // ############################################
-      // The order of execution is important here to reconstruct the new document
-      //    * First the processing of the file nodes
-      //    * then the code
-      //    * then the console
-      // ############################################
-
-      // Replace file node with the file content on the file system
-      final List<DocFileBlock> files = docUnit.getFileBlocks();
-      if (!files.isEmpty()) {
-
-        for (int j = 0; j < files.size(); j++) {
-
-          DocFileBlock docFileBlock = files.get(j);
-
-          final String fileStringPath = docFileBlock.getPath();
-          if (fileStringPath == null) {
-            throw new RuntimeException("The file path for this unit is null (<file type file.extension>");
-          }
-          // No need of cache test here because it's going very quick
-          if (cachedDocUnit != null) {
-            List<DocFileBlock> fileBlocks = cachedDocUnit.getFileBlocks();
-            if (fileBlocks.size() > j) {
-              DocFileBlock cachedDocFileBlock = fileBlocks.get(j);
-              if (!(fileStringPath.equals(cachedDocFileBlock.getPath()))) {
-                fileChange = true;
-              }
-            }
-          } else {
-            fileChange = true;
-          }
-
-          Path filePath = Paths.get(baseFileDirectory.toString(), fileStringPath);
-          String fileContent = Strings.createFromPath(filePath).toString();
-
-          int start = docFileBlock.getLocationStart();
-          targetDoc.append(originalDoc, previousEnd, start);
-
-          DocLog.LOGGER.info(this.name, "Replacing the file block (" + Log.onOneLine(docFileBlock.getPath()) + ") from the file (" + docUnit.getPath() + ")");
-          targetDoc
-            .append(eol)
-            .append(fileContent)
-            .append(eol);
-
-          previousEnd = docFileBlock.getLocationEnd();
-
-
-        }
-      }
-
-      // ######################## Code Block Processing #####################
-      // Code block is not mandatory, you may just have a file
-      String code = docUnit.getCode();
-      if (code != null && !code.trim().isEmpty()) {
-        // Check if this unit has already been executed and that the code has not changed
-        if (cachedDocUnit != null) {
-          if (!(code.equals(cachedDocUnit.getCode()))) {
-            codeChange = true;
-          }
-        } else {
-          codeChange = true;
-        }
-
-        // Run
-        String result;
-        if (
-          ((codeChange || fileChange) & cacheIsOn())
-            || (!cacheIsOn())
-            || oneCodeBlockHasAlreadyRun
-        ) {
-          DocLog.LOGGER.info(this.name, "Running the code (" + Log.onOneLine(code) + ") from the file (" + docUnit.getPath() + ")");
-          try {
-            docExecutorResult.incrementCodeExecutionCounter();
-            result = docExecutorUnit.run(docUnit).trim();
-            DocLog.LOGGER.fine(this.name, "Code executed, no error");
-            oneCodeBlockHasAlreadyRun = true;
-          } catch (Exception e) {
-            docExecutorResult.addError();
-
-            /**
-             * The message can be huge if the error adds a usage
-             */
-            if (stopRunAtFirstError) {
-              DocLog.LOGGER.fine(this.name, "Stop at first run. Throwing the error");
-              throw new RuntimeException("Stop at first error", e);
-            } else {
-              if (e.getClass().equals(NullPointerException.class)) {
-                result = "null pointer exception";
-              } else {
-                result = e.getMessage();
-              }
-              DocLog.LOGGER.severe(this.name, "Error during execute: " + result);
-            }
-          }
-        } else {
-          DocLog.LOGGER.info(this.name, "The run of the code (" + Log.onOneLine(code) + ") was skipped due to caching from the file (" + docUnit.getPath() + ")");
-          result = cachedDocUnit.getConsole();
-        }
-
-        // Console
-        DocBlockLocation consoleLocation = docUnit.getConsoleLocation();
-        if (consoleLocation != null) {
-          int start = consoleLocation.getStart();
-          targetDoc.append(originalDoc, previousEnd, start);
-          String console = docUnit.getConsole();
-          if (console == null) {
-            throw new RuntimeException("No console were found, try a run without cache");
-          }
-          // The result does not have the EOL, so th console should not
-          // <console>
-          //   output
-          // </console>
-          String consoleTrim = console.trim();
-          if (!result.equals(consoleTrim)) {
-
-            int resultLineCount = Strings.createFromString(result).getLineCount();
-            int actualConsoleLineCount = Strings.createFromString(consoleTrim).getLineCount();
-            if (resultLineCount < actualConsoleLineCount && this.contentShrinkingWarning) {
-              String s = "A unit code produces less console lines (" + resultLineCount + ") than the actual (" + actualConsoleLineCount + ") in the page. Unit code: " + Strings.createFromString(docUnit.getCode()).toPrintableCharacter();
-              docExecutorResult.addWarning(s);
-            }
-            targetDoc
-              .append(eol)
-              .append(result)
-              .append(eol);
-
-            previousEnd = consoleLocation.getEnd();
-
-          } else {
-
-            previousEnd = consoleLocation.getStart();
-
-          }
-        }
-      }
-    }
-    targetDoc.append(originalDoc, previousEnd, originalDoc.length());
-    docExecutorResult.setNewDoc(targetDoc.toString());
-    return docExecutorResult;
-
-  }
 
 
   /**
@@ -418,12 +180,6 @@ public class DocExecutor {
     return this;
   }
 
-  /**
-   * @return if the cache is on
-   */
-  private Boolean cacheIsOn() {
-    return docCache != null;
-  }
 
   /**
    * Add a java system property
@@ -497,5 +253,30 @@ public class DocExecutor {
   public DocExecutor setContentShrinkWarning(boolean b) {
     this.contentShrinkingWarning = b;
     return this;
+  }
+
+  // Getter methods for DocExecutorRun
+  public String getName() {
+    return name;
+  }
+
+  public DocCache getDocCache() {
+    return docCache;
+  }
+
+  public boolean isOverwrite() {
+    return overwrite;
+  }
+
+  public Path getBaseFileDirectory() {
+    return baseFileDirectory;
+  }
+
+  public Level getLogLevel() {
+    return logLevel;
+  }
+
+  public boolean isContentShrinkingWarning() {
+    return contentShrinkingWarning;
   }
 }
