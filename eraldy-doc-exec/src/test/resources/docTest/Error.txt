@@ -1,9 +1,0 @@
-
-This unit should send an exception and stops the run.
-<unit>
-
-<code dos>
-cat doesnotexist.txt
-</code>
-
-</unit>

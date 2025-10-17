@@ -1,9 +1,0 @@
-
-
-<unit>
-<file txt dir\file.txt>
-</file>
-<code>
-echo file.txt
-</code>
-</unit>
